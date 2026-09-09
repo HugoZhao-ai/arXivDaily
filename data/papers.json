@@ -75,7 +75,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.08637.png",
+        "source": "https://arxiv.org/html/2609.08637v1/images/01_mcq_pipeline.png"
+      },
+      "image_checked": "2026-09-09T06:50:38+00:00"
     },
     {
       "id": "2609.08566",
@@ -187,7 +192,12 @@
           "evidence": "kv cache, compress, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.08131.png",
+        "source": "https://arxiv.org/html/2609.08131v1/nonLinear_transmission.png"
+      },
+      "image_checked": "2026-09-09T06:50:44+00:00"
     },
     {
       "id": "2609.08084",
@@ -225,7 +235,8 @@
           "evidence": "quantiz, transformer"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image_checked": "2026-09-09T06:50:50+00:00"
     },
     {
       "id": "2609.07966",
@@ -362,7 +373,12 @@
           "evidence": "long-context, efficient, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.07816.png",
+        "source": "https://arxiv.org/html/2609.07816v1/approximate.png"
+      },
+      "image_checked": "2026-09-09T06:50:57+00:00"
     },
     {
       "id": "2609.07815",
@@ -401,7 +417,8 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image_checked": "2026-09-09T06:51:00+00:00"
     },
     {
       "id": "2609.07664",
@@ -478,7 +495,12 @@
           "evidence": "long-context, agents, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.07601.png",
+        "source": "https://arxiv.org/html/2609.07601v1/fig1_new.png"
+      },
+      "image_checked": "2026-09-09T06:51:06+00:00"
     },
     {
       "id": "2609.07185",
@@ -514,7 +536,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.07185.png",
+        "source": "https://arxiv.org/html/2609.07185v1/fig_processing_global.png"
+      },
+      "image_checked": "2026-09-09T06:51:13+00:00"
     },
     {
       "id": "2609.06976",
@@ -552,7 +579,12 @@
           "evidence": "long-context, agentic, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.06976.png",
+        "source": "https://arxiv.org/html/2609.06976v1/fig_overall_framework.png"
+      },
+      "image_checked": "2026-09-09T06:51:19+00:00"
     },
     {
       "id": "2609.06940",
@@ -583,7 +615,12 @@
           "evidence": "kv cache, compress, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.06940.png",
+        "source": "https://arxiv.org/html/2609.06940v1/img/fig_intro_benefit_frontier.png"
+      },
+      "image_checked": "2026-09-09T06:51:26+00:00"
     },
     {
       "id": "2609.06922",
@@ -616,7 +653,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.06922.png",
+        "source": "https://arxiv.org/html/2609.06922v1/diagnostic.png"
+      },
+      "image_checked": "2026-09-09T06:51:32+00:00"
     },
     {
       "id": "2609.06663",
@@ -651,7 +693,12 @@
           "evidence": "kv cache, compress, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.06663.png",
+        "source": "https://arxiv.org/html/2609.06663v1/figures/teaser6.png"
+      },
+      "image_checked": "2026-09-09T06:51:38+00:00"
     },
     {
       "id": "2609.06473",
@@ -681,7 +728,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.06473.png",
+        "source": "https://arxiv.org/html/2609.06473v1/flowSQchart.png"
+      },
+      "image_checked": "2026-09-09T06:51:45+00:00"
     },
     {
       "id": "2609.06330",
@@ -712,7 +764,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.06330.png",
+        "source": "https://arxiv.org/html/2609.06330v1/figures/bref_probe_sensitivity.png"
+      },
+      "image_checked": "2026-09-09T06:51:51+00:00"
     },
     {
       "id": "2609.06161",
@@ -746,7 +803,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.06161.png",
+        "source": "https://arxiv.org/html/2609.06161v1/figure1.png"
+      },
+      "image_checked": "2026-09-09T06:51:58+00:00"
     },
     {
       "id": "2609.05881",
@@ -776,7 +838,12 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.05881.png",
+        "source": "https://arxiv.org/html/2609.05881v1/fig1_heatmap.png"
+      },
+      "image_checked": "2026-09-09T06:52:04+00:00"
     },
     {
       "id": "2609.05764",
