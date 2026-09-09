@@ -74,6 +74,10 @@ relevance 说明与大模型量化、长程 Agent / 多步工具调用量化、K
     body = {"model": model, "messages": [{"role": "system", "content": system},
             {"role": "user", "content": json.dumps({"title": paper["title"], "source_kind": source_kind, "paper_text": source}, ensure_ascii=False)}],
             "temperature": 0.2, "max_tokens": 3000}
+    if model.startswith("deepseek-v4-"):
+        # Keep the output budget for the reading note; V4 enables thinking by default.
+        body["thinking"] = {"type": "disabled"}
+        body["response_format"] = {"type": "json_object"}
     request = Request(base + "/chat/completions", data=json.dumps(body).encode(),
                       headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
     with urlopen(request, timeout=120) as response:

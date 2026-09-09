@@ -60,6 +60,8 @@ python -m unittest discover -s tests -v
 | Variable | `LLM_MODEL` | 服务支持的模型 ID；默认 `deepseek-ai/DeepSeek-V3.2`，可按账户可用模型更换 |
 | Secret | `MODELSCOPE_ACCESS_TOKEN` | 兼容 ModelScope 配置；未设 `LLM_API_KEY` 时使用 |
 
+使用 DeepSeek 官方 V4 Flash 时，将 `LLM_BASE_URL` 设为 `https://api.deepseek.com`，`LLM_MODEL` 设为 `deepseek-v4-flash`，并将官方密钥保存在 `LLM_API_KEY` Secret。脚本对 V4 使用非思考模式和 JSON 输出，确保输出预算用于中文解读。接口说明见 [DeepSeek 官方文档](https://api-docs.deepseek.com/)。
+
 本地运行时设置同名环境变量。项目**不自动加载 `.env`**。API Key 只在构建任务中使用，不进入网页。摘要/HTML 节选将发送给你配置的模型服务；调用量受 `--max-items` 限制。
 
 中文卡片包含一句话摘要、核心贡献、方法、实验结果、局限和研究关联。优先读取 arXiv HTML，失败则使用摘要，并明确标注信息来源。摘要未提供的实验或局限不要求模型补造；Agent 关联推测应与实际实验区分。模型生成失败会保留原始摘要、在日志与任务摘要中报告，并在后续任务重试。
