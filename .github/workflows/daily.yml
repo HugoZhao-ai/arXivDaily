@@ -1,0 +1,111 @@
+name: Daily papers & GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    # 04:17 UTC = 12:17 Asia/Shanghai. Avoid the busy top of the hour.
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+    inputs:
+      sync:
+        description: 'Fetch new papers before building'
+        type: boolean
+        default: true
+
+concurrency:
+  group: quant-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Only the default branch can write data or deploy, including manual runs.
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    outputs:
+      sync-outcome: ${{ steps.sync.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test
+        run: python -m unittest discover -s tests -v
+      - name: Sync independent topic and author streams
+        id: sync
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.sync)
+        continue-on-error: true
+        run: python scripts/sync.py
+      - name: Optional Chinese reading notes and figures
+        id: enrich
+        if: steps.sync.outcome != 'skipped'
+        continue-on-error: true
+        run: python scripts/enrich.py --max-items 15
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          MODELSCOPE_ACCESS_TOKEN: ${{ secrets.MODELSCOPE_ACCESS_TOKEN }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://api-inference.modelscope.cn/v1' }}
+          LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-ai/DeepSeek-V3.2' }}
+      - name: Persist data and independent checkpoints
+        if: always() && steps.sync.outcome != 'skipped'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: update paper data [skip ci]'
+            git push origin HEAD:${{ github.event.repository.default_branch }}
+          fi
+      - name: Build portable static HTML
+        run: python scripts/build.py
+      - name: Check generated pages and internal links
+        run: python scripts/check_site.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Report sync status
+        if: always()
+        env:
+          SYNC_OUTCOME: ${{ steps.sync.outcome }}
+          ENRICH_OUTCOME: ${{ steps.enrich.outcome }}
+        run: python scripts/report.py
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  sync-health:
+    needs: [build, deploy]
+    if: always() && needs.build.result == 'success' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.sync))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fail visibly on partial sync after serving the saved archive
+        env:
+          SYNC_OUTCOME: ${{ needs.build.outputs.sync-outcome }}
+        run: |
+          python -c "import json,os; s=json.load(open('data/state.json')); assert os.environ['SYNC_OUTCOME']=='success' and s['last_run']['status']=='ok', 'Incomplete arXiv sync. Saved archive was deployed; inspect data/state.json and rerun.'"

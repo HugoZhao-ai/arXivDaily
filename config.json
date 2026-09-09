@@ -1,0 +1,45 @@
+{
+  "title": "Quant Research Daily",
+  "subtitle": "大模型量化 · 长程 Agent · 研究者追踪",
+  "sync": {"initial_days": 30, "overlap_days": 7, "page_size": 50, "max_pages": 30, "delay_seconds": 3.2},
+  "topics": [
+    {
+      "id": "llm-quantization",
+      "name": "大模型量化",
+      "description": "权重与激活量化、PTQ / QAT、混合精度与低比特推理。",
+      "query": "(ti:quantiz* OR abs:quantiz* OR ti:\"low-bit\" OR abs:\"low-bit\" OR ti:FP4 OR ti:FP8) AND (ti:\"language model\" OR abs:\"language model\" OR abs:LLM OR abs:LLMs)",
+      "groups": [["quantiz", "quantis", "low-bit", "low bit", "4-bit", "4 bit", "8-bit", "8 bit", "fp4", "fp8", "int4", "int8", "mixed precision"], ["language model", "llm", "llms", "transformer"]],
+      "kind": "direct"
+    },
+    {
+      "id": "agent-quantization",
+      "name": "Agent 长程任务量化",
+      "description": "量化对多步决策、工具调用、长程推理与误差累积的影响。",
+      "query": "(ti:quantiz* OR abs:quantiz* OR abs:\"low-bit\" OR abs:\"low precision\") AND (abs:agent OR abs:agentic OR abs:\"long-horizon\" OR abs:\"multi-step\" OR abs:\"chain-of-thought\" OR abs:reasoning OR abs:\"tool use\")",
+      "groups": [["quantiz", "quantis", "low-bit", "low bit", "low precision", "4-bit", "fp4", "fp8", "int4", "mixed precision"], ["agent", "agents", "agentic", "long-horizon", "long horizon", "multi-step reasoning", "multi step reasoning", "long chain-of-thought", "long reasoning", "tool use", "tool-use", "tool calling"], ["language model", "llm", "llms", "transformer", "reasoning model", "reasoning models"]],
+      "kind": "direct"
+    },
+    {
+      "id": "long-context",
+      "name": "长上下文与 KV Cache",
+      "description": "面向长程任务的上下文、记忆与推理效率；作为延伸阅读单独标记。",
+      "query": "(abs:\"KV cache\" OR abs:\"key-value cache\" OR abs:\"long-context\") AND (abs:quantiz* OR abs:compress* OR abs:efficient OR abs:agent)",
+      "groups": [["kv cache", "kv-cache", "key-value cache", "long-context", "long context"], ["quantiz", "compress", "efficient", "agent", "agents", "agentic", "sparse", "memory"], ["language model", "llm", "llms", "transformer"]],
+      "kind": "related"
+    }
+  ],
+  "researchers": [
+    {
+      "id": "song-han",
+      "name": "Song Han",
+      "name_zh": "韩松",
+      "affiliation": "MIT EECS · HAN Lab",
+      "homepage": "https://hanlab.mit.edu/songhan",
+      "aliases": ["Song Han", "Han Song"],
+      "query": "au:\"Song Han\"",
+      "verified_arxiv_ids": ["2211.10438", "2306.00978", "2405.04532", "2309.17453", "2406.10774", "2410.10819", "2502.14866"],
+      "description": "关注高效 AI、模型量化、模型压缩与长上下文推理。按作者独立收录，不受主题筛选限制。"
+    }
+  ],
+  "seed_ids": ["2211.10438", "2306.00978", "2405.04532", "2309.17453", "2406.10774", "2410.10819", "2502.14866"]
+}
