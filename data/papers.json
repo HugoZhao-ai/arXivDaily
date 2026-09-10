@@ -2,6 +2,151 @@
   "schema_version": 1,
   "papers": [
     {
+      "id": "2609.10439",
+      "title": "Forgetting Only What Matters: Layer-Selective Unlearning toward Robust LLMs",
+      "abstract": "Large Language Models (LLMs) can memorize and reproduce sensitive, copyrighted, or otherwise undesirable training content, creating privacy, safety, and regulatory concerns. Machine unlearning offers a practical alternative to full retraining, but many existing methods apply broad or fixed parameter updates that can degrade utility and remain brittle under deployment changes such as post-training quantization, where forgotten knowledge may partially re-emerge. We propose Forgetting Only What Matters via Unlearning Layers (FOM-UL), a layer-level unlearning framework that selects transformer layers using a forget-to-retain significance score. This score identifies layers with high influence on the forget set and low sensitivity to the retain set, allowing FOM-UL to concentrate updates where they are most effective while leaving most of the model unchanged. This targeted update strategy improves the forgetting-utility trade-off and provides an empirical path toward quantization-resilient unlearning by reducing the chance that small, diffuse updates are erased by low-bit rounding. Across TOFU, KnowUnDo, and MUSE-style evaluations, FOM-UL reduces residual memorization compared with strong GA, NPO, KLD, SURE, ReLearn, and LUNAR-based baselines while preserving retain-set utility close to the vanilla model. Under 8-bit and 4-bit post-training quantization, FOM-UL maintains stronger memorization suppression and utility preservation than competing methods, and adversarial prompt evaluations show lower recovery of forgotten content. Overall, FOM-UL provides an efficient unlearning strategy that improves targeted forgetting, utility preservation, and deployment robustness without claiming formal guarantees of erasure.",
+      "authors": [
+        "Ravi Ranjan",
+        "Olivera Kotevska",
+        "Agoritsa Polyzou"
+      ],
+      "published": "2026-09-09T16:50:41Z",
+      "updated": "2026-09-09T16:50:41Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.10439",
+      "pdf_url": "https://arxiv.org/pdf/2609.10439",
+      "first_seen": "2026-09-10T08:57:06+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.10439.png",
+        "source": "https://arxiv.org/html/2609.10439v1/intro-1.png"
+      },
+      "image_checked": "2026-09-10T08:57:19+00:00",
+      "summary": {
+        "title_zh": "只遗忘重要内容：面向鲁棒大模型的层选择性遗忘",
+        "tldr": "论文提出 FOM-UL，一种基于遗忘集与保留集梯度显著性比值的层选择性机器遗忘框架，仅更新对遗忘目标影响大而对保留集影响小的 Transformer 层，并在迭代中按需扩展层集合；在 TOFU、KnowUnDo 与 MUSE 类评测中，该方法在降低残留记忆的同时保持保留集效用，并在 8 位与 4 位训练后量化及对抗提示下表现出更好的鲁棒性。",
+        "contributions": "论文自述贡献包括：一，提出基于遗忘集梯度幅值与保留集梯度幅值之比的层选择准则，定位高遗忘杠杆且低保留干扰的层；二，提出迭代式层预算扩展策略，从少量高分层开始，仅在遗忘指标未满足时扩展；三，通过限制更新层数减少可训练参数、显存与运行时间，并兼容 GA、NPO、KLD 等标准遗忘损失；四，在 8 位与 4 位训练后量化下进行量化鲁棒性实证分析，显示集中层更新相比全局或固定选择基线减少残留记忆。",
+        "method": "FOM-UL 将模型参数按层分组，先对每层计算遗忘损失梯度范数与保留损失梯度范数，并定义显著性分数 Sig(ℓ)=I(ℓ)/(I_r(ℓ)+ε)，据此选出超过阈值 τ 的候选层集合 S。随后仅对 S 中的层进行更新，更新方向由三部分组成：遗忘损失梯度上升、失配损失梯度上升以偏离原始输出、保留损失梯度下降以维持效用；未选中的层保持冻结。若遗忘指标未达标，则按显著性分数加入下一层并重复更新，直至收敛或达到最大轮数。论文还给出量化导致遗忘更新被舍入抹除的形式化条件，即更新前后参数落入同一量化桶时量化后模型可能恢复被抑制知识。",
+        "results": "在 TOFU-World Facts 上，论文报告 FOM-UL 在 GPT-2、Llama-3.2-1B 与 Gemma-3-1B 上取得最佳整体遗忘-效用平衡，并提升 GA、NPO、KLD 等基础目标的表现；在 NEWS、KnowUnDo、BOOKS 上，FOM-UL 匹配或持平最佳记忆指标并显著降低隐私泄漏，同时保留集效用接近原始模型。量化鲁棒性方面，8 位与 4 位量化下 FOM-UL 的残留记忆低于 GA、NPO、KLD、SURE+NPO、ReLearn、LUNAR 等基线；论文指出其 M3 出现负值，应解释为偏离重训练隐私基线而非隐私改善。对抗提示下 FOM-UL 的攻击泄漏率为 11.6%，低于 SURE+NPO 的 16.5% 与 LUNAR 的 19.8%。效率方面，FOM-UL 在 Llama-2 上可训练参数约 7M、显存 8 GB、运行约 20 分钟。消融显示仅使用遗忘、保留或失配单一组件均导致次优权衡，完整 FOM-UL 表现最均衡。",
+        "limitations": "论文自述局限包括：FOM-UL 的效果依赖层归因信号的可靠性，而该信号可能随提示、领域与评测设置变化；FOM-UL 不提供形式化的完全擦除保证，高度纠缠或冗余编码的知识可能需要扩展更新层集合或增加迭代，从而增加计算并带来效用权衡；在更具对抗性或分布偏移的场景下可能更脆弱。此外，摘要与节选未提供全部实验细节，部分结果需查看全文。",
+        "relevance": "该论文与大模型量化直接相关：它专门研究 8 位与 4 位训练后量化下遗忘更新的鲁棒性，并分析量化舍入如何抹除或恢复被遗忘知识。与长程 Agent 或多步工具调用量化的关系在提供的文本中没有直接实验或讨论，论文未涉及 Agent 场景、多步工具调用或 KV cache 量化；因此不能声称其对 Agent 应用有直接验证。若将层选择性更新思想迁移到 Agent 的 KV cache 或工具调用记忆管理，属于推测而非论文结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:57:25+00:00",
+        "source_hash": "2c9d0aa5e74dfe304df6cf5b8b222881f8cc722dc17d32eca107448f98620a46",
+        "paper_updated": "2026-09-09T16:50:41Z"
+      }
+    },
+    {
+      "id": "2609.10266",
+      "title": "KVShareArena: KV-Cache Reuse Across Contexts and Model Checkpoints",
+      "abstract": "LLM serving systems already reuse KV caches, but only when the reused text sits at the very start of the prompt. Two growing workloads break this condition: a retrieval-augmented generation server assembles a different set of retrieved chunks for every query, and a multi-agent coordinator reads reports written by other agents. Reused inside a new prompt, a cache carries the wrong positions and never attended to the other sources. The cache may also have been written by a different checkpoint of the same model family, which changes the stored values. Repair methods for such caches have appeared in three separate communities, each measured on its own terms, and existing benchmarks test only exact-prefix reuse, where nothing is lost. KVShareArena benchmarks KV-cache reuse across prompt contexts and model checkpoints on retrieved chunks and agent reports. It scores every method by the fraction of the gap it recovers between no cache and full recomputation, and charges compute, memory, and per-request latency with the cache in hand, reporting the one-time cost of building a cache separately. We find that correcting positions, which needs no recomputation, is enough until a question needs several sources at once. There, only methods that pay, by re-encoding part of the cache or by training, recover half to two thirds of the gap; unrepaired caches can be worse than no cache. Cache-compression methods that are harmless on a single prompt fall significantly behind position correction on freshly written agent reports. These patterns hold across three model boards. When a different checkpoint wrote the cache, training-free methods are barely affected, while an adapter trained on one checkpoint's caches loses quality. Harness, frozen querysets, and cost accounting ship as a pip package with an automated submission workflow and a public leaderboard.",
+      "authors": [
+        "Xi Shi",
+        "Qian Lou"
+      ],
+      "published": "2026-09-09T14:53:45Z",
+      "updated": "2026-09-09T14:53:45Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.10266",
+      "pdf_url": "https://arxiv.org/pdf/2609.10266",
+      "first_seen": "2026-09-10T08:57:12+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv-cache, compress, llm"
+        }
+      ],
+      "related_only": true,
+      "image_checked": "2026-09-10T08:57:26+00:00",
+      "summary": {
+        "title_zh": "KVShareArena：跨上下文与跨模型检查点的 KV 缓存复用基准",
+        "tldr": "该论文提出 KVShareArena，一个评测 KV 缓存跨提示上下文与跨模型检查点复用的基准，覆盖检索证据与智能体报告两类负载，用性能差距恢复率（PGR）在无缓存下限与同负载上限之间打分，并测量计算、显存与延迟三类成本。核心结论是：免费的位置对齐在任务不需要多源联合推理时已足够；当问题需要多个来源联合时，只有付出重算或训练代价的修复方法才能恢复部分质量；压缩方法在错位装配下并不免费；跨检查点复用时，训练型修复会失效，而重算型修复保持稳定。",
+        "contributions": "提出跨上下文与跨检查点的 KV 缓存复用基准，包含检索证据与智能体报告两条负载轨道、冻结查询集与同负载上限；建立统一测量体系，用无缓存下限与同负载上限之间的 PGR 打分，并在同一后端上测量计算、KV 字节与延迟三条成本前沿，采用配对统计；给出类级别发现；发布可 pip 安装的测试框架、单类方法契约、自动提交工作流与公开排行榜。",
+        "method": "将 KV 条目的出生上下文定义为计算时的提示前缀与序列位置，负载 KV 在规范隔离上下文中生成。错位在两种形式下出现：拼接装配（多个独立编码块的缓存拼入同一消费者提示，块之间互相不可见且位置冲突）与前缀替换（同一负载在不同角色前缀下复用，仅几何位置错误）。独立变化两个因素：使用上下文是否匹配出生上下文，以及生产者权重是否匹配接收者权重，形成四格设计。两条轨道为检索证据（RAG 主榜，独立缓存的原始块按查询选择装配）与智能体报告（多智能体迁移轨道，专家智能体在未看到问题的情况下各自读取不重叠材料后写出的报告）。质量指标为 PGR，等于方法得分减下限再除以上限减下限，下限为完全不使用共享材料，上限为对同一材料完整重算。效率在计算、显存、运行时三条前沿上报告，延迟仅在共享后端上按请求测量，缓存构建成本单独报告。评分使用各数据集官方指标，包括 LongBench 子集的 token 级 F1 与 FRAMES 自带的 LLM 自动评分协议，并用跨家族评分面板交叉校验。数据集与机制需通过预注册准入标准，包括上限减下限不小于 0.25、残差份额不小于 0.25 且置信区间排除零、残差在配对检验下显著。主榜使用一个 8B 开源模型同时作为生产者与接收者，另用第二个 8B 家族与一个 4B 同源模型作为确认榜，仅检查模式复现而不做数值比较。",
+        "results": "在检索证据主榜上，免费位置对齐已恢复科学论文问答子集的大部分差距，没有方法显著优于它；修复空间集中在单文档与多跳问答。多跳问答上免费对齐本身低于下限（PGR 为 -0.196），选择性重算（CacheBlend 在 15% 负载重算，LegoLink 重算比例低于 0.5%）与注意力校准各自显著优于免费对齐，把多跳拉回 0.39 至 0.46 的差距；KVPacket 以零负载重算在单文档与多跳两个子集上显著优于免费对齐。压缩类方法在任何子集都未显著优于免费对齐，并在四个单元中显著低于它。在智能体报告轨道上，朴素装配极具破坏性（PGR 为 -0.82），只有两个需要重算的修复方法超过免费对齐基线：CacheBlend（+0.11）与 RelayCaching（+0.08，修复智能体间传递的解码 KV），二者统计上并列第一，仍有约三分之一差距未被填补；所有压缩行显著低于免费对齐；训练型方法未迁移，KVPacket 处于免费对齐水平，Block-Attention 显著低于它。计算轴上十六行中有十三行完全不重算，少数重算方法跨越两个数量级。运行时轴上，持有缓存时每请求 TTFT 比密集预填低约 0.9，缓存构建成本单独报告且不摊薄。显存轴上只有压缩节省字节，4 位量化实测节省 71.9% 而非名义 75%，因为需存储每组缩放因子；修复质量的方法都存储完整缓存，KVPacket 的软 token 与 MiniPIC 的填充各多约 3%。边界发现包括：SnapKV 在 r=0.5 时出生上下文中 PGR 为 0.77/0.69/0.82，错位装配后降至 0.57/0.17/-0.08；前缀替换下直接复用已在上限，单源交接朴素复用崩溃（-0.22/-0.37/-0.98），仅位置修复即恢复 0.93/0.98/1.05；盲区份额随生产者拆分单调上升，全拆分时达 0.76。跨检查点复用时，多数免训练方法变化很小（偏移不超过 0.06，多不显著），但训练拟合到生产者负载表示的修复会失效：KVPacket 在六个单元中四个显著下降（最多 -0.135），LegoLink 零重算变体在多跳问答崩溃（-0.231），而带重算的同一方法在六个单元均不受影响，CacheBlend 全部通过。失败时可能给出流畅但实体错误的答案。",
+        "limitations": "基准测量多源问答，智能体报告轨道按构造包含的方法较少。逐行排名基于单个 8B 模型，确认榜只复现模式而非排名。同后端延迟仅覆盖共享同一引擎的行；报告协议为作者构造；输入上限为 29K token。在 N=100 时最小可检测配对差异约为 0.10，更小差异读作并列，补救办法是预注册扩大领先行的样本量。查询集公开且冻结，排行榜条目会重新评分，但污染仅靠下限归一化来抑制。检查点因素覆盖架构、分词器与 RoPE 基匹配的情形，对三者中任一不同的生产者不作说明。",
+        "relevance": "该论文直接研究 KV 缓存复用，属于大模型量化与 KV cache 管理的核心议题。它系统评测了 KV 缓存压缩方法（如 4 位量化、SnapKV、Knorm、TOVA、StreamingLLM）在错位装配与跨检查点场景下的表现，发现压缩在错位装配下并不免费，且压缩节省显存与修复质量不重叠，这对 KV cache 量化研究有直接参考价值。对于长程 Agent 与多步工具调用量化，论文的智能体报告轨道模拟了多智能体协调者读取其他智能体刚写出的报告这一部署场景，并测量了跨上下文与跨检查点的 KV 复用质量与成本，指出训练型修复在跨检查点时失效而重算型修复稳定，这对多步工具调用中缓存跨步骤、跨模型复用的量化策略有启示。但论文本身没有专门针对长程 Agent 多步工具调用进行实验，其智能体报告轨道是作者构造的协议，并非真实工具调用轨迹，因此对 Agent 应用的结论属于推测性外推，需谨慎对待。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:57:36+00:00",
+        "source_hash": "d335e986853aa9189625c27d4c4a801cd02c4fadeab249fb19f9331b4ff9cc4d",
+        "paper_updated": "2026-09-09T14:53:45Z"
+      }
+    },
+    {
+      "id": "2609.09793",
+      "title": "How Fragile Is Safety Alignment at Frontier Scale? A Single-Direction Attack on a 320B MoE",
+      "abstract": "Directional ablation removes an aligned language model's ability to refuse by projecting a single \"refusal direction\" out of the weights that write the residual stream. It needs no gradient-based training and no optimization, only a few hundred contrastive prompts, which makes it the canonical white-box attack on open-weight alignment. However, it has been established only on dense models up to roughly 70B parameters. We study whether it survives the shift to frontier mixture-of-experts (MoE) models whose residual streams are no longer a single tensor and whose weights ship quantized. We apply it to GLM-5.3-Flash (320B parameters, 288 routed experts, a four-wide hyper-connection residual, block-FP8). The attack survives the architecture, but what it reaches is no longer where a reader of the original recipe would look for it. Editing the attention, dense and routed-expert writers on their own removes 0.039, 0.016 and 0.148 of refusal respectively; editing all three together removes 0.776. As a result, 74% of the effect exists only under the joint intervention. The part the conventional recipe reaches by module-name matching accounts for 0.066 of that 0.776, which is why it fails silently on an MoE. The effect does not follow from removing just any direction: ablating a random direction orthogonal to it leaves refusal unchanged. A category-concentrated residue survives every edit we tried: subspaces fitted on violence, sexual content and hate leave measurable refusal at every rank from 1 to 12. We report the method, the 41-89 percentage-point reductions it achieves across seven harmful benchmarks with no detected change in capability, and the boundary where it stops.",
+      "authors": [
+        "Yi Shi",
+        "Tanyu Chen",
+        "Kai Shen"
+      ],
+      "published": "2026-09-09T06:48:08Z",
+      "updated": "2026-09-09T06:48:08Z",
+      "version": 1,
+      "categories": [
+        "cs.CR",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "url": "https://arxiv.org/abs/2609.09793",
+      "pdf_url": "https://arxiv.org/pdf/2609.09793",
+      "first_seen": "2026-09-10T08:57:06+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-10T08:57:36+00:00",
+      "summary": {
+        "title_zh": "前沿规模下的安全对齐有多脆弱？对320B MoE模型的单方向攻击",
+        "tldr": "本文在GLM-5.3-Flash（约320B参数、288个路由专家、四流超连接残差、block-FP8量化）上复现方向消融攻击，发现该攻击仍能移除大部分拒答行为，但效果在注意力、稠密投影与路由专家三组写入权重之间强烈非可加：单独编辑分别只移除0.039、0.016、0.148，三者联合移除0.776，其中74%的效果只在联合干预下出现；按模块名匹配的传统实现只能触及0.066，因而在MoE上静默失效。",
+        "contributions": "在320B MoE模型上对全部七个写入权重子集做分解，发现效果强烈非可加，并指出按模块名匹配的实现会静默漏掉融合专家张量；证明方向消融与超连接多流残差兼容，且编辑残差写入权重比在层边界投影更彻底；刻画该低秩编辑的边界：随机正交方向不产生效果，但按内容类别拟合的子空间（秩1至12）仍留下可测的拒答残留。",
+        "method": "沿用方向消融配方：用AdvBench与Alpaca对比提示的最后一 token 残差均值差估计单位拒答方向，在验证集上选层（第22层），对写入语言残差流的所有权重矩阵施加秩一正交投影。针对该模型做了三处适配：按参数张量结构展开三维融合专家张量以枚举全部写入者（共12,479个矩阵）；读取时把四流残差按超连接混合权重折叠为单一向量，编辑仍作用于写入权重；对block-FP8权重先按块缩放反量化、在float32中投影、再量化并回写码与缩放，采用32次迭代正交化以降低再量化泄漏。评估用七个有害基准、XSTest过度拒答与四个能力基准，采用模型裁判与规则分类器，并用McNemar配对检验与Wilson区间。",
+        "results": "编辑后七个有害基准的拒答率从0.51–1.00降至0.08–0.48，降幅41–89个百分点，所有降幅在配对McNemar检验下显著（p<10^-7）；干净变体结果接近，说明不是对拟合样本的记忆。XSTest安全提示的误拒从6/250降至0。四个能力基准的配对区间均跨零，未检测到能力变化（MMLU区间仍允许下降3.7个百分点）。写入组分解：注意力0.039、稠密+共享0.016、路由专家0.148，三者联合0.776，三组单独效应之和仅0.203，74%的效果来自交互项；按模块名匹配可触及的注意力+稠密组仅移除0.066。随机正交方向消融后拒答率与未编辑几乎相同（0.987/0.920 对 0.993/0.920），说明效果对该方向特异。按暴力、性内容、仇恨等类别拟合的子空间在秩1至12下均留下可测拒答残留。",
+        "limitations": "摘要与节选明确列出：仅研究单一模型；评判依赖一个模型裁判，且两个评分器在不同条件下不一致；能力评估只是子集；秩扫描属探索性；只有一个随机对照，未做功效分析；比率存在运行间波动；未公开实现本身有代价。此外，节选为HTML片段，可能被截断，不能声称已读全文。",
+        "relevance": "该工作直接关系到大模型量化：它研究在block-FP8量化权重上施加权重编辑，并量化了再量化导致的投影泄漏（8次迭代13.4%、32次5.2%），以及FP8与BF16写入者的不同泄漏水平，说明量化会削弱权重级干预的彻底性。与KV cache无直接关系，文中未涉及KV cache的量化或压缩。与长程Agent/多步工具调用量化无直接实验关系：论文未做任何Agent或多步工具调用实验，其结论仅针对单轮有害提示的拒答行为；若外推到Agent场景，只能作为推测——即若Agent依赖模型拒答作为安全闸门，权重级单方向编辑可能削弱该闸门，但论文没有验证多步工具调用中的表现。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:57:43+00:00",
+        "source_hash": "3ae4e1a2d7e16f9f90132d384ebd013f7171596b96dfbab22abbaabdb5f8afdc",
+        "paper_updated": "2026-09-09T06:48:08Z"
+      }
+    },
+    {
       "id": "2609.09085",
       "title": "It's Not RoPE that Creates Sinks: The Role of Self-Concentration and Value-Non-Mixing in Attention",
       "abstract": "Large Language Models (LLMs) often exhibit \"Attention Sink\" (AS) and the accompanying \"Massive Activations\" (MAs) at the initial position of a sequence. These phenomena frequently co-occur, and MAs can pose challenges for low-bit quantization. In this study, we analyze the factors underlying AS and MAs that emerge at the initial position regardless of the token occupying it. Our experiments suggest that self-concentration of attention, resulting from the causal mask, and the subsequent Value-non-mixing in attention outputs contribute to AS and MAs. These findings provide new empirical evidence on the internal dynamics of LLMs, offering insights that may inform future quantization strategies and advance our understanding of the internal mechanisms of attention layers.",
@@ -164,6 +309,56 @@
       }
     },
     {
+      "id": "2609.09243",
+      "title": "In RAG We Trust? Measuring Robustness of Retrieval-Augmented Generation Under Document Poisoning",
+      "abstract": "Retrieval-augmented generation (RAG) grounds a language model in retrieved documents, which reduces hallucination but creates a new attack surface: if retrieved text is tampered with, the model may repeat the falsehood. We study how much a small quantized model, Llama 3.1 8B, degrades when a fraction of its retrieved context is poisoned. Three corruption strategies are tested, entity swap, number swap, and negation, each applied to zero, one, two, or three of the three retrieved passages, over a factorial sweep of 588 runs on a fact-checking task built from FEVER. Accuracy falls from 77.9% on clean context to 43.5% when all three passages are corrupted. Entity swap flips the largest share of answers that were correct on clean context. Number-based corruption stays flat while poisoned passages are a minority and jumps once they form a majority, a pattern we re-check with query-level bootstrap intervals. The model rarely invents new falsehoods; its dominant reaction is to abstain, and a lexical overlap proxy of unsupported generation falls under attack rather than rising. The study is a small-scale measurement with coarse automated labels; we treat the strategy contrasts as suggestive until decoding is controlled and stronger adjudication is in place.",
+      "authors": [
+        "Iliano Fasolino"
+      ],
+      "published": "2026-09-08T08:31:57Z",
+      "updated": "2026-09-08T08:31:57Z",
+      "version": 1,
+      "categories": [
+        "cs.CR",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.09243",
+      "pdf_url": "https://arxiv.org/pdf/2609.09243",
+      "first_seen": "2026-09-10T08:57:06+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.09243.png",
+        "source": "https://arxiv.org/html/2609.09243v1/heatmap.png"
+      },
+      "image_checked": "2026-09-10T08:57:46+00:00",
+      "summary": {
+        "title_zh": "我们信任RAG吗？衡量文档投毒下检索增强生成的鲁棒性",
+        "tldr": "该论文在一个小规模测量实验中，用4比特量化的Llama 3.1 8B模型、MiniLM检索器和FAISS索引，在基于FEVER构建的事实核查任务上测试三种文档投毒策略（实体替换、数字替换、否定）与四个投毒水平（0/3至3/3）共588次运行。结果显示，当三条检索段落全部被污染时，准确率从干净上下文的77.9%降至43.5%；实体替换翻转最多原本正确的答案；数字污染在污染段落占多数时出现跃升；模型的主要失败反应是弃答而非编造新错误。作者强调这是小规模测量，标签粗糙，策略对比仅为提示性结论。",
+        "contributions": "第一，围绕4比特Llama 3.1 8B、MiniLM检索器和包含近两万条FEVER证据句的FAISS索引，构建了可复现的投毒测试平台。第二，运行完整因子实验，将三种投毒策略与四个投毒水平交叉，在固定查询集上报告准确率、被欺骗率、弃答率和基于词汇重叠的无支撑生成代理指标。第三，刻画失败面：实体污染翻转最多答案，数字污染在占上下文多数时跃升，模型面对矛盾时默认弃答而非编造。所有点估计均来自同一588次运行表，并对跳跃或策略排序报告查询级自助法区间和配对检验。",
+        "method": "流程遵循标准RAG三阶段：用all-MiniLM-L6-v2将问题和段落编码为384维向量，归一化后存入FAISS平面内积索引，检索前三条段落（k=3）送入生成器。生成器为4比特GGUF Q4_K_M量化的Llama 3.1 8B Instruct，通过llama.cpp在CPU运行，温度0.1，提示要求仅依据上下文回答，无法确定时回复“Not enough information”。投毒在检索后、构建提示前进行，不攻击检索器。三种策略：实体替换（同类型合理实体替换）、数字替换（扰动数值）、否定（插入否定翻转真值）。投毒水平为三条检索段落中被污染的数量，取0/3、1/3、2/3、3/3，污染段落随机选择。每次运行检索一次，分别用干净段落和同一列表的投毒副本各回答一次。指标包括准确率（关键词大小写不敏感匹配）、被欺骗率（干净正确但投毒错误的比例）、弃答率（通过短语检测）和无支撑生成代理（答案内容词与检索段落内容词重叠低于30%即标记）。评估集含49条事实核查查询（37条不同），另向索引加入10条信息丰富段落。49×3×4=588次运行，共1176次生成。",
+        "results": "准确率从干净上下文的77.9%降至三条段落全部污染时的43.5%。按投毒水平平均：0/3时干净准确率78.2%、投毒准确率69.4%、被欺骗率9.5%、弃答率21.1%；1/3时分别为77.6%、63.9%、15.0%、29.3%；2/3时78.2%、53.1%、25.9%、38.8%；3/3时77.6%、43.5%、34.0%、51.7%。0/3行已存在约9个百分点的残余差距，作者归因于温度0.1下两次独立生成的解码噪声和严格关键词匹配，0/3运行中干净与投毒答案完全相同的比例仅为76.9%。按策略平均：实体替换干净准确率78.1%、投毒54.6%、被欺骗率23.5%、弃答43.4%；数字替换77.6%、57.7%、20.4%、30.1%；否定78.1%、60.2%、19.4%、32.1%。数字替换在0和1条污染时被欺骗率均为10.2%（自助法95%区间[2.0,18.4]），2条时升至26.5%（[14.3,38.8]），3条时34.7%（[22.5,49.0]）；从1到2的跳跃为16.3个百分点，区间[2.0,30.6]排除零但较宽；McNemar检验在2和3条污染时显著（p<10^-3），1条时不显著（p=0.22）。全部投毒查询中弃答率35.2%，高于被欺骗率21.1%；实体替换在全污染时弃答达69%。词汇重叠代理显示低重叠答案在干净臂约29%，在投毒臂约20%，即污染下该代理下降而非上升。最脆弱查询为知名人物传记和地标事实，是/否和位置问题比开放数字问题更易受影响。",
+        "limitations": "仅覆盖一个小型量化模型、紧凑查询集和基于规则的污染，绝对数字不应视为普遍结论。检索在配对间共享，但解码未锁定（温度0.1，两次独立生成），0/3残余表明背景配对噪声不可忽略。关键词匹配是弱正确性标准，重叠代理不是语义忠实度判断。加入的段落使检索比原始FEVER证据更容易。作者提出后续步骤：锁定解码种子并加入多种子、多污染重复与分层重采样；用结构化FEVER式标签和归一化实体或数量评分替代关键词检查；用盲法人工或经验证的蕴含模型裁决分层样本；将答案分解为原子主张以区分毒药采纳与无支撑生成；在更大指令微调模型和第二个语料上重复；用模型生成的对抗段落替代规则编辑；测量生成前标记跨段落分歧能否恢复准确率而不抑制正确答案。",
+        "relevance": "该论文直接涉及大模型量化：生成器为4比特GGUF Q4_K_M量化的Llama 3.1 8B，在8GB机器上运行，属于量化模型在RAG场景下的鲁棒性测量。与KV cache无直接关系，论文未涉及KV cache压缩或量化。与长程Agent或多步工具调用量化无直接关系：论文未进行任何Agent实验，未涉及多步工具调用、规划或工具使用，也未测量量化对Agent轨迹的影响。其RAG投毒与弃答行为可能对Agent在检索工具返回被污染文档时的可靠性有推测性参考价值，但论文本身没有Agent实验，相关联系属于推测而非论文结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:57:55+00:00",
+        "source_hash": "f35a91fbae6b6742b53830b6248dc57c769cc2fa9467f84905b68b9dc7130268",
+        "paper_updated": "2026-09-08T08:31:57Z"
+      }
+    },
+    {
       "id": "2609.08307",
       "title": "A Measurement Study of LLM Inference Trade-offs Across Edge Continuum Hardware",
       "abstract": "Large language models (LLMs) are increasingly used as backends for intelligent web services, but serving them across the edge continuum requires balancing quality, latency, model footprint, and energy. This paper presents a controlled measurement study of self-hosted LLM inference across edge and near-edge deployment nodes: an NVIDIA Jetson AGX Orin and a near-edge server with CPU-only and GPU-enabled inference modes. We evaluate multiple open-weight LLMs and quantization variants using a fixed question-answering workload, and compare them against GPT-4o as a cloud-hosted accuracy and latency reference. Our benchmarking pipeline reports accuracy, model footprint, per-token decoding latency, prefill latency, and overall execution energy. The results show that GPU-enabled server execution provides the lowest compute-side latency, while Jetson Orin shows lower measured energy, consistent with its lower platform power under our setup. CPU-only execution is consistently dominated in latency for our workload and shows higher measured energy. We also show that parameter count and downloaded weight-file size alone do not reliably predict observed accuracy or latency. Finally, using Pareto-frontier analysis, we study how deployment decisions may change under possible streamed-token delivery overheads, highlighting that compute-side inference metrics alone can lead to suboptimal placement for latency-sensitive interactive web services.",
@@ -215,6 +410,57 @@
         "generated_at": "2026-09-09T08:05:53+00:00",
         "source_hash": "055e9937606ebd70042e4dcdbbcd131bacf04f13fcfbfa7417ca9b2a8137dea5",
         "paper_updated": "2026-09-08T06:28:32Z"
+      }
+    },
+    {
+      "id": "2609.09240",
+      "title": "Scaling Post-Training Ternarisation to Qwen3-8B Capability Retention, Reproduction, Lossless Packing, and Packed Execution",
+      "abstract": "Ultra-low-bit language models promise reductions in storage and memory traffic, but a nominal \"1.58-bit\" label does not specify the deployed representation or its execution cost. We study a scale-up of an aggressive post-training conversion pipeline from Qwen3-4B to Qwen3-8B. The conversion uses KOTMS rotation, E2M-ATQ adaptive ternarisation, and GPTQ-style error compensation in a weight-only A16 configuration. We do not claim these algorithms as new. Our contribution is the end-to-end scale-up characterisation: an external reproduction gate, matched 4B/8B capability analysis, cross-corpus perplexity, effective-bit accounting, lossless lattice-aware packing, and direct packed execution. The 8B model reaches a three-corpus perplexity ratio of 1.361x, with WikiText-2, C4, and PTB ratios of 1.318x, 1.393x, and 1.371x. On eight zero-shot tasks at n = 500, mean accuracy is 64.6% versus 72.4% for FP16, corresponding to 78.5% chance-corrected retention and a 7.8-point absolute cost. The matched 4B run retains 69.6%, yielding an 8.9-point 8B advantage. The packed checkpoint is 8.24 GiB and preserves the recorded perplexity to measurement precision. Direct packed execution reaches 15.52 tokens/s in 7.35 GiB, while a preliminary packed GEMV remains slower than FP16 cuBLAS. The result is a validated scale-up baseline: model size improves robustness to aggressive post-training discretisation, actual serialisation is solved for the measured artefact, and direct execution is feasible, while broader seeds, calibration distributions, and kernel optimisation remain open.",
+      "authors": [
+        "Anirudh Malik",
+        "M Sparsh Mehra",
+        "Poojith Devan"
+      ],
+      "published": "2026-09-08T06:21:44Z",
+      "updated": "2026-09-08T06:21:44Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.09240",
+      "pdf_url": "https://arxiv.org/pdf/2609.09240",
+      "first_seen": "2026-09-10T08:57:06+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "low-bit, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.09240.png",
+        "source": "https://arxiv.org/html/2609.09240v1/fig_calibration_memory.png"
+      },
+      "image_checked": "2026-09-10T08:57:58+00:00",
+      "summary": {
+        "title_zh": "将训练后三值化扩展到 Qwen3-8B：能力保持、复现、无损打包与打包执行",
+        "tldr": "该技术报告将一套已有的训练后低比特转换流程（KOTMS 旋转、E2M-ATQ 自适应三值化、GPTQ 式误差补偿，权重三值、激活保持 A16）从 Qwen3-4B 扩展到 Qwen3-8B，并围绕外部复现门、匹配协议的 4B/8B 能力对比、跨语料困惑度、有效比特核算、格点感知无损打包和直接打包执行展开系统级刻画。8B 转换在八项零样本任务上平均准确率 64.6%，FP16 为 72.4%，机会校正后保持率 78.5%，比匹配协议下的 4B（69.6%）高 8.9 个百分点；打包后检查点为 8.24 GiB，直接打包执行在 7.35 GiB 下达到 15.52 tokens/s，但原型打包 GEMV 仍比 FP16 cuBLAS 慢 4.6 倍。",
+        "contributions": "作者明确声明三值权重、1.585 比特信息下限、KOTMS、E2M-ATQ、GPTQ 以及原生低比特推理概念均非本文新提出。其自述贡献为：1）经过验证的 8B 规模放大；2）外部复现门；3）匹配协议的 4B/8B 能力对比；4）有效比特与表示核算；5）无损的格点感知打包；6）直接打包执行；7）来源与评测防护措施。",
+        "method": "目标模型为 Qwen3-8B（36 层、隐藏维度 4096、中间维度 12288），仅转换 252 个线性投影（注意力 q/k/v/o 与 MLP gate/up/down），嵌入、LM head、归一化、激活与 KV cache 保持 FP16，即权重三值、激活 A16 的权重-only 配置。流程为 KOTMS 结构化正交旋转、E2M-ATQ 自适应三值化（行均值偏移、阈值 0.75 倍行均值绝对偏差、第一支撑最小二乘缩放、残差第二支撑、交替精化）以及 GPTQ 式误差补偿（64 样本、2048 token 序列、seed 0、percdamp=0.01）。自适应表示使用 4 个不相交显著性掩码，orders=[2,2,1,1]。评测在单张 RTX 5070（12,227 MiB 显存）上进行，八项零样本任务 n=500，采用机会校正保持率公式。",
+        "results": "复现门：转换模型零样本平均 62.00，对比已发表 TWLA 参考 62.05，差 0.08%；但本地 FP16 基线 69.57 与已发表 69.09 相差 7.9%，因此作者强调应比较转换后的绝对分数而非比值。困惑度：WikiText-2 比值 1.318 倍、C4 1.393 倍、PTB 1.371 倍，平均 1.361 倍。能力：八任务平均 64.6% 对 FP16 72.4%，绝对损失 7.8 点，机会校正保持率 78.5%；损失不均匀，MMLU 与 ARC-Challenge 最弱，LAMBADA 与 BoolQ 较稳。数学：六个数学相关科目全部高于 25% 四选一机会下限。匹配 4B/8B：8B 在八项中六项占优，平均保持率 69.6% 对 78.5%，优势 8.9 点。表示：有效权重信息预算约 1.64 比特/权重，但完整检查点并非 1.64 比特/参数。打包：16.9 GB 降至 8.24 GiB，WikiText-2 困惑度 12.758265 对 12.758180，PTB 23.517294 对 23.516298。执行：直接打包执行 15.52 tokens/s、7.35 GiB，此前 CPU 卸载路径约 1.48 tokens/s；4096×2560 GEMV 上 FP16 cuBLAS 0.0451 ms、打包 Triton 0.2082 ms、分块解包加 cuBLAS 0.8924 ms，打包核慢 4.6 倍。",
+        "limitations": "作者列出的主要局限：单一随机种子；每任务 n=500 的能力样本；参考门中 WikiText-2 同时用于校准与评测；规模对比仅两个模型尺寸；仅部分参数量化；内核为原型而非生产质量；本地 FP16 与已发表 TWLA 基线存在 7.9% 差异；未与所有竞争性三值 PTQ 方法做完整同协议比较。作者还指出两点比较不构成缩放定律，打包 GEMV 慢于 FP16 cuBLAS 属内核成熟度问题而非三值算术的固有限制，且不应宣称通用 FP16 加速。",
+        "relevance": "该论文与大模型量化直接相关：研究训练后三值化（约 1.64 比特/权重的自适应表示）、GPTQ 式补偿、有效比特核算以及低比特检查点的无损打包与直接执行，属于权重-only 低比特量化的系统级研究。与 KV cache 的关系：论文明确说明 KV cache 保持 FP16，未被量化，因此本文不提供 KV cache 量化的实验证据，仅在表示核算中把 KV cache 列为仍为高精度的部分。与长程 Agent / 多步工具调用量化的关系：论文未涉及 Agent、多步工具调用或长程推理场景，也未做任何 Agent 实验；其能力评测仅为八项零样本任务与数学科目，因此不能据此推断 Agent 场景下的量化效果。若将本文用于 Agent 部署，只能作为低比特权重转换与打包执行的背景参考，属于推测而非论文结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:06+00:00",
+        "source_hash": "334fb82bb938a99a75c2e991da7fc45a9ee425329086347390db55d0f742780f",
+        "paper_updated": "2026-09-08T06:21:44Z"
       }
     },
     {
@@ -577,7 +823,7 @@
     {
       "id": "2609.07664",
       "title": "Accuracy is Not Enough: A Divergence-Based Approach to Evaluate Fidelity Loss in Quantized LLMs",
-      "abstract": "Deployment of Large Language Models (LLMs) on memory-constrained edge devices relies heavily on aggressive post-training quantization. However, evaluating these models is largely based on zero-shot task accuracy, which depends solely on argmax predictions and is insensitive to changes in the underlying predictive distribution. Consequently, accuracy can exhibit unstable, non-monotonic behavior under progressive quantization, masking substantial fidelity loss relative to the BFloat16 (BF16) uncompressed base model and providing misleading deployment signals. We introduce a distribution-sensitive evaluation framework quantifying information loss in quantized LLMs as the divergence between full-vocabulary predictive distributions at the token decision boundary. We compute statistical distances, including Jensen-Shannon Divergence and Total Variation Distance, between outputs of full-precision and quantized models, enabling a fine-grained analysis of distributional shift. Using this framework, we quantify probability mass displacement and distributional drift relative to the BF16 reference, capturing predictive distribution changes not reflected in top-1 accuracy. We conduct a 120-run experimental matrix across five foundation architectures and four reasoning benchmarks under progressive quantization regimes, from uncompressed BF16 to Q2_K, providing a systematic fidelity analysis. Our results show divergence metrics generally increase under stronger quantization, complementing task accuracy with a fidelity signal. Across tested llama.cpp schemes, mixed-precision Q4_K generally yields lower divergence than uniform Q4_0 at similar memory footprints. These findings motivate distribution-aware evaluation as a practical diagnostic complement to task accuracy; they do not directly establish correctness, calibration, safety, or user-perceived quality.",
+      "abstract": "Deployment of Large Language Models (LLMs) on memory-constrained edge devices relies heavily on aggressive post-training quantization. However, evaluating these models is largely based on zero-shot task accuracy, which depends solely on argmax predictions and is insensitive to changes in the underlying predictive distribution. Consequently, accuracy can exhibit unstable, non-monotonic behavior under progressive quantization, masking substantial fidelity loss relative to the BFloat16 (BF16) uncompressed base model and providing misleading deployment signals. We introduce a distribution-sensitive evaluation framework quantifying information loss in quantized LLMs as the divergence between full-vocabulary predictive distributions at the token decision boundary. We compute statistical distances, including Jensen-Shannon Divergence and Total Variation Distance, between outputs of full-precision and quantized models, enabling a fine-grained analysis of distributional shift. Using this framework, we quantify probability mass displacement and distributional drift relative to the BF16 reference, capturing predictive distribution changes not reflected in top-1 accuracy. We conduct a 120-run experimental matrix across five foundation architectures and four reasoning benchmarks under progressive quantization regimes, from uncompressed BF16 to Q2_K, providing a systematic fidelity analysis. Our results show divergence metrics generally increase under stronger quantization, complementing task accuracy with a fidelity signal. Across tested llama-cpp schemes, mixed-precision Q4_K generally yields lower divergence than uniform Q4_0 at similar memory footprints. These findings motivate distribution-aware evaluation as a practical diagnostic complement to task accuracy; they do not directly establish correctness, calibration, safety, or user-perceived quality.",
       "authors": [
         "Shahzeb Qamar",
         "Lorenz Sparrenberg",
@@ -589,8 +835,8 @@
         "Rafet Sifa"
       ],
       "published": "2026-09-07T15:49:52Z",
-      "updated": "2026-09-07T15:49:52Z",
-      "version": 1,
+      "updated": "2026-09-09T08:50:36Z",
+      "version": 2,
       "categories": [
         "cs.LG",
         "cs.AI"
@@ -612,22 +858,22 @@
       "related_only": false,
       "image": {
         "file": "2609.07664.png",
-        "source": "https://arxiv.org/html/2609.07664v1/system_architecture_figure.png"
+        "source": "https://arxiv.org/html/2609.07664v2/system_architecture_figure.png"
       },
-      "image_checked": "2026-09-09T08:06:40+00:00",
+      "image_checked": "2026-09-10T08:58:09+00:00",
       "summary": {
-        "title_zh": "准确性不足：基于散度的量化大语言模型保真度损失评估方法",
-        "tldr": "该论文提出一种基于全词汇概率分布散度（TVD和JSD）的评估框架，用于量化LLM在量化后相对于BF16参考模型的保真度损失。实验表明，任务准确性可能掩盖严重的分布偏移，而散度指标能更敏感地反映量化带来的信息损失。在测试的llama.cpp方案中，混合精度Q4_K通常比均匀Q4_0在相似内存占用下具有更低的散度。",
-        "contributions": "1. 证明任务准确性可能掩盖相对于BF16参考模型的显著分布差异；2. 引入基于有界TVD和JSD的全词汇保真度分析，并给出粗粒度化结果；3. 在五个基础模型、四个基准和六种量化方案下评估了120种配置；4. 发现混合精度Q4_K通常比均匀Q4_0在相似内存占用下具有更低的散度。",
-        "method": "提出双流评估流水线：流1计算零样本任务准确性（基于NLL），流2提取全词汇softmax分布并计算与BF16参考的TVD和JSD。量化模型通过llama.cpp从BF16基线生成，涵盖Q8_0、Q6_K、Q4_0、Q4_K、Q2_K等方案。实验在五个模型（LLaMA-3.1-8B、LLaMA-3.2-1B、Mistral-7B-v0.1、Teuken-7B-base-v0.6、Gemma-2B）和四个基准（MMLU、BoolQ、PIQA、CausalBench）上进行。",
-        "results": "实验显示，任务准确性在量化下可能保持稳定甚至非单调变化，而TVD和JSD通常随量化增强而增加。例如，Teuken-7B在PIQA上Q4_0的准确性仅下降0.2%，但TVD高达0.560。混合精度Q4_K通常比均匀Q4_0具有更低的TVD，例如LLaMA-3.1-8B在MMLU上Q4_K的TVD为0.055，而Q4_0为0.221。部分小模型（如Gemma-2B、LLaMA-3.2-1B）在BoolQ和CausalBench上出现多数类预测模式，准确性稳定但分布偏移仍可被TVD捕获。",
-        "limitations": "研究仅限于基础模型、固定提示模板、提示条件全词汇分布以及llama.cpp/GGUF量化。未评估指令微调或RLHF对齐模型的多步生成，也未与其他量化方法（如AWQ、GPTQ、SmoothQuant）比较。散度指标衡量参考保真度，不直接衡量正确性、校准、安全性或用户感知质量。",
-        "relevance": "该论文主要关注量化LLM的评估，与KV cache量化无直接实验关系，但提及KV cache量化可能导致对齐崩溃（引用文献）。其提出的分布散度评估方法可推广到KV cache量化场景，用于检测KV cache压缩引起的分布偏移。论文未涉及长程Agent或多步工具调用量化，但散度指标可用于评估Agent中每一步的分布保真度。",
+        "title_zh": "准确率并不足够：一种基于散度的方法评估量化大语言模型的保真度损失",
+        "tldr": "论文提出用全词表预测分布之间的散度（TVD 与 JSD）来评估量化大语言模型相对 BF16 参考模型的保真度损失，指出零样本任务准确率会掩盖量化带来的分布漂移；在五个基础模型、四个基准和六种量化方案共 120 组配置上，散度通常随量化加剧而增大，且在测试的 llama.cpp 方案中混合精度 Q4_K 一般比均匀 Q4_0 散度更低。",
+        "contributions": "摘要与正文列出的贡献包括：一，展示任务准确率可能掩盖相对 BF16 参考模型的显著分布差异；二，引入基于有界 TVD 和 JSD 的全词表保真度分析，并给出粗粒化定理；三，在五个基础模型、四个基准和六种量化方案上评估 120 组配置；四，在测试的 llama.cpp 方案中发现混合精度 Q4_K 在相近内存占用下通常比均匀 Q4_0 散度更低。",
+        "method": "论文设计双流评估流程：流一按基准惯例用长度归一化负对数似然计算零样本任务准确率并统计相对 BF16 的预测翻转；流二对同一提示提取后端提供的全词表输出向量，施加温度 1.0 的 softmax 且不做分布截断，再与 BF16 参考分布计算 TVD 和 JSD。量化模型均由 BF16 Hugging Face 基线经 llama.cpp 生成，评估 Q8_0、Q6_K、Q4_0、Q4_K、Q2_K 等状态，使用固定连续生成模板，在单张 NVIDIA V100 32GB 上以 seed=42 确定性推理，上下文窗口 2048。",
+        "results": "在给出的节选中，Teuken-7B-base-v0.6 在 PIQA 上从 BF16 的 68.9% 降到 Q4_0 的 68.7%，准确率仅降 0.2%，但预测翻转 4.84%、TVD 为 0.560；LLaMA-3.1-8B 在 PIQA 上 Q2_K 准确率 74.6%（BF16 为 77.3%），TVD 为 0.257；LLaMA-3.1-8B 在 MMLU 上 Q4_K 的 TVD 为 0.055，而 Q4_0 为 0.221；Teuken-7B 在 MMLU 上 Q4_K 为 0.143、Q4_0 为 0.541。论文称在评估设置中散度通常随量化加剧而增大，且 Q4_K 在相近内存下通常比 Q4_0 散度更低。Gemma-2B 与 LLaMA-3.2-1B 在 CausalBench 和 BoolQ 上出现准确率恒定、零翻转但精确率或召回率退化的模式。",
+        "limitations": "论文自述局限：仅研究基础模型、固定提示模板、提示条件化的全词表分布以及 llama.cpp/GGUF 量化；散度指标衡量的是相对 BF16 参考的保真度，本身不直接证明正确性、校准、安全性或用户感知质量；Q4_K 的有利权衡不是通用部署阈值，也不能替代延迟、吞吐、能耗、校准或生成质量评估。摘要未提供，需查看全文以确认更多细节。",
+        "relevance": "该论文直接关系到大模型量化评估：它主张用全词表预测分布的 TVD 与 JSD 补充零样本准确率，以揭示量化造成的保真度损失，并比较均匀量化与混合精度量化。关于长程 Agent 或多步工具调用量化，论文未做 Agent 实验，仅在未来工作中提出应评估指令微调与 RLHF 对齐架构下的多步生成；因此对 Agent 场景的适用性属于推测而非本文实验结论。关于 KV cache，论文在流一中使用原生 KV 缓存进行准确率评估，但未研究 KV cache 量化，仅在引用文献中提及 KV cache 量化可能导致对齐崩溃。",
         "source_kind": "html_excerpt",
         "model": "deepseek-v4-flash",
-        "generated_at": "2026-09-09T08:06:48+00:00",
-        "source_hash": "10ccb2b151ddc6b2dadda85c2518ef8b921f487c02bfb1201d5a08ccca8fb673",
-        "paper_updated": "2026-09-07T15:49:52Z"
+        "generated_at": "2026-09-10T08:58:16+00:00",
+        "source_hash": "cd0bfff15fb2229341ec9666c3b87cfaf9cd4c3dde50021b204ebc9d4b1037e5",
+        "paper_updated": "2026-09-09T08:50:36Z"
       }
     },
     {
@@ -830,7 +1076,21 @@
         "file": "2609.06940.png",
         "source": "https://arxiv.org/html/2609.06940v1/img/fig_intro_benefit_frontier.png"
       },
-      "image_checked": "2026-09-09T06:51:26+00:00"
+      "image_checked": "2026-09-10T08:58:16+00:00",
+      "summary": {
+        "title_zh": "统一AI网关：面向联合模型路由与KV缓存管理的框架",
+        "tldr": "该论文提出统一AI网关这一端-边-云系统设定，将模型路由、计算放置与KV缓存管理在同一请求路径上联合决策，并综合现有KV缓存复用、压缩、跨模型映射、分布式存储与传输的证据，通过工作负载级解析仿真报告了建模的TTFT加速与输入成本收益。",
+        "contributions": "提出统一AI网关抽象与联合控制，用全局控制平面在延迟、成本、质量和资源约束下联合选择模型与缓存动作；建立覆盖缓存复用、压缩、映射、存储、传输、预填充和路由的端到端分类，并指出已有方法只优化单个阶段而缺乏跨模型与跨层协调；通过八个工作负载画像的解析仿真给出建模收益与部署指引。",
+        "method": "论文定义端-边-云三层架构，边缘侧承载全局控制平面，协调端设备、边缘资源、分布式缓存存储、预填充服务和云模型服务。请求时联合选择目标模型、执行站点和KV缓存动作，包括直接复用、跨模型映射、压缩、传输、边缘或远程预填充以及目标侧重新预填充；请求流层面后台优化缓存放置、复制、检索和生命周期。论文综合已有KV缓存复用、压缩、跨模型映射、分布式存储与传输以及模型路由的证据，并建立工作负载级解析仿真模型，用输入输出长度、有效缓存命中率、模型切换率和可用带宽等参数计算准备时间、输入成本和端到端成本。",
+        "results": "摘要与节选报告，在八个典型工作负载画像下，工作负载级解析仿真给出建模的TTFT加速1.25倍至13.28倍，输入成本收益1.20倍至6.16倍；其中长程编码智能体工作负载的TTFT加速为5.01倍至12.87倍。节选还综合了已有工作的报告结果，例如精确前缀复用吞吐提升2至6.4倍、非前缀复用TTFT降低2.2至3.3倍、语义复用6.25倍加速、多智能体场景最高7.8倍预填充加速、量化压缩最高约20倍压缩、跨模型映射比重新预填充快2.7至25倍、分布式缓存系统最高15倍吞吐提升等。这些数字来自不同模型、硬件和工作负载，论文将其作为分类证据而非直接跨行比较。",
+        "limitations": "论文的收益数字来自工作负载级解析仿真而非真实端到端部署实验，摘要未提供完整仿真细节，需查看全文。节选指出跨模型映射存在保真度约束，映射误差需满足质量损失阈值；缓存传输受带宽、RTT、内存拷贝和恢复开销限制；分布式缓存一致性、安全隐私、异构边缘硬件、系统经济性和标准生态支持仍是待解决问题。论文明确假设后台放置、复制、驱逐和迁移成本已在请求流上摊销并从每请求关键路径中省略，结果条件于有效状态管理而非评估其策略或开销。",
+        "relevance": "该论文与大模型量化、长程Agent多步工具调用量化和KV cache直接相关。它把KV cache作为网关管理的显式基础设施对象，讨论KV cache复用、压缩、跨模型映射、分布式存储与传输，其中压缩部分涉及低比特量化、层感知混合压缩和低秩方法。论文以长程编码智能体作为典型工作负载之一，涉及多步工具调用中对话历史、工具输出和仓库状态在轮次间重复出现，并报告该画像的建模TTFT加速。但论文没有开展独立的Agent实验，其Agent相关收益来自解析仿真和已有文献综合，属于对Agent应用的推测性外推，需查看全文确认具体假设。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:22+00:00",
+        "source_hash": "49ef22697b18b29473e0e772f7cd7e6cd26e4f557950b239260491c6383bd33c",
+        "paper_updated": "2026-09-07T02:21:39Z"
+      }
     },
     {
       "id": "2609.06922",
@@ -868,7 +1128,21 @@
         "file": "2609.06922.png",
         "source": "https://arxiv.org/html/2609.06922v1/diagnostic.png"
       },
-      "image_checked": "2026-09-09T06:51:32+00:00"
+      "image_checked": "2026-09-10T08:58:22+00:00",
+      "summary": {
+        "title_zh": "翻转之前：在量化视觉语言模型的答案改变之前测量隐藏的分数偏移（面向视觉问答）",
+        "tldr": "论文提出三阶段评估方法“Before The Flip”，用先验回退分数（PRS）衡量量化在答案未变时对是/否分数差距的隐藏影响。在LLaVA上，4比特量化比8比特更明显地把分数推向图像令牌被替换后的输出，但9000个答案中仅265个改变；Qwen2.5-VL呈现相同但更小的趋势。逐问题选择高精度权重组在任何测试存储预算下都未能同时超过两个打乱对照，因此不支持按问题自适应精度。",
+        "contributions": "提出衡量隐藏分数偏移的指标PRS，用于检测量化是否把是/否分数推向图像替换输出，即使最终答案不变；通过一次将一个权重组从4比特提升到8比特，绘制24个图像编码器块、1个连接器和32个解码器块的精度敏感性图；对逐问题精度选择做受控检验，与两个打乱对照比较；跨两个模型、五种图像替换方法、开放式描述、四个额外任务、固定精度方案、学习式选择方法和视觉对比解码进行评估。",
+        "method": "三阶段评估。阶段1：对同一问题做三次运行（16比特原图、16比特但把所有图像令牌替换为固定平均令牌、压缩权重加原图），用中心化后的分数差定义图像替换变化d_i和压缩变化q_i，PRS为q_i在d_i方向上的投影除以d_i范数平方，正值表示压缩把分数推向替换输出；过滤图像替换影响过小的问题。阶段2：把模型分为57组（24图像编码器块、1连接器、32解码器块），每次只把一组升到8比特，用包含交叉熵增量和PRS正部的faithfulness损失衡量改进。阶段3：比较固定方案、事后方案与两个打乱对照（组内打乱问题、问题内打乱组），要求真实增益同时超过两个对照。",
+        "results": "在8277个图像替换可测影响分数的问题上，LLaVA平均PRS从8比特的0.0094升至4比特的0.0760，正PRS比例从63.7%升至72.7%；但4比特仅改变9000个答案中的265个，其中42.6%与平均令牌替换答案一致，打乱对照为42.7%（p=.722）。PRS方向依赖替换方式：数据集平均令牌、图像平均令牌、全零令牌、另一图像令牌均产生正W4 PRS，而灰度图像不产生。解码器深度与平均损失下降负相关（ρ=-0.633，p=0.0001），前半解码器平均损失下降0.00994，后半为-0.00098；13个解码器块升到W8反而增加损失。在1024个校准问题上，5%、10%、15%存储预算下逐问题选择增益均未同时超过两个打乱对照；两组问题算出的组排名相关性仅r=.307。三个选择器都收敛到同一方案并对每个问题调用VCD。固定10%方案相对W4降低PRS+ 0.0650，但相对图像编码器保持W8的差异区间包含零。Qwen2.5-VL复现比特排序但差距更小（W8 0.00017，W4 0.01397）。",
+        "limitations": "实验使用低精度权重但以16比特运算，未报告延迟、内存或能耗测量。PRS仅适用于二值答案且替换方向偏向“否”，平均PRS缺少图像级置信区间。作者建议未来研究更多VLM。摘要与节选未提供其他限制，需查看全文。",
+        "relevance": "论文直接研究视觉语言模型权重量化（4比特与8比特）对内部是/否分数（log概率）的隐藏影响，属于大模型量化评估范畴，但聚焦VQA而非长程Agent或多步工具调用。论文未涉及KV cache量化，也未做任何Agent或多步工具调用实验；其关于“答案未变但内部分数已偏移”的发现可被推测为对Agent部署中量化风险有参考意义，但论文本身没有Agent实验，不能据此推断Agent场景结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:29+00:00",
+        "source_hash": "242cfe6263a4580164c30bcb9c0142beaa642dde7fa53ac2003124e4f6e3883c",
+        "paper_updated": "2026-09-07T01:38:42Z"
+      }
     },
     {
       "id": "2609.06663",
@@ -908,7 +1182,21 @@
         "file": "2609.06663.png",
         "source": "https://arxiv.org/html/2609.06663v1/figures/teaser6.png"
       },
-      "image_checked": "2026-09-09T06:51:38+00:00"
+      "image_checked": "2026-09-10T08:58:29+00:00",
+      "summary": {
+        "title_zh": "ECOKV：基于互补多样性度量的几何感知 KV Cache 淘汰方法",
+        "tldr": "该论文针对多模态大模型 KV cache 淘汰中仅依赖余弦相似度多样性度量的问题，提出结合欧氏距离与余弦相似度的几何感知复合多样性度量，并据此估计每个注意力头的冗余度以自适应加权多样性与重要性，同时发现缩小观测窗口可在紧张预算下提升性能。",
+        "contributions": "论文自述贡献包括：对多种多样性度量及其对模型性能的影响进行深入分析；提出头部自适应的键多样性与冗余估计器，联合利用欧氏距离与余弦相似度动态调整各注意力头的多样性贡献；观察到在紧张预算下缩小观测窗口可提升性能；在多模态问答基准上取得最优性能，并对多样性实现选择及不同度量间关系提供实证分析。",
+        "method": "方法包含三部分：一是键多样性评分，计算所有键向量的质心，用每个键到质心的欧氏距离经 min-max 归一化得到幅度感知多样性分数，再与余弦相似度多样性分数按系数 α 线性组合；二是头部自适应冗余估计，用每个注意力头的平均欧氏距离经缩放 sigmoid 映射为冗余分数，与余弦相似度冗余分数按系数 β 组合得到多样性权重 λ，最终分数为 λ 乘缩放后的多样性分数加 1-λ 乘重要性分数；三是最小化观测窗口，将传统 32 的窗口缩小到很小甚至仅保留最近一个 token，把更多预算留给动态选择。",
+        "results": "在 LLaVA-NeXT-Mistral-7B 与 Qwen2-VL-7B-Instruct 上，于 DocVQA、OCRBench、TextVQA、ChartQA、TextCaps 及长上下文 MP-DocVQA 上评估，ECOKV 可即插即用地集成到 SnapKV、PyramidKV、AdaKV、SparseMM 中，在多种压缩比下优于 MixKV 与 FullKV 基线，预算 256 时已可匹配或超过 FullKV。消融显示 α=0.8、β=0.6 接近最优；窗口大小从 32 降到 4 或 1 普遍提升；不同归一化策略性能相近；效率与基线相当。",
+        "limitations": "论文未设专门局限性章节；摘要与节选未提供失败案例、跨模型泛化边界或超参数敏感性的负面结论，摘要未提供，需查看全文。此外，实验仅覆盖两个 7B 级多模态模型和若干视觉问答基准，是否适用于纯文本长上下文或更大规模模型未在节选中说明。",
+        "relevance": "该论文直接研究大模型 KV cache 淘汰与压缩，属于 KV cache 量化与压缩的相邻方向。其核心是 KV cache 中键的多样性度量与保留策略，而非权重量化或 KV cache 低比特量化。论文未涉及长程 Agent 或多步工具调用实验，因此对 Agent 场景的适用性属于推测而非论文直接结论；若 Agent 推理依赖长上下文 KV cache，其淘汰策略可能相关，但需另行验证。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:34+00:00",
+        "source_hash": "8f931b805945f02403e3653fb9cf1f9c7881d9494e9bcb40c3c10d64b445a834",
+        "paper_updated": "2026-09-06T15:13:48Z"
+      }
     },
     {
       "id": "2609.06473",
@@ -943,7 +1231,21 @@
         "file": "2609.06473.png",
         "source": "https://arxiv.org/html/2609.06473v1/flowSQchart.png"
       },
-      "image_checked": "2026-09-09T06:51:45+00:00"
+      "image_checked": "2026-09-10T08:58:34+00:00",
+      "summary": {
+        "title_zh": "压缩下的引导：量化大语言模型中的剂量反应、能力代价与失败不对称性",
+        "tldr": "本文系统研究权重-only 量化（INT8 与 NF4）对推理时激活引导的影响，覆盖四个 7–9B 开源模型与两个行为目标（情感与推理长度）。在匹配行为效果的等效应框架下，情感引导的能力代价在量化后基本不变，INT8 合并对比为 -0.010（90% CI [-0.026, +0.007]），按三标签规则描述性地判为等效；而推理长度呈现强烈不对称：加长可分级但最终出现上限失控与崩溃，缩短近似阶跃函数，仅能缩短 12–30% 后即不连续失败。作者还指出朴素等效应阶梯在有下界目标上会锚定崩溃地板，并提出删失构造修复；同时发现 Mistral-NF4 在未引导时基线 GSM8K 从 0.545 降至 0.365。引导向量与 FP16 高度共线（INT8 余弦 0.989–0.998，NF4 0.945–0.990）。",
+        "contributions": "1）跨多模型、多量化方案、多行为目标系统刻画权重-only 量化下的激活引导。2）在匹配行为效果下，情感引导的能力代价小且接近零；经 v2.3.1 解析器统一重打分后，INT8 合并对比为 -0.010（90% CI [-0.026, +0.007]），描述性判为等效，NF4 合并对比 -0.017（[-0.067, +0.033]）为不确定；推理长度引导表现出强不对称失败。3）识别朴素 E* 阶梯在有下界目标上的方法学失败，并提出删失 E* 构造，在推导效果水平前排除高失败区域。4）将基线能力漂移与引导代价分开量化，说明等效应对比必须结合各量化条件的未引导能力来解读。5）测量跨精度条件的引导向量相似度，发现 FP16 与 INT8 向量余弦相似度很高，NF4 略低但仍高。",
+        "method": "使用四个开源指令微调模型（Qwen2.5-7B-Instruct、Llama-3.1-8B-Instruct、Mistral-7B-Instruct-v0.3、Gemma-2-9B-it），在预先选定的单一残差流层施加 CAA 风格引导向量，并在生成时作用于最后一个 token 位置。三种部署条件：FP16、INT8 权重-only（bitsandbytes W8A16 / LLM.int8() 风格）、NF4 权重-only（bitsandbytes W4A16），激活保持 FP16/BF16。每个（模型、方案）单元做五次数据级重采样，每次重采样重新抽取对比对与提示/能力样本，各精度条件从共享对比对中自行提取引导向量。行为目标为情感（RoBERTa 分类器评分）与推理长度（无评判者，取非失败轨迹的中位生成 token 数，失败定义为未在 2048 token 上限前输出 EOS 或触发重复检测）。能力探针为生成式 GSM8K 思维链，N=200，贪心解码，512 token 上限，精确匹配最终数值答案；MMLU 作为次要剂量盲对比。采用等效应框架：先定位 E* 交叉点（行为极值的预设比例 f∈{0.5,0.4,0.3}），再比较 IECC=cap(0)-cap(α*)。对长度目标使用删失规则，排除每 α 失败率超过 0.10 的 α 后再推导水平与交叉。聚合使用 REML τ² 加修正 Knapp-Hartung 标准误，跨模型合并使用随机效应模型并以异质性门控（I²<50% 且 τ≤0.058）。H1 决策规则为 TOST 等效边界 δ=0.03，三标签：等效、显著更差、不确定。",
+        "results": "情感目标：所有能力分数使用审计后的 v2.3.1 解析器。E* 接受阶梯在全部 15 个单元中接受某一比例（多数 f=0.5，少数 Llama 与 Mistral 为 0.4 或 0.3），FP16 等效应能力代价在 +0.02 至 +0.05 之间。每个单模型对比均判为不确定；合并 INT8 对比 -0.010（90% CI [-0.026, +0.007]；τ_model=0，I²=0），描述性达到等效标签；合并 NF4 对比 -0.017（[-0.067, +0.033]；τ_model=0.047，I²=0.81），为不确定。唯一排除零的区间是 Mistral–NF4（-0.080，[-0.135, -0.024]），但需结合其基线漂移解读。系数幅度膨胀未复现，原始 α*/α*_FP16 为 0.74–1.12 倍。长度目标：正向加长臂可分级上升，随后进入上限失控并最终完全终止失败；负向缩短臂最佳情况仅缩短 12–30%（Llama 约 30% 于 α=-6，Mistral 约 27% 于 -4，Qwen 约 15% 于 -25，Gemma 约 12% 于 -160），之后不连续崩溃为立即终止且空输出。干净操作窗口因模型差异极大：Qwen 约 ±40，Gemma 约 ±200，Llama 约 [-6,+8]，Mistral 约 [-4,+4]。量化未改变曲线形状、崩溃 α 或两种失败模式。E* 阶梯失败：四个模型中三个（Qwen、Llama、Gemma）的极值解析到崩溃地板，所有 60 个单元的 f=0.5 交叉都落在崩溃悬崖上，FP16 阶梯接受率为 Qwen 0/5、Llama 0/5、Mistral 1/5、Gemma 2/5；按原规则长度 IECC 不可确认。删失修复后 FP16 接受率恢复至 3–5/5（10% 规则），交叉离散度下降（Qwen α* 标准差 18→8，5% 阈值下为 2.1）。10% 规则下长度引导在 E* 处对 Qwen 几乎免费（IECC +0.006）、Gemma +0.021、Mistral +0.023（仅 3/5 接受），Llama 从未达到 5/5 接受且代价最高最不稳定（FP16 +0.021，INT8 +0.231，标准差 0.327）。负向臂未探测能力，因为不存在等效应点。基线漂移：三个模型未引导 GSM8K 跨方案差异小于四点（Qwen 0.911/0.906/0.877；Llama 0.863/0.874/0.842；Gemma 0.817/0.824/0.767），Mistral 例外：0.545（FP16）→0.480（INT8）→0.365（NF4），NF4 在未引导时损失十八点，且在独立收集的情感矩阵中复现（0.544→0.498→0.351）。引导向量相似度：INT8 与 FP16 余弦 0.989–0.998，NF4 为 0.945–0.990，排序 cos(FP16,INT8)>cos(FP16,NF4)>cos(INT8,NF4) 在全部 21 个比较中成立；Llama 方向对量化最敏感（NF4 余弦 0.945–0.962），Gemma 最不敏感（0.988–0.990）。",
+        "limitations": "设计仅覆盖 7–9B 范围内的 k=3（情感）或 k=4（长度）模型家族，跨模型异质性估计在此 k 下不精确，预设的 K=12 确认性结论被推迟。仅研究 bitsandbytes 权重-only 量化（INT8、NF4），激活量化（W8A8、W4A4）与离群值感知权重算法（GPTQ、AWQ、SmoothQuant、QuaRot）被设计排除，可能表现不同。仅使用单一引导方法（CAA）、每模型单一位置与层。长度目标的效果分辨率（每 α 约 10 个提示）相对其能力轴（N=200）较粗，且长度能力代价报告按构造为单臂。所有评估均为英文。报告的是 k=3/k=4 描述性刻画，而非预设的 K=12 确认性合并。此外，删失修复后 Qwen 与 Gemma 的修复交叉点距最近能力读取约 2–4 个网格步，其 IECC 受插值限制；确认性长度 IECC 需在删失规则下重新放置能力探测窗口，作者将其列为未来工作。",
+        "relevance": "本文直接研究权重-only 量化（INT8、NF4）与推理时激活引导的交互，属于大模型量化对内部表征与行为控制影响的研究。与 KV cache 量化无直接关系：论文明确将激活保持 FP16/BF16，仅量化权重，未涉及 KV cache 量化或长上下文缓存压缩。与长程 Agent / 多步工具调用量化的关系为间接且需明确区分：论文没有进行任何 Agent、多步工具调用或长程任务实验，其行为目标仅为情感与推理长度，能力探针为 GSM8K 与 MMLU。论文中关于部署风险的讨论（如长度引导的失败悬崖、需监控每 α 失败率、压缩可能主导引导干预）可被推测性地外推到 Agent 场景中的行为控制与量化部署，但这些属于对 Agent 应用的推测，并非论文的直接实验结论。论文的等效应框架、删失 E* 构造与基线漂移分析对任何在量化模型上做行为控制的研究具有方法学参考价值。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:47+00:00",
+        "source_hash": "43b6dedb9ec5d2003d1ce459d8c0dfe9ce0d4abdd18c4b256bb03e3b83df70c7",
+        "paper_updated": "2026-09-06T08:41:42Z"
+      }
     },
     {
       "id": "2609.06330",
@@ -979,7 +1281,21 @@
         "file": "2609.06330.png",
         "source": "https://arxiv.org/html/2609.06330v1/figures/bref_probe_sensitivity.png"
       },
-      "image_checked": "2026-09-09T06:51:51+00:00"
+      "image_checked": "2026-09-10T08:58:47+00:00",
+      "summary": {
+        "title_zh": "超越问答匹配：基于概率分布的大语言模型扰动-响应指纹",
+        "tldr": "论文提出 BReF，一种无需训练的指纹方法，通过比较四个选项标签 A/B/C/D 的概率分布在受控文本扰动下的变化来区分大语言模型。对每对模型，BReF 选取 25 个共同响应探针，并用全局余弦相似度比较其扰动对数比（PLR）响应方向。在包含 34 个检查点、22 条有记录的直系父模型关系和 411 个嫌疑-候选对的统一基准上，BReF 在 22/22 个案例中检索到有记录的父模型（MRR=1.0000），DP-DF AUC 为 1.0000；同家族区分更难（DP-SF AUC 0.8969）。",
+        "contributions": "提出基于扰动对数比响应、配对特定联合响应选择和全局余弦相似度的概率分布指纹；构建角色约束的直系父模型检索基准，含 34 个检查点、22 条有记录的直系父模型关系、共享候选注册表和 411 个嫌疑-候选对；在同一基准上与 REEF、MET、ZeroPrint、LLMmap 及匹配的 QA 一致性基线比较，并在多重比较校正后显示统计显著提升；通过静态概率、仅能量、选择器、探针数量、扰动数量、语义选项置换和概率校准等控制实验系统验证机制，并进行分词器审计。",
+        "method": "BReF 假设可获取四个指定选项概率或足以归一化为四路概率向量的选项对数概率。对每个探针，在无扰动基线和 13 个固定扰动下计算裁剪的扰动对数比（PLR）响应，展平为 52 维向量。对每对模型，用响应幅度的几何均值选取联合响应最强的 25 个探针，然后按相同探针顺序拼接响应向量，用全局余弦相似度计算最终分数。幅度决定在哪里比较，响应方向决定相似程度；选择阶段和评分阶段均不使用家族或来源标签。",
+        "results": "在统一直系父模型检索基准上，BReF 对全部 22 个嫌疑模型将文档记录的父模型排在第 1 位，Top-3 为 22/22，MRR 为 1.0000，DP-DF AUC 为 1.0000。DP、SF、DF 对的平均相似度分别为 0.9668、0.7873、0.5320，DP-DF 差距为 0.4348。DP-SF AUC 为 0.8969，DP-All AUC 为 0.9832，平均真实父模型边际为 0.1105。REEF 是最强的复现先前方法（MRR 0.8171）。相对 REEF，BReF 的 MRR 提升 0.1829，95% CI [0.0682, 0.3052]。相对仅幅度的 Top-25 控制，BReF 将 Top-1 从 14/22 提升到 22/22，精确 McNemar 检验 p=0.0078，Holm 校正后 p=0.0313。语义选项置换下 P1、P2、P3 分别保持 20/22、18/22、20/22 Top-1，退化均限于 Qwen 家族。非对称温度校准 5×5 网格下 Top-1 为 21/22 至 22/22，Top-3 全部 22/22，MRR 0.9773 至 1.0000。",
+        "limitations": "方法需要访问完整的四选项概率或足够的选项对数概率，接口提供少于四个指定选项值时不在当前协议范围内。当前基准未处理模糊的多父模型合并情况。语义选项置换会影响若干 Qwen 家族排名，说明对答案顺序并非不变；中等概率重标定也会改变部分精确父模型排名。配对特定探针选择的增量效果在当前嫌疑模型数量下较为有限。实验时仓库修订哈希未记录，报告为 NOT_RECORDED。探针池中可恢复显式标签的 195 项均存储为标签 0（A），但该标签不进入 BReF 分数。",
+        "relevance": "该论文与大模型量化有直接关系：基准的 22 条直系父模型边中包含 6 条量化边（如 GPTQ-Int4、GPTQ-Int8、4bits 等），BReF 在量化组 6/6 全部正确检索父模型，说明其可用于识别量化后检查点的来源。与长程 Agent / 多步工具调用量化的关系：论文未涉及 Agent 场景、多步工具调用或 Agent 量化实验，摘要与正文均无相关实验，因此不能推断其在 Agent 多步工具调用量化中的表现。与 KV cache 的关系：论文未涉及 KV cache 的量化、压缩或管理，未提供任何 KV cache 相关实验或结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:58:54+00:00",
+        "source_hash": "aad55a4c69a7196c8f6c2f8065ded8b6d0272a2275ea4b898885b3d7061b6d97",
+        "paper_updated": "2026-09-06T01:35:07Z"
+      }
     },
     {
       "id": "2609.06161",
@@ -1018,7 +1334,21 @@
         "file": "2609.06161.png",
         "source": "https://arxiv.org/html/2609.06161v1/figure1.png"
       },
-      "image_checked": "2026-09-09T06:51:58+00:00"
+      "image_checked": "2026-09-10T08:58:54+00:00",
+      "summary": {
+        "title_zh": "All for 1-Bit：面向大语言模型的真正 1 比特训练后量化",
+        "tldr": "论文提出 AF1，一个面向大语言模型的真正 1 比特训练后量化框架，由零空间感知二值分解 NABF 与分层 Shapley 分配 HiSA 两部分组成，目标是在目标线性权重上维持严格的 1.0 有效比特每权重预算，同时尽量保持模型精度。摘要与节选称其在 LLaMA、Qwen、Gemma 系列上优于已有二值化 PTQ 方法，并相对 BF16 获得约 2.5 倍推理加速和超过 90% 的内存降低。",
+        "contributions": "论文自述的贡献包括：指出真正 1 比特 PTQ 的两个障碍，即单矩阵二值化表示能力有限，以及层与子模块在极端压缩下敏感度高度异质；提出 AF1 框架，将用于高表达力且抑制误差的二值分解的 NABF 与用于分层、考虑交互的结构预算分配的 HiSA 结合；在多个 LLM 系列上实验，声称在目标线性权重严格 1.0 有效 BPW 预算下取得优于现有二值化 PTQ 方法的精度与内存权衡。",
+        "method": "AF1 包含两个组件。NABF 通过 Hessian 感知的代理重参数化、零空间感知的二值 ADMM 分解以及仅尺度全局重建来改进二值重建：先用输入激活与输出梯度构造 K-FAC 风格的对角近似，将权重重参数化到代理空间；再将权重分解为两个二值符号矩阵与连续缩放向量的双因子形式，用 ADMM 求解连续代理并由 SVID 投影回二值域，同时把离散投影残差引导到固定因子的近似零空间，并通过闭式最小二乘把补偿吸收进缩放向量；最后冻结二值矩阵，仅优化缩放参数，以 KL 散度对齐全精度教师模型。HiSA 用合作博弈的 Shapley 值分配结构预算：层级别用渐进 Shapley 采样，以端到端 NLL 退化衡量层重要性并换算为粗粒度预算；块级别用双敏感度 Shapley，分别估计方向失真与幅度失真，经稳健 Z 分数归一化与 Soft-OR 融合，再按尺寸感知敏感度密度把层预算分配到子模块并转换为中间维度。",
+        "results": "节选给出的实验设置包括 LLaMA-2/3、Qwen3、Gemma-3 及其指令微调变体，评测 WikiText2 困惑度、七个零样本任务以及 MMLU-Pro、GSM8K、HumanEval，校准数据为 RedPajama 的 128 条长度 2048 序列，硬件为 NVIDIA RTX PRO 6000。表 1 显示 AF1 在 2.5 比特设置下在所列模型上为量化方法中最佳；在 1.0 有效 BPW 下，LLaMA-3-70B 达到 61.80 零样本平均准确率和 8.91 WikiText2 困惑度，论文称其超过最强基线 HBLLM。表 2 显示指令微调模型上 AF1 在 Qwen3-14B-Instruct 上优于 BiLLM、STBLLM、ARB-LLM，相对 HBLLM 平均分约低 9% 但模型体积仅为 39.3%。消融表 3 显示 NABF 单独将困惑度从 8.9e2 降至 30.47、平均准确率 40.79，加入 HiSA 后困惑度 24.21、平均准确率 43.09。效率方面称在 LLaMA-2-7B 上以 5.9 GPU 小时将困惑度从 ARB-LLM 的 16.44 降至 11.20，比 LittleBit 快约 40 倍、比 OneBit 快约 228 倍；推理上相对 BF16 平均降低约 90% 内存、相对 GPTQ-W4 降低约 68%，解码吞吐约为 BF16 的 2.5 倍。以上均为论文自述结果，未独立验证。",
+        "limitations": "论文自述的局限包括：AF1 只针对目标线性权重的权重二值化 PTQ，不直接压缩激活或 KV cache，因此在长上下文或大 batch 服务中可能受限；效率评估基于代表性 GPU 实现与优化后的二值矩阵乘法，进一步集成到更广泛推理栈仍是未来方向；实验覆盖 LLaMA、Qwen、Gemma 与标准语言基准，更多架构、更广指令微调变体和真实部署负载的评估有待补充。此外，节选未提供全部实验细节与完整附录内容，部分结论需查看全文。",
+        "relevance": "该论文与大模型量化直接相关，属于极低比特权重训练后量化方向，核心目标是实现真正 1 比特权重存储并控制有效 BPW。与 KV cache 的关系是：论文明确说明其方法不直接压缩激活或 KV cache，因此对 KV cache 量化没有直接贡献，但降低权重比特可减少内存带宽压力，在长上下文解码中可能间接缓解部分瓶颈。与长程 Agent 或多步工具调用量化的关系是：节选仅在引言中把 LLM 用于自主 Agent、长程决策等作为背景提及，并未开展任何 Agent 或多步工具调用实验，也没有针对 Agent 场景的量化评测；因此论文对长程 Agent 多步工具调用量化的适用性属于推测，需后续在 Agent 工作负载上验证，不能视为论文的直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:59:02+00:00",
+        "source_hash": "ec85986006e64ff17127687125b77feaca176b721b474164997c8318d7ce123b",
+        "paper_updated": "2026-09-05T16:03:41Z"
+      }
     },
     {
       "id": "2609.05881",
@@ -1053,7 +1383,21 @@
         "file": "2609.05881.png",
         "source": "https://arxiv.org/html/2609.05881v1/fig1_heatmap.png"
       },
-      "image_checked": "2026-09-09T06:52:04+00:00"
+      "image_checked": "2026-09-10T08:59:02+00:00",
+      "summary": {
+        "title_zh": "到手即坏：公共模型仓库中静默缺陷的 LLM 制品及其检测方法",
+        "tldr": "该论文对 327 个量化后的代码能力 LLM 制品（305 个来自 Ollama 官方库，22 个来自 HuggingFace 社区仓库）执行功能普查，使用 15 任务校准冒烟测试套件筛查，并对可疑制品进行 164 任务全量评估、第二推理后端复现和独立分发者转换裁判。结果确认官方库存在 5 个静默功能缺陷制品（占 1.6%），并区分出真实分发缺陷、小模型极端量化下的能力崩塌以及后端依赖型失败三类现象。",
+        "contributions": "据作者称，这是首个生态系统规模的分发量化 LLM 制品功能普查，实际执行数百个第三方转换而非仅检查元数据；在官方渠道确认 5 个静默缺陷并给出下界流行率与置信区间；其裁决链区分了真实分发缺陷、小模型低精度能力崩塌和后端依赖型失败三类被朴素阈值混淆的现象；证明表面输出统计无法替代执行，因为存在输出统计正常的缺陷类别；发布 quantcheck 验收测试工具、完整审计数据集及每个确认缺陷的披露报告。",
+        "method": "采样框覆盖两个分发渠道：Ollama 官方库中所有显式量化后缀、文件不超过 8GB 的 instruct 代码能力标签，共 305 个制品、15 个模型线；HuggingFace 上下载量最高的社区 GGUF 仓库中抽取 22 个文件。测试套件为 15 任务功能冒烟测试，基于 Qwen2.5-Coder 家族 24 个配置的 542 个 EvalPlus 任务地面真值校准，健康配置全部通过 15 题，已知缺陷制品通过 0 题。筛查分两阶段：第一阶段标记通过少于 9/15 的制品；第二阶段与同模型同尺寸高精度基线中位数比较，低于基线 60% 视为健康，≤2/15 且家族基线≥8 则列为缺陷嫌疑。嫌疑制品接受 164 任务全量评估、CUDA 与 Metal 双后端复现、独立分发者同模型同量化转换裁判，以及人工转录检查。社区制品还使用其自带模板复测。记录四个廉价输出统计特征用于 RQ2 分析。",
+        "results": "官方库 305 个制品中，271 个健康，3 个退化，6 个能力崩塌，7 个缺陷嫌疑，18 个无框内基线。7 个嫌疑中 5 个确认缺陷：4 个 Qwen2.5-Coder-3B 转换（q2_K、q3_K_S、q3_K_M、q3_K_L）在 164 任务中得 0 分，而独立转换得 8 至 14/15；1 个 phi3.5-mini q2_K 得 0/164，独立 q2_K 转换得 6/15。5 个缺陷均占官方制品 1.6%，按模型加尺寸转换组计为 2/29（6.9%，Wilson 95% CI 1.9% 至 22.0%），按制品率 Wilson 区间为 0.7% 至 3.8%。两个 llama3.2-1B 嫌疑经裁判判定为能力崩塌而非缺陷。社区渠道 22 个中 20 个健康，两个 TheBloke deepseek-coder-6.7B 转换在 CUDA 上得 5 和 6/15，在 Metal 上得 13 和 15/15，被记录为后端依赖型失败而非缺陷。RQ2 显示廉价信号无法可靠检测：截断率 0.2 阈值捕获 2/5 缺陷、11 个假阳性；重复 6-gram 份额 0.2 捕获 3/5、4 个假阳性；最佳低噪声规则捕获 3/5、假阳性率 2.3%；剩余两个缺陷表面统计接近正常。RQ4 中所有确认缺陷均被 15 任务筛查标记，未标记制品随机抽样 10 个在 49 个留出任务上得分 22% 至 59%，未发现漏检缺陷，但漏检率 Wilson 95% 区间为 0% 至 27.8%。筛查推理耗时 12 秒至 7 分钟，中位数 30 秒。",
+        "limitations": "冒烟套件仅测试 Python 代码生成，对其他用途损坏的制品可能通过，流行率是功能缺陷的下界；套件任务刻意简单，细微质量退化可能逃过筛查。两个后端共享同一固定 llama.cpp 运行时版本，仅在该版本下显现的缺陷无法与坏文件区分。普查范围限于一个仓库中不超过 8GB 的代码能力 instruct 制品加小规模流行度加权社区样本，流行率可能不适用于聊天模型、更大制品或其他仓库。RQ4 中未标记制品抽样仅 10 个，漏检率上界宽松。摘要未提供，需查看全文以获取更完整的局限性讨论。",
+        "relevance": "该论文直接研究量化 LLM 制品（GGUF 格式，2 至 8 比特）在公共模型仓库中的静默功能缺陷，属于大模型量化与分发质量交叉领域。其发现表明量化转换可能产生功能完全失效的制品，且表面统计无法检测，这对量化质量评估有直接意义。论文未涉及长程 Agent 或多步工具调用量化，也未进行任何 Agent 实验；其 15 任务与 164 任务评估均为单轮代码生成任务，不涉及多步工具调用或 KV cache。论文未讨论 KV cache 量化或缓存相关问题。对 Agent 应用的推测：若 Agent 依赖本地量化模型执行工具调用，静默缺陷制品可能导致工具调用完全失效，但论文未对此进行实验验证，该联系属于外部推测而非论文结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:59:09+00:00",
+        "source_hash": "da417625080197f8a21d319d16b1945dcbffd92474e2548fb6416339e6ec61f8",
+        "paper_updated": "2026-09-05T05:05:51Z"
+      }
     },
     {
       "id": "2609.05764",
@@ -1092,7 +1436,26 @@
           "evidence": "kv cache, quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.05764.png",
+        "source": "https://arxiv.org/html/2609.05764v1/figures/fig1_crossbar.png"
+      },
+      "image_checked": "2026-09-10T08:59:13+00:00",
+      "summary": {
+        "title_zh": "面向长上下文LLM解码中密集片上NVM的接口感知KV缓存量化",
+        "tldr": "论文针对长上下文LLM解码中KV缓存受内存带宽限制的问题，提出一种与片上密集非易失性存储器（NVM）接口相匹配的KV缓存量化方案：用随机Hadamard旋转加逐向量归一化使所有坐标范围一致，从而用一套固定码本（键为无数据解析码本、值为一次离线校准码本）服务整个KV缓存，码本阈值直接编程为读取转换器的参考电平，逐向量仅存一个范数标量（约3%元数据），反量化为16项查表加一次乘法。在3B至14B模型、最长32k上下文下，4比特KV缓存在真实器件级存储噪声与交叉阵列噪声下保持精度；其优势在内存接口而非精度，KV读取能耗比KIVI和KVQuant低3.1至3.6倍，元数据比KIVI低8倍。",
+        "contributions": "论文自述贡献包括：识别出现有KV量化方案（KIVI的逐组元数据、KVQuant的稀疏全精度离群值）与NVM驻留KV缓存之间的不匹配，并量化其在密集NVM上的开销（容量最多25%、每坐标多约1个有效比特、KV读取能耗3.1至3.6倍）；设计结构与内存接口匹配的量化方案，键值各一套全token共享的固定码本，阈值实现为读取转换器参考电平，逐向量仅一个范数标量作为元数据，密集规则存储，读取路径为查表加乘法，键用无数据解析码本、值用一次离线校准，固定旋转映射到一次性写入的静态交叉阵列；在Llama-3.2-3B、Llama-3.1-8B、Qwen2.5-14B三个规模上，在旋转交叉阵列与存储单元的真实器件级模拟非理想性下与KIVI、KVQuant比较；量化该设计在容量、KV读取能耗与重建成本上的收益。",
+        "method": "方法要点：对每个键/值向量先做随机Hadamard旋转（正交、条目为±1/√d、O(d log d)），再归一化到单位球，使所有坐标共享同一范围并只留一个范数标量；旋转放在RoPE之后，使查询与键处于同一旋转框架，注意力分数不变，反旋转离线折叠进输出投影。量化采用逐坐标标量量化，码本由Lloyd-Max条件离线求解一次：键码本由单位球坐标的解析边缘分布（1-x^2)^((d-3)/2)直接导出、无需数据，值码本因尾部更重而用64条不超过512 token的离线序列校准一次，二者均全token共享。硬件映射：旋转用一次性写入的静态模拟交叉阵列（差分方案实现符号），码本阈值编程为读取转换器（读出放大器比较器）的参考电平，KV缓存以固定宽度b比特索引存于密集NVM，码本表与范数存于小容量数字SRAM，注意力在数字逻辑中于旋转空间完成。对Qwen2.5的注意力投影偏置，在量化前减去、反量化后加回（存储预计算的Hβ常量），Llama无此偏置故该步骤不激活。",
+        "results": "论文报告：在σ=0的软件精度对比中，等比特宽度下本文码本精度低于KIVI和KVQuant（如8B多值检索98.1对KIVI的100，14B为94.9对98.5，3B为80.4对89.0），作者明确不主张精度优势；混合码本明显优于全无数据码本（后者在8B困惑度升至21、14B升至53），而全校准码本与混合码本在3B和8B上相差约一个百分点，说明键码本无需校准。匹配存储预算下KIVI-3bit（约4.0有效比特）多值检索仍高于本文（86.4/99.3/98.3对80.4/98.1/94.9）。真实长上下文任务上4比特KV缓存基本跟随骨干，仅8B的LongBench平均下降超过2点（-4.2 F1），SAMSum各规模在1.6 ROUGE-L内。内存接口方面：本文元数据3.1%、4.1有效比特/坐标、读取为查表加一次乘法；KIVI元数据25%、5.0有效比特、读取为取数加逐坐标乘加，KV读取能耗为本文3.64倍；KVQuant元数据7.1%、4.3有效比特、读取为查表加gather加乘加，能耗为本文3.11倍；KVQuant去掉稀疏离群值后检索精度从96.5降至81.2（14B）、从86.5降至58.0（3B）。存储噪声下多值检索在满量程3%以内保持平稳，4%开始退化、5%急剧下降；KIVI在5%时3B最差下降8.8个百分点而本文为25.5。静态旋转交叉阵列在2%电导噪声、6位输入DAC、2%累加噪声下与理想旋转基本一致。端到端：4比特使KV缓存比全精度小3.88倍，8k上下文3B模型上片上KV面积从140 mm²降至62 mm²（含26 mm²范数SRAM），每步KV读取能耗从0.16 mJ降至0.041 mJ（约3.9倍）；单次单元写入约3.3 pJ，写一个token的4比特索引约0.2 μJ；读取能耗中约4倍来自4比特量化、约320倍来自片上而非片外访问，CiM特有项（旋转交叉阵列加码本查表）占每步KV读取能耗不到1%。面积随上下文和模型增长，32k时总KV面积达250/285/428 mm²，超出典型单die预算。",
+        "limitations": "论文自述主要局限是精度差距（等比特宽度下低于KIVI和KVQuant）以及采用解析映射成本模型，该模型还抽象了写入侧归一化硬件，完整系统实现留待未来工作。此外，32k上下文下总KV面积超出典型单die预算，作者指出这标志单die实现的扩展极限，需要未来多die或3D集成NVM方案。论文明确其能耗与面积为基于NeuroSim的22nm解析映射成本模型，并非全系统仿真。摘要与节选中未提供对Agent任务、多步工具调用或端到端推理延迟的实测，需查看全文确认是否有相关实验。",
+        "relevance": "该论文直接研究大模型KV缓存量化，属于大模型量化范畴，但聚焦于KV缓存而非权重或激活。其核心是面向片上密集NVM与固定范围转换器接口的KV量化格式设计，与KV cache的存储、读取能耗和元数据开销直接相关。论文未涉及长程Agent或多步工具调用场景，也未做任何Agent实验；其长上下文评测为RULER、needle-in-a-haystack、LongBench、SAMSum等检索与理解任务，因此对Agent应用的适用性只能视为推测：若Agent依赖长上下文KV缓存且部署在NVM片上存储上，该格式的低元数据与低读取能耗可能有益，但论文没有验证多步工具调用下的精度或延迟表现。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:59:23+00:00",
+        "source_hash": "ddb4592457d5634652c27bf5d4f0e3c05d567338eaa7194eeca46c6f70ed77a6",
+        "paper_updated": "2026-09-04T22:58:21Z"
+      }
     },
     {
       "id": "2609.05241",
@@ -1130,7 +1493,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.05241.png",
+        "source": "https://arxiv.org/html/2609.05241v1/figures/foundation_model_families.png"
+      },
+      "image_checked": "2026-09-10T08:59:27+00:00",
+      "summary": {
+        "title_zh": "无审查开放权重模型：再分发作为持久层",
+        "tldr": "该报告对 HuggingFace 与 GitHub 上被移除安全护栏的开放权重模型生态进行测绘，识别出 3,471 个原始无审查模型与 8,164 个压缩再分发版本，指出再分发层（量化、镜像到 Ollama 等）是该生态持久化与可部署化的关键，并统计了 1,643 个集成无审查模型的 GitHub 应用，其中 25% 被判定为明确恶意。",
+        "contributions": "报告声称的主要贡献包括：一是系统测绘无审查开放权重模型的完整供应链，从 HuggingFace 生产到 GitHub 应用部署；二是区分生产者与再分发者两个功能上分离的层级，并量化再分发的集中度（三家再分发者占全部 8,164 个压缩再分发的 52%）；三是提出并量化“2.4 倍再打包效应”，说明再分发如何带来结构性持久性；四是统计下游应用类型与恶意比例；五是给出 Venice.ai、CyberAlbSecOP、NSFW 部署三个案例研究。",
+        "method": "报告称使用关键词搜索（含中、日文术语）与对已知高产生产者的爬取，在 HuggingFace 模型与数据集注册表上获得 17,727 个候选仓库，并用 GPT-5 作为 LLM 分类器将其分为原始无审查模型、压缩再分发、模型合并、恶意数据集或误报，得到 12,360 个相关仓库。GitHub 侧通过模型名关键词、应用级关键词、主题标签与行为者爬取获得 44,705 个候选仓库，过滤后得到 1,643 个集成无审查模型的应用。时间分析基于仓库在 HuggingFace 的发布日期。",
+        "results": "报告称在 2024 年 1 月至 2026 年 3 月间识别出 3,471 个原始无审查模型，平均每个被再打包 2.4 次；三家再分发者（mradermacher、Triangle104、RichardErkhov）占全部 8,164 个压缩再分发的 52%；huihui-ai 的 192 个原始模型产生约 1,800 个下游再打包，约占整个数据集的 14%。生产者至少 1,055 个、再分发者至少 1,011 个，两者仅 24% 重叠。GitHub 应用创建量从 2024 年中的约每月 30 个升至 2025 年末的每月 140–188 个；43% 应用 README 提及 Ollama，14% 提及直接 HuggingFace 下载。Dolphin 家族支撑 30% 的 1,643 个应用。中国来源基础模型占全部识别无审查模型仓库的 38%，其新生产份额从 2024 年一季度的 1% 升至 2025 年二季度的 55%。Heretic 工具发布后，月产量从约 89 个升至约 338 个。1,643 个应用中有 411 个（25%）被判定为明确恶意。",
+        "limitations": "报告自述的局限包括：平台范围仅限 HuggingFace 与公开 GitHub，未覆盖 ModelScope、Gitee、私有仓库、自托管部署与直接下载渠道；分类仅用单次 LLM 分类器、无人工真值验证，30.3% 候选被判为误报，未测量精确率或召回率；21% 原始模型元数据无技术信号，另有 17% 仅能识别为消融类但无具体工具归属；2026 年一季度仅约 2.3 个月，与完整季度不可直接比较；GitHub 搜索 API 每查询上限 1,000 条，中日韩高频词被截断，非英文应用真实数量可能更大；6.3% 的 HuggingFace 条目基础模型来源未解析。",
+        "relevance": "该报告与大模型量化的关系在于：其核心论点之一是量化与压缩再分发（GGUF、AWQ、GPTQ、EXL2、MLX）把“已发布”模型转化为“可部署”模型，量化格式与 Ollama 等注册表是下游应用增长的主要驱动，而非原始上传量。与长程 Agent / 多步工具调用量化的关系：报告未涉及 Agent、多步工具调用或 KV cache，也未做任何 Agent 场景实验；其讨论的是无审查模型在本地消费级硬件上的部署与再分发，与 Agent 量化无直接实验关联。与 KV cache 的关系：报告全文未提及 KV cache，无相关实验或结论。若要把该报告的“再分发持久性”推论到 Agent 或 KV cache 量化场景，属于外部推测，报告本身并未提供此类证据。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-10T08:59:32+00:00",
+        "source_hash": "a7e112e8e3da15d08fa4f0fc5a54521ab0988cb0f189fdb4d9bd309102f74737",
+        "paper_updated": "2026-09-04T15:06:39Z"
+      }
     },
     {
       "id": "2609.05235",
