@@ -2,6 +2,443 @@
   "schema_version": 1,
   "papers": [
     {
+      "id": "2609.11716",
+      "title": "Why Does Post-Training Quantization Work?",
+      "abstract": "Post-training quantization compresses large language models (LLMs) by storing their weights at reduced precision, and each quantized weight introduces an error into the hidden states. Naively, these errors should accumulate with depth and corrupt next-token prediction; randomly initialized models accumulate these discrepancies rapidly, whereas quantized pretrained models accumulate much less hidden-state error and largely maintain downstream task performance, even though they were never trained with quantization noise. This raises the question we address: why does post-training quantization work? Comparing full-precision and quantized forward passes, we identify two mechanisms that characterize pretrained quantization robustness. First, the error a layer newly introduces tends to oppose the error it inherits from the layer's input. The two cancel partially such that the discrepancy between full-precision and quantized passes grows slowly. This counteracting residual interaction develops during pretraining. Our quantitative analysis identifies it as a major factor slowing hidden-error growth. Second, LM-head geometry preferentially preserves the scores and probabilities of high-ranked tokens, which typically represent the model's most confident predictions. Together, these mechanisms explain why quantization error that passes through numerous layers can still produce only small output changes, and we verify the findings across models and quantization settings.",
+      "authors": [
+        "Yuxiang Chen",
+        "Michael Beyer",
+        "Jun Zhu",
+        "Jianfei Chen"
+      ],
+      "published": "2026-09-10T15:32:32Z",
+      "updated": "2026-09-10T15:32:32Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.11716",
+      "pdf_url": "https://arxiv.org/pdf/2609.11716",
+      "first_seen": "2026-09-11T08:55:08+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-11T08:55:31+00:00",
+      "summary": {
+        "title_zh": "后训练量化为何有效？",
+        "tldr": "该论文研究后训练量化（PTQ）为何在预训练大语言模型上有效。作者比较全精度与量化前向传播，发现两个机制：一是预训练模型中每个块新引入的误差倾向于抵消其继承的输入误差（counteraction），从而减缓隐藏误差随深度的增长；二是LM头的高维几何结构优先保留高排名token的分数与概率。作者在Qwen3、OLMo3、Gemma3及OLMoE等模型上验证了这些机制。",
+        "contributions": "1. 将量化鲁棒性重新表述为机制性问题，通过与随机初始化模型对比说明权重接近全精度值并非全部原因，缓慢的隐藏误差增长主要来自预训练模型本身。2. 给出缓慢误差增长的定量解释：每层新增误差倾向于对抗其继承误差，推导出精确分解并实验确认该抵消对限制隐藏误差增长显著。3. 给出高排名token预测稳定的理论解释：最高输出概率token的分数在残余最终隐藏误差下变化很小，推导隐藏误差如何通过LM头几何影响分数并连接至对数概率变化。",
+        "method": "论文比较同一输入下全精度模型与量化模型的逐块前向传播，定义隐藏误差为两者隐藏状态之差。主要使用NVFP4格式与最近舍入（RTN）量化Attention和MLP中的标准线性投影，LM头保持BF16全精度。作者推导平方隐藏误差递推（命题1）和相对隐藏误差递推（定理1），将增长分解为T_add、T_inter、T_align三项；并通过移除或反转抵消方向的干预实验提供因果证据。随后用长度-角度分解（命题2）分析最终隐藏误差，并用LM头投影角度与分数变化理论（定理2、定理3）解释高排名token的稳定性。",
+        "results": "在Qwen3-32B上，NVFP4权重量化在六个零样本基准上平均仅降低0.43个百分点；最终相对隐藏误差范数约0.15，余弦相似度约0.98。随机初始化模型的最终绝对隐藏误差范数比预训练检查点大5.5倍，相对误差大6.7倍；OLMo3-7B上分别为20.2倍和3.7倍。预训练Qwen3-32B中，交互项在1至48层累计抵消块更新误差项的50.2%；T_inter与T_align在1至L层累计抵消T_add的81.8%，而随机初始化下仅0.09%。移除抵消使最终相对隐藏误差升高2.94倍，反转升高8.41倍。角度贡献占平方相对隐藏误差的88.9%至98.7%，LM头输入平均旋转12.47度。Flip@1为8.3%至12.7%，Ret@10和Ret@20平均约85%。投影角变化被衰减约78.6倍，理论预测约89.7倍。",
+        "limitations": "作者列出三点局限：仅分析单个下一token预测的量化机制，未扩展到多token生成；机制分析依赖聚合统计，无法精确刻画每条隐藏误差轨迹或输出变化，尤其是极端误差的罕见位置；LM头理论使用均匀方向假设进行近似，而实际隐藏状态旋转方向未必均匀。此外，是否训练随机性产生抵消、以及这些发现能否改进后训练量化仍为开放问题。",
+        "relevance": "该论文直接研究大语言模型的后训练量化（PTQ）机制，涉及权重与激活量化、NVFP4格式以及GPTQ、AWQ等PTQ算法，与大模型量化主题高度相关。论文分析的是逐token前向传播中的隐藏误差传播与输出稳定性，未涉及KV cache量化，也未进行长程Agent或多步工具调用实验；因此其结论对长程Agent/多步工具调用量化的适用性属于推测，需额外实验验证。摘要与节选未提供任何Agent场景下的量化实验。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:55:36+00:00",
+        "source_hash": "314c477b93b39b6f161bd651aaea7536a909054d2c73ace53989ff67ca2d719b",
+        "paper_updated": "2026-09-10T15:32:32Z"
+      }
+    },
+    {
+      "id": "2609.11687",
+      "title": "Structured Transforms for Low-Overhead Quantization of Language Models",
+      "abstract": "We revisit Kashin-decomposition-based weight quantization for large language models and propose an improved algorithm with stronger convergence properties and structured, efficient orthogonal transforms. The method retains the core factorization of each weight into two components -- one with bounded infinity norm and the other with bounded infinity norm after an orthogonal transformation -- but replaces the dense random orthogonal matrix with a sign-randomized Discrete Cosine Transform (DCT), reducing the per-iteration cost from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N \\log N)$. The proposed greedy algorithm with alternating updates guarantees the four-peak distribution required for stable 2-bit clustering of each factor and admits closed-form initialization of cluster centers, removing the multi-restart k-means bottleneck of prior work. Composed with OPTQ-style sequential error compensation and QuIP-style incoherence preprocessing, the resulting JAX pipeline is competitive with OPTQ, QuIP, QuIP-RG and a fine-tuning- and vector-quantization-free variant of QuIP# at 4-bit per channel on OPT, Llama-2 and Pythia, with favorable wall-clock scaling. The bounded-$\\ell_\\infty$ factorization is also notably robust: on stress configurations where QuIP variants diverge to four-digit perplexity (Pythia-6.9B) or abort with NaNs in LDL back-substitution (Mistral-7B), Kashin-DCT remains numerically stable and stays close to FP16 baseline. At inference time, each weight decomposes into two 2-bit factor codes per channel that are structurally suited to native-2-bit hardware.",
+      "authors": [
+        "Daria Cherniuk",
+        "Alexander Rudikov",
+        "Boris Kashin",
+        "Ivan Oseledets"
+      ],
+      "published": "2026-09-10T15:15:50Z",
+      "updated": "2026-09-10T15:15:50Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.11687",
+      "pdf_url": "https://arxiv.org/pdf/2609.11687",
+      "first_seen": "2026-09-11T08:55:08+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.11687.png",
+        "source": "https://arxiv.org/html/2609.11687v1/figures/u_hist.png"
+      },
+      "image_checked": "2026-09-11T08:55:39+00:00",
+      "summary": {
+        "title_zh": "面向语言模型低开销量化的结构化变换",
+        "tldr": "本文重新审视基于 Kashin 分解的大语言模型权重量化，提出一种带交替更新的贪心算法，用符号随机化离散余弦变换（DCT）替代稠密随机正交矩阵，将每次迭代代价从 O(N^2) 降到 O(N log N)，并通过闭式初始化聚类中心消除多次重启 k-means 的开销；与 OPTQ 式误差补偿和 QuIP 式非相干预处理组合后，在 OPT、Llama-2、Pythia 等模型 4-bit 每通道设置下与 OPTQ、QuIP、QuIP-RG 及无微调无矢量量化的 QuIP# 变体相当，并在部分压力配置下表现出更好的数值稳定性。",
+        "contributions": "摘要与节选列出三项主要贡献：一是提出带交替更新的分区贪心算法（算法1），固定 u 与 v-hat 更新顺序为每四步一块，保证两个因子都产生四峰分布并给出收敛性证明，同时用符号随机化 DCT 替代稠密随机正交矩阵 Q，每次迭代代价由 O(N^2) 降至 O(N log N) 且无需存储矩阵；二是给出闭式聚类中心初始化，利用残差范数解析得到 ±c1±c2 的峰位置，消除多次重启 k-means 搜索；三是将 Kashin 分解与 OPTQ 式顺序误差补偿、QuIP 式非相干预处理组合，实现为可编译的 JAX 流水线并支持多 GPU pmap。",
+        "method": "方法保留 Kashin 分解 w = u + P^T v-hat 的向量级形式，其中 u 与 P v 分别具有小的无穷范数。用符号随机化 DCT（P z = IDCT(ε ⊙ DCT(z))）替代稠密随机正交矩阵，利用 FFT 实现 O(N log N) 复杂度。提出贪心算法带交替更新：每四步一块，前两步从 Q_N 更新 u，后两步从 U_{E,Φ} Q_N 更新 v-hat，从而保证两个因子都出现四峰分布。由于每步更新为 ±c_k(r_k)，两步后峰位置解析为 ±c1±c2，据此初始化 k-means 中心并只做少量精化迭代。整体流水线再叠加 OPTQ 式逐列顺序误差补偿与 QuIP 式非相干预处理（Kronecker 或随机 Hadamard），用 JAX 实现。",
+        "results": "在 OPT、Llama-2、Pythia 系列模型 4-bit 每通道设置下，Kashin-DCT+K 与 Kashin-DCT+H 在 WikiText-2、C4 困惑度及 HellaSwag、PiQA、Winogrande 准确率上与 OPTQ、QuIP、QuIP-RG 及无微调无矢量量化的 QuIP# 变体相当或更优。压力测试中：Pythia-6.9B 上 QuIP 与 QuIP-RG 发散到超过 2000 的 WikiText-2 困惑度，QuIP# 约 325，OPTQ 为 12.02，Kashin-DCT+H 为 20.6±1.6；Mistral-7B v0.1 上所有 QuIP 变体在 LDL 回代中出现 NaN 而中止，OPTQ 退化到约 380，Kashin-DCT 保持稳定并在 FP16 参考 8.63 之上约 0.3。闭式初始化使聚类墙钟时间相对多次重启 2-D k-means 基线约减少 10 倍。",
+        "limitations": "作者列出的局限：结果未覆盖 AWQ、OmniQuant 等激活感知基线以及基于旋转的方法；不过作者指出旋转类方法与本文的权重分解是正交的，可替换预处理部分，留作未来工作。未来工作包括实现融合 2-bit GEMM 与共享 ε 的 DCT 核并与 Marlin 等 4-bit 基线比较端到端延迟，以及将分解扩展到 sub-4-bit 预算或权重与激活联合量化。摘要未提供，需查看全文以了解更完整的实验局限。",
+        "relevance": "该论文直接研究大语言模型权重的低比特后训练量化，属于大模型量化方向。其核心是权重分解与 2-bit 聚类量化，推理时每个权重分解为每通道两个 2-bit 因子码，并讨论在原生 2-bit 硬件上的 GEMM 融合与内存带宽优势。论文未涉及 KV cache 量化，也未涉及长程 Agent 或多步工具调用场景；节选中没有任何 Agent 实验或工具调用评测，因此与大模型量化相关，但与长程 Agent / 多步工具调用量化及 KV cache 的关系在提供内容中未涉及，属于推测范围之外。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:55:46+00:00",
+        "source_hash": "8c039b8dd7f9599d0497aeb1c731381d128e02382f7622020a62fc8a935887fb",
+        "paper_updated": "2026-09-10T15:15:50Z"
+      }
+    },
+    {
+      "id": "2609.11582",
+      "title": "OmniKVQuant: KV Cache Quantization for Omni-LLMs",
+      "abstract": "As Omni-modal large language models (Omni-LLMs) take in audio, video and text together, their KV cache memory cost grows. KV cache quantization is the de facto approach in text-only LLMs, but its application to Omni-LLMs remains unexplored. In this paper, we analyze how TurboQuant, a representative rotation-based KV cache quantization method, behaves on multimodal caches and identify two critical issues: temporal key drift and heterogeneous value geometry. To address these, we propose OmniKVQuant, a training-free framework that (i) sets the key quantization range over each short window of the input stream; and (ii) rotates values separately per modality. On Qwen2.5-Omni and Qwen3-Omni, OmniKVQuant enables 2-bit KV caches while substantially preserving performance across seven audio-visual benchmarks. We further provide a fused Triton decode kernel that unpacks the 2-bit cache during attention, so no dense FP16 cache is ever built. Code: https://github.com/kaistmm/OmniKVQuant",
+      "authors": [
+        "Suho Yoo",
+        "Hyunjong Ok",
+        "Jongmin Choi",
+        "Jihoo Jung",
+        "Joon Son Chung"
+      ],
+      "published": "2026-09-10T14:14:12Z",
+      "updated": "2026-09-10T14:14:12Z",
+      "version": 1,
+      "categories": [
+        "cs.CV"
+      ],
+      "url": "https://arxiv.org/abs/2609.11582",
+      "pdf_url": "https://arxiv.org/pdf/2609.11582",
+      "first_seen": "2026-09-11T08:55:08+00:00",
+      "topics": [
+        "llm-quantization",
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        },
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.11582.png",
+        "source": "https://arxiv.org/html/2609.11582v1/pca_value.png"
+      },
+      "image_checked": "2026-09-11T08:55:49+00:00",
+      "summary": {
+        "title_zh": "OmniKVQuant：面向全模态大语言模型的 KV Cache 量化",
+        "tldr": "论文针对全模态大语言模型（同时处理音频、视频、文本）的 KV cache 内存开销问题，分析了旋转式 KV cache 量化方法 TurboQuant 在多模态缓存上的两个失效点——时间性键漂移与异构值几何，并提出免训练框架 OmniKVQuant：对键按输入流的短窗口设定量化范围，对值按模态分别旋转。在 Qwen2.5-Omni 与 Qwen3-Omni 的七个音视频基准上，该方法在 2-bit KV cache 下明显优于 TurboQuant，并给出融合 Triton 解码核以避免构建稠密 FP16 缓存。",
+        "contributions": "论文声称提出首个面向全模态大语言模型的 KV cache 量化方法 OmniKVQuant，为免训练框架；识别出 TurboQuant 应用于多模态缓存时的两个问题：时间性键漂移与异构值几何；提出按短窗口设定键量化范围、按模态分别校准值旋转；提供融合 Triton 解码核，在注意力计算中解包 2-bit 缓存，不构建稠密 FP16 缓存。",
+        "method": "以 TurboQuant 的随机 Hadamard 旋转加固定码本为基础。针对键：观察到旋转后键坐标的局部方差远低于高斯参考分布，且随短时间窗口漂移，因此在连续 token 分组内对旋转后的键坐标做 min-max 缩放，再套用同一固定码本，并存储每组的最小值与缩放因子用于重建。针对值：观察到文本、音频、视频的值表示占据不同特征区域，因此按模态分别校准旋转基 U_m，用注意力权重平方加权构造协方差矩阵并做特征分解得到各模态基，替换共享 Hadamard 旋转。实现上使用 32-token 分组、默认 MXFP4 元数据，值旋转在 VGGSound 校准数据上每模型校准一次。",
+        "results": "在 Qwen2.5-Omni-3B 上，K2/V2 量化下 OmniKVQuant 在多项选择与描述任务上分别保留 FP16 性能的 98.8% 与 97.3%，优于 TurboQuant 的 96.9% 与 91.7%；在 Qwen3-Omni-30B-A3B 上，TurboQuant 降至 58.5% 与 43.6%，而 OmniKVQuant 保留 90.6% 与 83.4%。量化误差对比中，OmniKVQuant 在相近比特预算下重建 MSE、注意力 KL 与输出 MSE 均低于 TurboQuant。消融显示局部键范围贡献最大，模态特定值旋转带来额外增益；在 K2V2 至 K4V4 各比特宽度下均优于 TurboQuant。值旋转实验显示同模态校准的旋转误差最低。键适配实验显示时间连续分组优于全局打乱与模态内打乱。",
+        "limitations": "论文正文未设专门局限性章节；摘要与可见正文未提供失败案例、额外开销的完整量化、更长输入或更多模态的验证，摘要未提供，需查看全文。实验受 FP16 显存限制，仅评估最长一分钟的样本。值旋转基依赖 VGGSound 校准数据，跨域泛化未在可见文本中讨论。",
+        "relevance": "该论文直接研究大模型 KV cache 量化，属于低比特 KV cache 压缩方向，与量化主题高度相关。其方法针对全模态（音频、视频、文本）KV cache，涉及键的时序范围自适应与值的模态感知旋转，可用于多模态长上下文推理的内存压缩。论文未涉及长程 Agent 或多步工具调用场景，也没有任何 Agent 实验；对 Agent 应用的适用性属于推测，需另行验证。与 KV cache 的关系是核心研究对象：论文提出在 2-bit 下压缩 KV cache 并保持性能，同时用融合 Triton 核避免物化稠密 FP16 缓存。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:55:55+00:00",
+        "source_hash": "91aeba2e391fce4024e1d54e5c0d0646c5439250353cefe2d33a25eb30f296e8",
+        "paper_updated": "2026-09-10T14:14:12Z"
+      }
+    },
+    {
+      "id": "2609.11392",
+      "title": "PATTON: Enabling Commodity PIM for Production LLM Serving",
+      "abstract": "Processing-in-Memory (PIM) is promising for accelerating memory-bound decode attention, but attention acceleration alone is insufficient for production LLM serving, where engines dynamically allocate, populate, share, cache, and reclaim logical KV cache blocks. Supporting this lifecycle on commodity PIM requires efficient physical memory allocation, block-to-address mapping, and command generation. For the Value cache, these requirements create a fundamental conflict among GEMV efficiency, single-token write efficiency, and memory capacity: GEMV-optimized layouts scatter newly generated Value vectors across rows, making writes costly, while finer-grained memory sharing improves capacity utilization but fragments GEMV reductions. We present PATTON, a PIM runtime that integrates production LLM serving engines with commodity PIM. PATTON introduces hierarchical granule allocation: block-sized Key and Value granules map one-to-one to logical token blocks, fixing their physical placements and commands, while coarser granules group blocks for efficient GEMV execution and memory utilization. A Commit Zone stages partial Value blocks for efficient single-token writes before committing them to GEMV-optimized locations. PATTON tracks these placements to generate KV cache writes and QK-transpose/SV commands. Across attention execution and runtime-induced prefill recomputation, PATTON achieves an average 1.95x speedup and 4.83x higher energy efficiency over evaluated baselines, requires no PIM processing-unit modifications, and maintains a KV cache hit rate comparable to the native GPU KV cache in vLLM.",
+      "authors": [
+        "Hangyeol Kim",
+        "Sanghyun Lee",
+        "Teokkyu Suh",
+        "Joo-Young Kim"
+      ],
+      "published": "2026-09-10T11:28:07Z",
+      "updated": "2026-09-10T11:28:07Z",
+      "version": 1,
+      "categories": [
+        "cs.AR"
+      ],
+      "url": "https://arxiv.org/abs/2609.11392",
+      "pdf_url": "https://arxiv.org/pdf/2609.11392",
+      "first_seen": "2026-09-11T08:55:27+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, efficient, llm"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.11392.png",
+        "source": "https://arxiv.org/html/2609.11392v1/Figures/final_fig1.png"
+      },
+      "image_checked": "2026-09-11T08:55:58+00:00",
+      "summary": {
+        "title_zh": "PATTON：为生产级大语言模型服务启用商用存内计算",
+        "tldr": "论文提出 PATTON，一个面向商用存内计算（PIM）的生产级 LLM 服务运行时系统，通过分层颗粒分配和提交区（Commit Zone）机制，把 vLLM 等引擎的逻辑 KV cache 块操作翻译为 PIM 的物理地址映射与命令序列，在无需修改 PIM 处理单元的前提下兼顾 GEMV 效率、KV cache 写入效率与容量效率。",
+        "contributions": "提出分层颗粒分配（Order-0/1/2 颗粒）将逻辑 token 块一对一绑定到物理放置与命令；提出 Commit Zone 暂存部分填充的 Value 块以优化解码阶段单 token 写入；在 vLLM 中实现并面向 AiM 指令集，无需修改 PIM 处理单元；支持动态分配、前缀共享、前缀缓存与回收，并保持与 vLLM 原生 GPU KV cache 相当的命中率。",
+        "method": "PATTON 将每个 transformer 层的物理地址空间划分为 Key Row Sets、Value Row Sets 和 Commit Zone Row Sets。Order-0 颗粒为一个 channel 内所有 bank 的一个 burst，是最小有效并行执行单元；Order-1-K/O1V 与逻辑 Key/Value 块一一对应，固定其物理放置与命令；Order-2 颗粒将多个 Order-1 分组以提升 GEMV 执行与容量效率。Key 采用先跨 channel（Case Ch）再填充行内空闲列（Case C）的放置；Value 在块填满后采用 Case Ch→C 以保持连续 token 归约，未填满的部分块先放入 Commit Zone 的 CZ slot（每 channel 一次行激活），写满 16 个 token 后再提交到预留的 O1V 位置。运行时按逻辑块 ID 记录放置元数据，用于生成 KV cache 写入、QK⊤ 与 SV 的 DRAM 命令序列。",
+        "results": "在 ShareGPT 多轮对话、Llama3-8B、Qwen3-8B、OPT-6.7B、Qwen1.5-7B 上，结合注意力执行与运行时导致的 prefill 重计算，PATTON 相对所评估基线平均取得 1.95 倍加速和 4.83 倍能效提升；相对 NeuPIMs、PIMphony、AttAcc、BlockPIM 的平均加速分别为 4.27、1.42、1.52、1.57 倍，能效提升分别为 7.94、6.77、6.70、1.51 倍。消融显示 Commit Zone 使整体注意力延迟和能耗分别降低 13.0% 和 12.4%，Value 写入加速 5 倍；相对 BlockPIM 延迟和能耗降低 22.7% 和 34.5%。容量压力下 PATTON 的 KV cache 命中率为 82.09%，GPU 参考为 87.86%，而去掉 O2V 后降至 30.30%。",
+        "limitations": "评估基于 Ramulator2 的 AiM 模拟器与建模能耗，而非真实商用 PIM 硬件实测；与 AttAcc、NeuPIMs 比较时受其硬件配置限制上下文长度被限制为 2048 token；部分基线未公开精确的 channel-bank-row-column 放置，评估中对其采用了有利的 GEMV 优化布局假设；论文未提供在真实长程 Agent 或多步工具调用负载上的实验。摘要未提供，需查看全文以确认更多限制。",
+        "relevance": "该论文与大模型量化无直接关系，未涉及权重量化或激活量化。其核心与 KV cache 直接相关：研究生产级服务引擎中 KV cache 块的动态分配、前缀共享、前缀缓存、回收以及逻辑块到 PIM 物理地址的映射，并优化解码阶段单 token 的 KV cache 写入效率与容量效率。对于长程 Agent / 多步工具调用场景，论文仅通过多轮对话（ShareGPT）体现前缀复用与缓存保留的重要性，属于对 Agent 类长上下文复用场景的间接相关；论文没有进行任何 Agent 或多步工具调用的实验，因此不能据此推断其在 Agent 工作负载上的量化或性能结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:04+00:00",
+        "source_hash": "59a992867b51c00a3ade7832d4a449ec45cdfb489f12d2b6947239b9fcd3ec95",
+        "paper_updated": "2026-09-10T11:28:07Z"
+      }
+    },
+    {
+      "id": "2609.11231",
+      "title": "A Voice-Interactive Multi-Agent System for Smart Operating Rooms: Architecture Design and Key Technologies",
+      "abstract": "This paper presents SurgicalRoomAgent, a voice-interactive multi-agent system for smart operating rooms based on large language models (LLMs). The system achieves natural language understanding, device control, intraoperative recording, and surgical report generation through a layered architecture comprising a voice interaction pipeline (wake, ASR, turn detection, agent reasoning, TTS) and an agent core (skill registry, task planner, device manager). Three key technologies are investigated: (1) KV Cache prefix warming for low-latency inference, reducing recomputation overhead from approximately 500 ms to tens of milliseconds via byte-level Longest Common Prefix reuse; (2) streaming partial JSON parsing with early parallel task execution, reducing end-to-end latency by approximately 30%; and (3) progressive skill prompt disclosure, which dynamically filters system prompts based on user role, connected devices, and surgical phase to maximize information density within limited context windows. The system is implemented using the Qwen3-27B model with llama.cpp/sglang inference engines. Experimental analysis demonstrates effective operation within a 16,384-token context limit and multi-device parallel control response times meeting OR real-time requirements.",
+      "authors": [
+        "Tianxiang Zhou"
+      ],
+      "published": "2026-09-10T08:29:27Z",
+      "updated": "2026-09-10T08:29:27Z",
+      "version": 1,
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.HC"
+      ],
+      "url": "https://arxiv.org/abs/2609.11231",
+      "pdf_url": "https://arxiv.org/pdf/2609.11231",
+      "first_seen": "2026-09-11T08:55:27+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, agent, language model"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.11231.png",
+        "source": "https://arxiv.org/html/2609.11231v1/surgical-room-agent-runtime.png"
+      },
+      "image_checked": "2026-09-11T08:56:07+00:00",
+      "summary": {
+        "title_zh": "面向智能手术室的语音交互多智能体系统：架构设计与关键技术",
+        "tldr": "本文提出 SurgicalRoomAgent，一个面向智能手术室、基于大语言模型的语音交互多智能体系统，采用语音交互流水线与智能体核心的分层架构，并研究三项关键技术：基于字节级最长公共前缀复用的 KV Cache 前缀预热、流式部分 JSON 解析与任务提前并行执行、渐进式技能提示披露；系统使用 Qwen3-27B 模型与 llama.cpp/sglang 推理引擎，在 16384 token 上下文限制内运行，摘要与正文给出的性能数据多为基于架构与参数配置的理论估计。",
+        "contributions": "1. 分层架构设计：将语音交互流水线（唤醒→ASR→轮次检测→智能体推理→LLM 生成→TTS）与智能体核心（技能注册表、任务规划器、设备管理器等）分离。2. KV Cache 前缀预热优化：基于字节级最长公共前缀复用，在设备状态变化后异步预计算系统提示的 KV Cache，将真实请求的预填充开销从约 500 毫秒降至数十毫秒。3. 流式部分 JSON 解析与任务提前执行：在 LLM 流式输出中实时解析部分 JSON，检测到完整任务数组即启动并行执行，形成边生成边执行的流水线。4. 渐进式技能提示披露：依据用户角色、已连接设备、手术阶段三层上下文动态过滤系统提示。5. DAG 任务规划与调度：采用 Kahn 算法分层拓扑排序与 DFS 三色环检测，支持多意图任务的依赖建模与并行执行。",
+        "method": "系统采用分层架构，语音交互流水线由五个通过 HTTP/WebSocket 通信的微服务组成：唤醒服务（Sherpa-ONNX 关键词识别）、实时 ASR 服务（FunASR 或 Qwen3-ASR，含音素匹配热词后校正，阈值 0.85）、轮次检测服务（基于 LLM 的二分类，0 表示闲聊或噪声、2 表示医疗指令，用 GBNF 语法约束输出，保留最近 5 轮对话上下文）、智能体服务（FastAPI，REST 与 WebSocket 接口）、TTS 服务（CosyVoice 或 Qwen3-TTS，支持流式合成）。智能体核心以 MultiTurnAgent 类为中心，包含技能注册表（Registry+Decorator 模式，自动发现）、任务规划器（Kahn 分层拓扑排序与 DFS 三色环检测）、设备管理器（模板方法模式，DeviceFunction 含 20 余个字段、24 个可更新字段）、权限控制（RBAC，admin/surgeon/anesthesiologist/nurse/any 五级）、存储与安全（SQLite、JWT HMAC-SHA256 24 小时过期、字段级加密、审计日志）。KV Cache 前缀预热通过 PromptWarmer 组件实现，采用 10 秒 TTL 去重、300 毫秒防抖、单线程执行、静默失败与强制模式，预热请求参数为 max_tokens=1、stream=True、timeout=30s、cache_prompt=True，触发点为设备状态变化、对话轮次完成与记录开始。流式部分 JSON 解析通过 extract_partial_field、try_extract_tasks、is_field_complete 等函数实现，检测到完整 tasks 数组后立即提交并行执行。渐进式技能提示披露通过 build_prompt_sections(context) 实现角色、设备条件、手术阶段三层过滤，技能提示文件采用 YAML frontmatter 加 Markdown 正文格式。DAG 任务规划支持单任务与多任务 JSON 格式，TaskScheduler 按层并行执行，同层任务无依赖并行、层间串行，并提供 _fallback_single_task 回退机制。",
+        "results": "论文报告：预填充开销（设备变化）从约 500 毫秒降至约 50–80 毫秒，改善 83%–90%；首 token 时间从约 600 毫秒降至约 150–200 毫秒，改善 67%–75%；任务执行启动由等待完整 JSON 改为流式加提前执行，约改善 30%；TTS 播放延迟由等待完整响应改为响应闭合触发，约改善 40%。上下文窗口分配：系统提示（核心角色加设备定义）约 8000 token 占 48.8%，技能提示（披露后）约 3000 token 占 18.3%，决策流加安全加格式约 1662 token 占 10.1%，对话历史（10 轮）约 2000 token 占 12.2%，用户输入加设备状态约 1000 token 占 6.1%，总计约 15662 token 占 95.6%，可用余量约 722 token 占 4.4%。渐进式披露在护士角色且设备较少场景可释放约 2000–3000 token。系统在 16384 token 上下文限制内运行，max_tokens 设为 1024。论文明确注明上述数据为基于系统架构与参数配置的理论估计，实际性能受硬件配置、网络环境与模型负载影响。轮次检测准确率的具体数值摘要未提供，需查看全文。",
+        "limitations": "论文自述局限：1. 缺乏大规模临床验证，系统处于原型开发与实验室测试阶段，尚未在真实手术室环境开展大规模临床试验。2. 单一 LLM 实例瓶颈，当前使用单个 Qwen3-27B 实例，多用户并发场景下可能成为性能瓶颈，GPU 显存限制并发。3. ASR 精度依赖，手术室噪声（如电外科设备、手术吸引器）可能影响 ASR 精度，高噪声环境鲁棒性有待改进。4. 设备协议依赖，设备控制依赖厂商提供的 API 或协议，不同厂商接口差异大，集成新设备需开发特定适配层。5. 上下文窗口限制，16384 token 上下文窗口在长时间手术场景下可能不足以维持完整对话历史。此外，性能数据为理论估计而非实测，轮次检测准确率等具体指标摘要未提供，需查看全文。",
+        "relevance": "与大模型量化的关系：论文使用 Qwen3-27B-FP8 模型，涉及 FP8 量化，但论文重点不在量化算法本身，而是推理延迟优化；其 KV Cache 前缀预热与字节级最长公共前缀复用属于 KV Cache 管理与推理优化范畴，与量化后模型的显存与延迟权衡相关。与长程 Agent 及多步工具调用量化的关系：论文提出 DAG 任务规划与调度、流式部分 JSON 解析与提前并行执行、渐进式技能提示披露，这些属于多步工具调用与任务编排的工程优化，但论文未涉及针对长程 Agent 或多步工具调用的量化方法研究，也未开展 Agent 场景下的量化实验。与 KV cache 的关系：论文核心贡献之一是 KV Cache 前缀预热机制，通过 PromptWarmer 异步预计算系统提示前缀的 KV Cache，利用字节级 LCP 复用使真实请求仅计算增量部分，将预填充开销从约 500 毫秒降至约 50–80 毫秒，并设计了基于 MD5 短哈希的预热命中诊断机制，这是与 KV cache 直接相关的关键技术。需要明确：论文没有开展 Agent 相关的实验，其 Agent 应用属于系统架构设计与理论性能分析，性能数据为理论估计；论文也未研究量化对长程 Agent 或多步工具调用性能的影响。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:15+00:00",
+        "source_hash": "e8011a0f8af765756a5306228a6c1186767c982ca6d83dfed86f16f3cc7d6651",
+        "paper_updated": "2026-09-10T08:29:27Z"
+      }
+    },
+    {
+      "id": "2609.11192",
+      "title": "FlexComp: One Model for Every Ratio in Context Compression",
+      "abstract": "Soft context compression condenses a context into a few memory tokens that a frozen LLM consumes in place of the raw text, but existing compressors fix the compression ratio at training and inference: each deployed ratio requires a separately trained model, and the chosen ratio is applied uniformly to all inputs, whose actual needs vary drastically. We propose FlexComp, a method-agnostic framework that decouples the ratio from both training and deployment: Matryoshka-style training samples the memory budget $K$ per instance, turning one model into an any-ratio compressor, and the budget is then chosen per input by: (1) confidence-based cascade routing or (2) a lightweight learned $K$ predictor. Across ICAE, 500xCompressor, and SAC on MRQA, a single FlexComp model matches separately trained fixed-ratio specialists with minimal degradation. Cascade routing preserves over 98% of the mildest ratio's accuracy at up to 266x average compression; the $K$ predictor, in a single compression-decoding pass, reaches 158-236x within 0.7 F1 of the mildest ratio. At serving-scale batch sizes, the $K$ predictor cuts context KV cache by 50% and improves decoding throughput by 47%.",
+      "authors": [
+        "Kaiyan Zhao",
+        "Zhongtao Miao",
+        "Akiko Aizawa",
+        "Yoshimasa Tsuruoka"
+      ],
+      "published": "2026-09-10T07:59:52Z",
+      "updated": "2026-09-10T07:59:52Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.11192",
+      "pdf_url": "https://arxiv.org/pdf/2609.11192",
+      "first_seen": "2026-09-11T08:55:27+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, compress, llm"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.11192.png",
+        "source": "https://arxiv.org/html/2609.11192v1/figures/correlation.png"
+      },
+      "image_checked": "2026-09-11T08:56:18+00:00",
+      "summary": {
+        "title_zh": "FlexComp：面向上下文压缩中任意压缩比的单一模型",
+        "tldr": "该论文提出 FlexComp 框架，通过 Matryoshka 式训练让单个软上下文压缩器支持任意数量的记忆 token 预算，并在推理时按输入选择预算（置信度级联路由或轻量 K 预测器）。在 MRQA 上基于 ICAE、500xCompressor、SAC 三种压缩器验证：单模型可匹配分别训练的固定压缩比专用模型，自适应预算选择在保持精度的同时将平均压缩比提升至 158-266 倍，并在服务规模批大小下减少 50% 上下文 KV cache、提升 47% 解码吞吐。",
+        "contributions": "1）证明 Matryoshka 训练可将固定压缩比的上下文压缩器变为单一任意压缩比压缩器，在三种不同方法上验证且退化极小；2）提出两种按输入选择预算的策略：基于置信度的级联路由，以及在压缩前确定预算的 K 预测器，并展示其在 KV 内存与解码吞吐上的收益；3）系统分析精度-压缩权衡，发现实例级别上该权衡非单调：在相当一部分输入上更大预算反而有害，单个记忆 token 能答对而全预算失败。",
+        "method": "FlexComp 是方法无关框架。训练阶段采用 Matryoshka 式训练：对每个实例从支持预算集合 K={1,10,34}（对应 510x、51x、15x 压缩）中均匀采样预算 K，分配 K 个记忆槽，优化底层压缩器原有的 SFT 目标，编码器为 LoRA 适配的 Llama-3.2-1B，解码器冻结；预训练阶段保持固定 K=34。推理阶段有两种预算选择策略：级联路由从最激进预算 K=1 开始，用长度归一化的答案对数概率作为置信度，低于阈值则升级到更大预算重新编码，阈值在留出数据上校准；K 预测器则用无预算编码器特征均值池化后经两层 MLP 预测预算分布，在压缩前一次性确定 K，标签由 Matryoshka 模型自身在各预算下的 Rouge-1 F1 构造（最小且接近最佳预算，容差 0.1），并对类别做 1:1:1 重采样防止预测器坍缩。",
+        "results": "在 MRQA 上，单个 Matryoshka 模型与分别训练的固定压缩比专用模型相比，最差差距约 1.3 F1，九个设置中有四个单模型更优，OOD 上九个增量有七个为正；500xCompressor 在 510x 下 ID +3.72、OOD +3.12 F1。级联路由在 ICAE 上最激进操作点平均每输入 19.8 token（约 235x 压缩），ID F1 距始终 K=34 仅 0.6，OOD 略高于固定基线；整体保留最温和压缩比 98% 以上精度，平均压缩最高达 266x。K 预测器单次压缩-解码达到 158-236x 压缩，ID/OOD 精度下降最多 0.7 F1，且比相同预算比例的随机路由高约 5 F1。服务规模批大小 96、上下文长度 8192 时，K 预测器将上下文 KV cache 减少 50.5%、吞吐提升 47.0%。在 Llama-3.1-8B 上结论可迁移，单模型在各预算匹配或超过专用模型，级联保守点达 156x 压缩几乎无损，K 预测器达 183x 压缩。",
+        "limitations": "摘要未提供，需查看全文。HTML 节选显示：Matryoshka 训练若同时用于预训练会降低质量（SAC 在 K=34 下 ID 损失 2.3、OOD 损失 2.5 F1），因此仅用于 SFT；K 预测器在原始不均衡标签下会坍缩到多数类，需类别重采样；更大预算在部分样本上反而有害，约 11.8-12.8% 可解 ID 样本上 K=1 严格优于 K=34；论文未报告 Agent 或多步工具调用场景的实验。",
+        "relevance": "该论文与大模型量化、长程 Agent/多步工具调用量化、KV cache 的关系如下：它直接针对 KV cache 内存与解码吞吐，通过软 token 上下文压缩在预填充前避免物化完整上下文 KV cache，报告了 KV cache 减少 50% 与吞吐提升 47% 的实测结果，属于 KV cache 压缩/内存效率方向，但并非权重量化或激活量化方法。论文未在 Agent 或多步工具调用场景做实验，也未涉及工具调用轨迹的量化；其按输入自适应选择压缩预算的思路可能对长程 Agent 中上下文/工具输出压缩有参考价值，但这属于推测，论文本身没有 Agent 实验证据。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:26+00:00",
+        "source_hash": "a48059677a3d6369baccbe9b1bd5b919814efe6ac4c80e998c117d944573e91e",
+        "paper_updated": "2026-09-10T07:59:52Z"
+      }
+    },
+    {
+      "id": "2609.11133",
+      "title": "Phase-Decoupled, Model-Calibrated Power Control for Disaggregated LLM Serving",
+      "abstract": "Datacenter GPU power is the binding constraint on LLM serving capacity, and production serving has shifted to prefill/decode (PD) disaggregation. Deploying NVIDIA's Max-Q inference profile on a disaggregated B200 system, we found its realized gain modest (+8.6% tokens/J), model-dependent, and carrying a mean end-to-end latency cost (+5.2%) that throughput-only evaluation does not surface; the profile also applies one setting to prefill and decode GPUs that operate in opposite hardware regimes. We hypothesize that the optimal power setting is a property of the deployed (model, quantization, engine, hardware) combination rather than of the GPU class, that each lane warrants its own profile, and that converting SLO headroom into energy safely requires latency-gated calibration under a runtime SLO guard rather than a fixed recipe. We present a phase-decoupled, model-calibrated controller: the prefill lane runs under an SM-clock window whose floor is a latency guarantee by construction, and the decode lane under a power cap placed by automatic calibration just above a measured throughput/latency cliff. Because a disaggregated decode lane draws flat, memory-bound power, the cap binds continuously, the reactive-overshoot weakness that led POLCA to reject capping is absent, and the GPU's own power manager retains throughput under the cap. On an 8x B200 node serving Qwen3-Coder-480B (FP8) under agentic load, our balanced mode delivers +20.4% tokens/J at +3.5% mean e2e versus +8.6% at +5.2% for Max-Q, a Pareto improvement on both axes. On Qwen3-235B-A22B (NVFP4) every operating mode meets the ITL-p99 SLO in every repetition; both vendor profiles miss it. A decode-actuator A/B shows the calibrated cap beats static clock locks, and a three-day sustained run saves 32.3% of a lane pair's electricity. Both models are MoE; a dense model recovers roughly 5x less, so we scope our claims to MoE serving.",
+      "authors": [
+        "Jae Gon Kim",
+        "Donghoon Yoo",
+        "Hanyul Ryu",
+        "Sungho Ha",
+        "Juyeon Lee",
+        "Soojung Ryu"
+      ],
+      "published": "2026-09-10T06:23:37Z",
+      "updated": "2026-09-10T06:23:37Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "url": "https://arxiv.org/abs/2609.11133",
+      "pdf_url": "https://arxiv.org/pdf/2609.11133",
+      "first_seen": "2026-09-11T08:55:08+00:00",
+      "topics": [
+        "llm-quantization",
+        "agent-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        },
+        {
+          "type": "topic",
+          "label": "Agent 长程任务量化",
+          "evidence": "quantiz, agentic, llm"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-11T08:56:26+00:00",
+      "summary": {
+        "title_zh": "面向分离式LLM服务的相位解耦、模型校准功率控制",
+        "tldr": "论文针对预填充/解码分离（PD-disaggregated）的LLM服务，提出一种相位解耦的功率控制方案：预填充通道使用SM时钟窗口（下限即延迟保证），解码通道使用经自动校准、置于吞吐/延迟悬崖之上的功率上限。在8×B200节点上服务Qwen3-Coder-480B（FP8）等MoE模型时，其平衡模式在智能体负载下取得+20.4% tokens/J、+3.5%平均端到端延迟，优于NVIDIA Max-Q的+8.6%与+5.2%，并声称在延迟SLO合规上更稳定。",
+        "contributions": "提出相位解耦的异构执行器设计：预填充通道用DVFS时钟窗口阶梯，解码通道用校准功率上限；实现按（模型、量化、引擎）组合的全自动校准，并以尾延迟（ITL-p99）作为接受门槛；提供PERF/BAL/EFF三档运行模式阶梯，将效率/延迟权衡暴露为受SLO保护的运维旋钮；给出与NVIDIA Max-Q在B200分离式服务上的首次在飞对比测量，覆盖两个MoE模型与两种负载；并指出仅用吞吐指标会掩盖端到端延迟损害，提出均值端到端（Little定律）加ITL-p99的评估视角。",
+        "method": "服务平面为未修改的NVIDIA Dynamo加sglang-runtime PD分离栈，控制平面按通道分配执行器：预填充通道限制在约20-30%时钟范围的SM时钟窗口内，窗口下限由校准给出并作为延迟保证；解码通道施加单一功率上限，由GPU自身功率管理器在上限内做微秒级DVFS。校准流程离线运行约一小时，测量各通道自然功率、按模式生成解码功率上限与预填充时钟窗口边界，仅当吞吐保持且ITL-p99满足SLO时接受设定点，并记录引擎指纹（CUDA-graph、KV传输后端、引擎版本），指纹变化触发重校准。运行时SLO守卫监控各通道尾延迟，违规时释放该通道设定点至硬件默认。",
+        "results": "在8×B200节点上，480B FP8智能体负载下，Max-Q为+8.6% tokens/J、+5.2%平均端到端；BAL为+20.4%、+3.5%，EFF为+29.3%、+4.9%，两者在两个轴上均帕累托优于Max-Q。235B NVFP4重复配对研究中，智能体负载EFF为+38.8%±5.1% tokens/J、+6.6%平均端到端，Max-Q为+11.4%±6.1%、+2.8%；标准负载EFF为+22.4%±2.4%、+8.9%，Max-Q为+11.8%±2.0%、+2.8%。两个厂商配置在部分智能体重复中未满足ITL-p99 SLO（96%合规），而作者各模式在所有重复中均满足。解码执行器A/B中，校准功率上限优于吞吐最优与激进静态锁频（+24.1%对+17.2%对+15.5% tokens/J）。三天持续运行节省一对通道32.3%电力。校准研究显示单次运行估计悬崖不稳定，仅按吞吐接受会引入违反SLO的设定点。",
+        "limitations": "作者明确将结论限定于MoE模型：探索性稠密模型对比显示同一机制恢复的效率约少5倍，故不作稠密模型声明。运行时SLO守卫在所有记录运行中均未触发，因此合规对比归因于延迟门控校准而非运行时干预，守卫条款仅由契约而非观测确立。A/B仅对比静态锁频，未与自适应逐迭代DVFS控制器比较。预填充通道的窗口下限与窗口内策略未分离，缺少仅固定下限的对照臂；也未做预填充/解码的因子消融以分离效率归因。负载轴与时间轴campaign的绝对值与主表不可互换。原生时间戳回放与训练能耗不在范围内。摘要未提供，需查看全文以确认更多细节。",
+        "relevance": "论文与大模型量化、长程Agent/多步工具调用量化、KV cache的关系如下：直接相关的是量化作为校准维度——其校准按（模型、量化、引擎）组合进行，两个模型分别使用FP8与NVFP4量化，说明量化会改变解码悬崖与自然功率，因此量化方案是功率控制设定点的一部分。与长程Agent/多步工具调用的关系是负载层面的：其智能体负载模拟工具调用型流量（每客户端4轮工具调用、上下文累积、思考间隔），但论文并未研究Agent量化本身，也未做Agent任务成功率或工具调用正确性的实验，仅以tokens/J与延迟SLO衡量服务效率。与KV cache的关系是间接的：解码阶段被描述为受权重与KV-cache读取主导的内存带宽受限阶段，PD分离依赖KV-cache传输路径，且引擎指纹包含KV传输后端；但论文没有直接研究KV cache量化或KV cache压缩，也未给出KV cache量化对功率控制影响的实验。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:33+00:00",
+        "source_hash": "3944e06d041fc2888652666342a91db1e89f29534ade3af1c7182623c85ae6d2",
+        "paper_updated": "2026-09-10T06:23:37Z"
+      }
+    },
+    {
+      "id": "2609.10715",
+      "title": "NCP-ArchPreview Technical Report: Moving towards Latent Space Language Models through Next Concept Prediction",
+      "abstract": "We introduce NCP-ArchPreview, a latent-space language model that pushes autoregressive pretraining beyond standard next-token prediction (NTP). Alongside NTP, the model learns through Next Concept Prediction (NCP) to predict discrete concepts that span multiple tokens, introducing an explicit and more challenging concept-level objective while preserving standard token-level autoregressive generation. NCP-ArchPreview builds a latent space by constructing a product-quantized concept vocabulary directly from its hidden states, and subsequently learns to predict future concepts via a dedicated Concept Module. These predicted concepts are then fed back to the token level to guide subsequent generation, with NTP and NCP trained jointly end-to-end. We scale this architecture to 8.9B parameters and train it on 5.73T tokens from the Dolma-3 dataset, marking the largest demonstration of a latent-space language model to date. Remarkably, by consuming only 51.3% of the total training tokens, NCP-ArchPreview achieves the final pretraining loss of OLMo-3-7B. Following full pretraining, it outperforms OLMo-3-7B by 2.45 points on the downstream macro-average, including a notable 5.99-point gain on GSM8K. Controlled experiments isolate a clear progression of performance gains stemming from both the latent architecture and the NCP objective. Furthermore, utilizing only 85% of the standard computation, NCP-ArchPreview approaches the training loss of a strictly parameter-aligned 8.9B baseline. The learned latent space remains highly valuable after the pretraining stage: updating just the 17M-parameter VQ module yields a novel, lightweight interface for domain adaptation, while a simple injection of concept representations into a DFlash2 drafter improves the mean accepted length by 4.17% with negligible overhead.",
+      "authors": [
+        "The Intern-NCP Team",
+        ":",
+        "Jiaqi Cao",
+        "Chiyu Chen",
+        "Shuang Cheng",
+        "Xu Cheng",
+        "Beiya Dai",
+        "Yufan Feng",
+        "Kewen Ge",
+        "Ruijun Ge",
+        "Jiayi Huang",
+        "Yang Jiao",
+        "Dahua Lin",
+        "Zhouhan Lin",
+        "Yifan Liu",
+        "Yuliang Liu",
+        "Biqing Qi",
+        "Mowen Ruan",
+        "Junzhe Shen",
+        "Yunchong Song",
+        "Hao Sun",
+        "Zhongbo Tian",
+        "Yixuan Wang",
+        "Rubin Wei",
+        "Jiaxin Xiong",
+        "Kangyu Yang",
+        "Qian Yao",
+        "Qi Zhang",
+        "Bowen Zhou"
+      ],
+      "published": "2026-09-09T18:12:43Z",
+      "updated": "2026-09-09T18:12:43Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.10715",
+      "pdf_url": "https://arxiv.org/pdf/2609.10715",
+      "first_seen": "2026-09-11T08:55:08+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-11T08:56:33+00:00",
+      "summary": {
+        "title_zh": "NCP-ArchPreview 技术报告：通过下一概念预测迈向潜在空间语言模型",
+        "tldr": "该论文提出 NCP-ArchPreview，一种在标准下一词元预测之外，额外学习预测跨多个词元的离散概念的潜在空间语言模型，并扩展到 8.9B 参数、5.73T 词元规模进行预训练。",
+        "contributions": "提出 Next Concept Prediction（NCP）目标，与标准 NTP 联合端到端训练；通过从隐藏状态构建乘积量化的概念词表来建立潜在空间，并用专门的 Concept Module 预测未来概念，再反馈到词元层指导生成；将架构扩展到 8.9B 参数并在 Dolma-3 的 5.73T 词元上训练，称其为迄今最大规模的潜在空间语言模型演示。",
+        "method": "模型同时进行下一词元预测和下一概念预测；概念为跨多个词元的离散单元，其词表由隐藏状态经乘积量化构建；专用 Concept Module 预测未来概念，预测结果反馈至词元层引导后续生成；NTP 与 NCP 联合端到端训练。",
+        "results": "摘要称：仅消耗 51.3% 的总训练词元即达到 OLMo-3-7B 的最终预训练损失；完整预训练后在下游宏平均上超过 OLMo-3-7B 2.45 分，其中 GSM8K 提升 5.99 分；受控实验分离出潜在架构与 NCP 目标各自带来的性能提升；仅用 85% 标准计算量即接近严格参数对齐的 8.9B 基线的训练损失；仅更新 17M 参数的 VQ 模块可实现轻量领域适配；将概念表示注入 DFlash2 drafter 使平均接受长度提升 4.17%，开销可忽略。",
+        "limitations": "摘要未提供，需查看全文。",
+        "relevance": "该论文与大模型量化无直接关系，未涉及权重量化或 KV cache 量化。其潜在空间与乘积量化概念词表属于表示层面的量化，而非推理效率量化。论文未包含长程 Agent 或多步工具调用实验，因此对 Agent 场景的适用性属于推测而非直接实验结论；摘要未提供 Agent 相关评测，需查看全文确认。",
+        "source_kind": "abstract",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:37+00:00",
+        "source_hash": "7645b2d72fe44a36ab0a1c22b20fe69ae28dc1325e20fb1a8557f506aaca8625",
+        "paper_updated": "2026-09-09T18:12:43Z"
+      }
+    },
+    {
       "id": "2609.10439",
       "title": "Forgetting Only What Matters: Layer-Selective Unlearning toward Robust LLMs",
       "abstract": "Large Language Models (LLMs) can memorize and reproduce sensitive, copyrighted, or otherwise undesirable training content, creating privacy, safety, and regulatory concerns. Machine unlearning offers a practical alternative to full retraining, but many existing methods apply broad or fixed parameter updates that can degrade utility and remain brittle under deployment changes such as post-training quantization, where forgotten knowledge may partially re-emerge. We propose Forgetting Only What Matters via Unlearning Layers (FOM-UL), a layer-level unlearning framework that selects transformer layers using a forget-to-retain significance score. This score identifies layers with high influence on the forget set and low sensitivity to the retain set, allowing FOM-UL to concentrate updates where they are most effective while leaving most of the model unchanged. This targeted update strategy improves the forgetting-utility trade-off and provides an empirical path toward quantization-resilient unlearning by reducing the chance that small, diffuse updates are erased by low-bit rounding. Across TOFU, KnowUnDo, and MUSE-style evaluations, FOM-UL reduces residual memorization compared with strong GA, NPO, KLD, SURE, ReLearn, and LUNAR-based baselines while preserving retain-set utility close to the vanilla model. Under 8-bit and 4-bit post-training quantization, FOM-UL maintains stronger memorization suppression and utility preservation than competing methods, and adversarial prompt evaluations show lower recovery of forgotten content. Overall, FOM-UL provides an efficient unlearning strategy that improves targeted forgetting, utility preservation, and deployment robustness without claiming formal guarantees of erasure.",
@@ -1544,7 +1981,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.05235.png",
+        "source": "https://arxiv.org/html/2609.05235v1/figs/proposed_method_v4.png"
+      },
+      "image_checked": "2026-09-11T08:56:40+00:00",
+      "summary": {
+        "title_zh": "PRICE：面向比特币价格预测的大语言模型适配选择系统性研究",
+        "tldr": "该论文提出 PRICE 框架，在 4 比特量化的 LLaMA-3 8B 上系统研究五种适配选择（LoRA 参数高效微调、递归多步推理、整数取整数值表示、Context-Task-Format 提示、精确零温度解码）对比特币短期价格预测的影响，并通过消融实验与八个 Transformer 及时间序列基础模型对比。",
+        "contributions": "提出统一的 PRICE 框架，将参数高效微调、递归多步推理、整数取整数值表示、CTF 提示与零温度解码整合进单一预测流程；建立受控消融框架，在一致实验条件下量化各适配选择的贡献；证明参数高效微调与递归多步推理显著提升基于大模型的比特币预测；揭示数值表示的重要性，整数取整表示持续优于原始、标准化与实例归一化输入；考察提示设计与解码策略的作用，CTF 提示在微调后仍优于 CoT、iCoT 与少样本提示；通过与八个 Transformer 及时间序列基础模型对比验证有效性与稳健性。",
+        "method": "基于 4 比特量化的 LLaMA-3 8B-Instruct，使用 LLaMA-Factory 框架与 LoRA 微调，冻结预训练参数、仅训练低秩适配器。训练采用一步预测目标（pred_len=1），推理采用递归自回归多步策略，输入长度 seq_len=96（96 小时收盘价），预测长度 pred_len=8。数值以整数取整后转为文本输入。提示采用 Context-Task-Format 结构，输出限制为单个数值。解码采用温度 0 的确定性解码。数据来自 Binance 的 BTC/USDT 分钟级 OHLCV，聚合为小时级收盘价，最终使用 2023 年 3 月至 2024 年 12 月数据，按 80%/10%/10% 时间顺序划分。评估指标包括 MAE、MSE、MAPE、SMAPE、NRMSE 以及有效预测数量 VNP。",
+        "results": "输入表示消融（表 4，零样本）：取整值最优，MAPE 3.01、SMAPE 3.05、NRMSE 0.05；原始值 MAPE 4.23；标准归一化 MAPE 9.43；实例归一化 MAPE 548.36。学习范式与预测策略消融（表 5）：零样本单步 MAE 2063.62、MSE 7,405,313.89、VNP 1182；零样本多步 MAE 1779.88、MSE 9,264,283.10、VNP 1441；微调单步 MAE 534.85、MSE 3,263,720.91、VNP 1440；微调多步 MAE 445.60、MSE 423,562.43、VNP 1441。提示设计消融（表 6）：微调下 CTF MAE 432.83、MSE 402,655.83；iCoT MAE 436.68；基础提示 MAE 445.60；零样本下 GPT-mini 的 CTF MAE 519.12，CoT MAE 537.81；LLaMA 零样本 CoT MAE 13,559.24、VNP 1403；少样本 MAE 3,296.07。温度消融（表 7）：温度 0.0 时 MAE 415.89、MSE 385,195.52 最优，温度 1.9 时 MAE 611.14；相对默认 0.95，确定性解码使 MAE 降低约 3.8%、MSE 降低约 4.8%。对比评估部分（表 8）在提供的节选中被截断，具体数值摘要未提供，需查看全文。",
+        "limitations": "摘要未提供，需查看全文。提供的节选在对比评估表格处被截断，无法确认完整结论与局限讨论。",
+        "relevance": "该论文直接涉及大模型量化：使用 4 比特量化的 LLaMA-3 8B 作为基础模型，属于量化大模型在数值预测任务上的应用研究。与 KV cache 无直接关系，论文未讨论 KV cache 压缩或缓存量化。与长程 Agent / 多步工具调用量化无直接关系：论文的递归多步推理是时间序列自回归预测，不涉及 Agent 工具调用或多步任务规划；论文未开展任何 Agent 实验，也未评估工具调用场景下的量化影响。若将递归多步推理类比为多步生成，其关于零温度解码提升递归预测稳定性的结论可能对多步生成场景有参考价值，但这属于推测，论文本身未验证 Agent 应用。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:47+00:00",
+        "source_hash": "965c59b816f32f97529dc59380999568a28633988a76823a44b02ad42faec11b",
+        "paper_updated": "2026-09-04T15:01:38Z"
+      }
     },
     {
       "id": "2609.04875",
@@ -1581,7 +2037,26 @@
           "evidence": "kv cache, compress, llm"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.04875.png",
+        "source": "https://arxiv.org/html/2609.04875v1/Figures/motivation.png"
+      },
+      "image_checked": "2026-09-11T08:56:50+00:00",
+      "summary": {
+        "title_zh": "无需重启的遗忘：面向有状态大模型智能体的执行状态遗忘",
+        "tldr": "论文指出当前智能体的“遗忘”操作只删除明文记忆记录，而摘要、计划、工具痕迹与 KV cache 中派生的信息仍然保留，因此删除不等于遗忘。作者把运行时建模为确定性转移系统，提出反事实等价意义上的执行状态遗忘，并给出溯源引导的选择性重放方法：定位注入点、裁剪 KV cache 到干净前缀、对净化后的后缀进行重放，从而在理论上达到 T−τ+1 次重算的最优下界，并在多个智能体套件与模型家族上验证其与完全重置等价且重算 token 更少。",
+        "contributions": "论文自述贡献包括：一，提出面向有状态 LLM 智能体的执行状态遗忘问题，用可重建运行时状态上的反事实等价来形式化；二，给出前缀共享引理、可证明污染边界引理、精确拼接定理以及 T−τ+1 最优性；三，提出溯源引导的选择性重放系统，把溯源图、以裁剪作为恢复的检查点、以及副作用安全的重放组合成一个遗忘契约；四，提供诱导、随机与无字符串行为审计，并在三个套件、九个基线和三个模型家族上给出证据，声称所有部署式遗忘方法至少在一项审计上失败，而选择性重放以更低成本匹配完全重置。",
+        "method": "论文把运行时状态 R_t 建模为由模型前向计算与智能体脚手架共同决定的确定性转移系统，遗忘目标 z 在步骤 τ 注入。定义反事实轨迹为从观测流中删除 z 后的轨迹，精确遗忘即把真实最终状态映射到该反事实状态。前缀共享引理说明 t≤τ−1 时真实与反事实状态相同，因此干净前缀可免费复用；污染单调性引理说明缺少 token 级归因时，τ 及之后的产物都不可证明独立，计算只能重放不能编辑。拼接定理证明从 τ−1 的检查点恢复并重放净化后的后缀可精确重建反事实状态，推论给出至少 T−τ+1 次转移调用的下界。系统实现为溯源引导的选择性重放：执行时记录产物级溯源图，遗忘请求时查询注入点与污染闭包，恢复元数据检查点（对 KV cache 做裁剪），然后对后缀进行净化重放，只读或确定性工具从快照重放，有副作用的工具影子执行并去重。",
+        "results": "论文报告：在 LongMemEval、ToolSandbox、AgentDojo 三个套件上，删除持久记忆记录与不遗忘相比泄漏完全不变（any-leak 0.86–1.00）；遗忘指令在六探针诱导审计下泄漏概率为 1.00；源删除仍通过派生摘要与计划泄漏（0.84/0.94），且在行为提取测试中 80% 回合仍按被撤销偏好行动而字符串泄漏为 0。选择性重放在所有审计上与完全重置一致（any-leak 0、CAD 0），重算 token 比完全重置少约 9.3 倍（133 对 1235），比带前缀缓存的完全重置少约 1.5 倍。重算成本随注入步 τ 线性下降，符合 T−τ+1 规律（R²≈1.000）。在匹配种子下选择性重放 450/450 次逐 token 复现完全重置参考；独立种子下未检测到与完全重置自采样下限的差异，但作者说明非显著不等于等价。结果在 Llama-3.1-8B、Qwen2.5-7B、Mistral-7B 上复现。",
+        "limitations": "论文自述局限：保证只覆盖可重建的运行时状态，不覆盖模型参数、已提交的外部副作用或 z 的相关物；重算不能低于 T−τ+1。假设 A2 固定了 τ 之后的观测，因此重放覆盖可快照重放的工具有返回与记忆注入，但不覆盖本会不同的人类回合。除行为套件外审计仍基于字符串，分布性结果是未检测到差异而非等价性证明。此外，论文未在真实长程 Agent 多步工具调用场景中做端到端部署实验，其 Agent 应用含义属于对运行时状态的推测性外推。",
+        "relevance": "论文与大模型量化没有直接关系，未涉及权重量化、激活量化或量化误差分析。与长程 Agent 多步工具调用量化的关系在于：它研究有状态长程智能体的运行时状态管理，包括压缩摘要、明文记忆、待执行工具计划与 KV cache，并给出跨层遗忘契约；其成本分析以重算 token 与转移次数为单位，与推理服务中的 KV cache 复用、前缀缓存和重算开销直接相关。与 KV cache 的关系最紧密：论文把 KV cache 视为智能体状态的一部分，证明干净前缀就是真实与反事实轨迹共享的前缀，因此裁剪 KV cache 即恢复操作，并区分前缀重填与后缀重解码，指出溯源引导的重放可在不增加转移次数的前提下降低 token 级重算成本。论文没有做量化实验，也没有在量化模型上验证这些结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:56:58+00:00",
+        "source_hash": "afbacef29c01147045aaf2f98f3f1a0261c3ca2c6e613a635e666152533a16d5",
+        "paper_updated": "2026-09-04T08:31:40Z"
+      }
     },
     {
       "id": "2609.04852",
@@ -1614,7 +2089,26 @@
           "evidence": "long-context, agent, llm"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.04852.png",
+        "source": "https://arxiv.org/html/2609.04852v1/kvmem_overview.png"
+      },
+      "image_checked": "2026-09-11T08:57:01+00:00",
+      "summary": {
+        "title_zh": "KVMem：在消费级 GPU 上虚拟化百万 token 的 Agent 工作空间",
+        "tldr": "论文提出 KVMem，一种 KV 上下文虚拟化系统，将溢出的 Agent 工作空间历史以分页 KV 状态形式保存在 GPU 显存、主机内存和 NVMe 中，通过步级记忆调度、查询条件化的 KV 检索和分层 KV 管理，在每步构造有界的、与位置一致的执行视图，从而让可寻址工作空间远超模型原生上下文窗口。",
+        "contributions": "论文自述三点贡献：一是将累积的 Agent 上下文识别为可虚拟化的系统资源，区分可寻址工作空间、模型可见执行窗口与 GPU 常驻 KV 集合；二是提出 KVMem，将溢出上下文保存为跨 GPU 显存、主机内存和 NVMe 的可恢复 KV 块，结合步级记忆调度、模型原生注意力空间检索、分层 KV 放置与复用以及位置一致的重物化；三是在三个受控长上下文 Agent 基准上评估，并在 DeepSWE 长程软件工程轨迹上验证 24GB 笔记本 GPU 上 1M token 虚拟工作空间。",
+        "method": "KVMem 将工作空间历史切分为逻辑 KV 块，保留首次处理时计算的 KV 状态，并跨 GPU 显存、主机内存和 NVMe 分层存储。它包含三个机制：步级记忆调度在每个 Agent 步的 prefill 之后、decode 之前更新一次历史工作集，并在整个 decode 期间保持固定；查询条件化 KV 检索用去除位置编码后的 Mean-K 表示对每个块建立紧凑索引，用当前查询在注意力空间打分并全局 softmax 归一化，默认 32 token 块；分层 KV 管理通过仓库视图与执行视图分离、主动换出、检索感知的分层复用、打包与流水线化的 KV 重物化，以及位置一致的 re-RoPE，将选中块映射到紧凑执行视图。实现基于自研 QW3 推理引擎。",
+        "results": "摘要称在 LongMemEval、MemoryAgentBench 和 AgentLongBench 等长上下文 Agent 基准上，KVMem 通常比基于压缩的方法获得更高任务效用和更高推理效率；在 Qwen3.8-27B 的 DeepSWE 长上下文测试中，任务成功率从仅压缩上下文管理的 43.8% 提升到 48.4%；在配备 24GB RTX 5090 Laptop GPU 的笔记本上运行 Qwen3.6/3.8-27B NVFP4 与 MTP，可虚拟化最多 1M token 工作空间，为模型原生 256K 上下文窗口的四倍，单会话生成约 50 tokens/s。表 1 中 LongMemEval-S 的 Full Context 答案准确率为 86.60%，其余方法数值在提供的节选中被截断，摘要未提供，需查看全文。",
+        "limitations": "论文设有讨论与局限章节，但提供的节选未包含其内容，摘要未提供，需查看全文。节选中提到当后备工作空间达到容量上限时，当前原型会回退到将较旧历史压缩为文本，并指出 KV 原生的回收（块选择、合并或压缩）是未来方向。",
+        "relevance": "该论文与大模型量化、长程 Agent 多步工具调用量化、KV cache 均直接相关。它处理 KV cache 的容量与复用问题，将溢出的 KV 状态分页存储并选择性重物化，避免重复 prefill；实验使用 Q8 权重量化与 FP8 KV cache，以及 NVFP4-MTP 量化模型，说明其方法在量化推理配置下运行。对长程 Agent 多步工具调用而言，论文直接针对 Agent 工作空间上下文溢出，并在 DeepSWE 长程软件工程轨迹上评估，属于直接实验结论而非仅推测；但论文未专门研究量化对 KV 检索或重物化精度的影响，相关量化敏感性摘要未提供，需查看全文。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:57:07+00:00",
+        "source_hash": "bc95af106822f476188c544dd86febd67bab9b80826da9bf8efe16915620065f",
+        "paper_updated": "2026-09-04T08:09:59Z"
+      }
     },
     {
       "id": "2609.04778",
@@ -1646,7 +2140,26 @@
           "evidence": "long-context, compress, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.04778.png",
+        "source": "https://arxiv.org/html/2609.04778v1/Fig1.png"
+      },
+      "image_checked": "2026-09-11T08:57:10+00:00",
+      "summary": {
+        "title_zh": "面向移动边缘智能体AI的扩散语言模型：基础、应用与挑战",
+        "tldr": "这是一篇综述，系统梳理扩散语言模型（DLM）作为非自回归生成范式在移动边缘智能体AI中的适用性，围绕延迟、内存、能耗、带宽、隐私与可靠性约束，讨论资源高效架构、训练与推理加速、压缩、边云部署、通信感知服务、IoT与无线应用及评测，并将DLM的双向性、并行精炼、可控性与质量-延迟弹性映射到边缘系统需求。",
+        "contributions": "提出以边缘为导向的DLM视角，将迭代去噪、双向上下文建模、并行token精炼、可控生成与质量-延迟弹性同移动边缘智能需求相连接；统一综述DLM建模基础与轻量架构、高效训练、加速推理、模型压缩等资源高效技术；从仅设备执行到边缘辅助、云边协同、分布式与自适应服务组织边缘DLM部署，并讨论动态无线条件下的通信-计算协同优化；总结DLM在IoT与无线系统中的潜力，综述覆盖能力、交互、部署、安全与可复现性的结构化评测，并指出面向DLM原生移动边缘智能的开放挑战。",
+        "method": "本文为综述性研究，方法为文献梳理与分类框架构建。论文按DLM基础（自回归模型、掩码语言模型、连续与离散扩散模型、DLM生成流水线）、资源高效DLM（轻量扩散Transformer、块扩散与混合自回归-扩散、稀疏与MoE扩散、自回归到扩散适配与联合训练、PEFT、联邦扩散训练、并行解码、少步扩散、推测解码、模型压缩）、边缘与IoT智能体部署、通信受限下的自适应服务、IoT与无线应用、评测指标与基准、开放挑战等章节组织内容，并通过表格对比代表性模型与已有扩散相关综述的覆盖差异。",
+        "results": "摘要与节选主要给出文献层面的定性归纳与部分引用性数字。节选列出对比表：LLaDA 8B Base与Llama3 8B Base在MMLU为65.9对65.4、GSM8K为70.3对48.7、MATH为31.4对16.0、HumanEval为35.4对34.8、HumanEval-FIM为73.8对73.3；Dream 7B与Qwen2.5 7B及Llama3 8B在GSM8K为77.2对78.9与55.3、MATH为39.6对41.1与18.0、HumanEval为57.9对56.7与35.4；Dream 7B在规划类任务Countdown为16.0对6.2与3.7、Sudoku为81.0对21.0与0.0、Trip planning为17.8对3.6与8.7；D2F-Dream-Base-7B与D2F-LLaDA-Instruct-8B相对自回归基线在GSM8K为119.9对48.0与52.7 tokens/s、HumanEval为81.6对50.9与55.4 tokens/s。论文明确说明这些数字来自原始论文各自评测设置，属于文献级汇总而非统一受控基准。节选还列出若干边缘部署相关数字，如MobileDiffusion设备端延迟0.2秒、SnapFusion移动端延迟1.96秒、SnapGen++移动端延迟1.8秒、PTQD的LDM-4显存占用1603.35 MB FP32与430.06 MB W8A8等，均引自相应工作。摘要未提供本文自身的实验数据，需查看全文。",
+        "limitations": "本文为综述，摘要未提供其自身的实验验证或统一基准结果，需查看全文。节选明确指出所引用的定量对比来自不同原始论文的各自评测设置，因此只能作为紧凑的文献级汇总，而非受控统一基准。论文也指出DLM在边缘落地仍受迭代去噪、模型规模、采样稳定性、缓存兼容性与硬件感知并行解码等制约，且移动边缘智能体场景下的作用仍研究不足。关于长上下文状态管理、拆分推理、可信执行、多模态接地与可复现基准等被列为开放问题。",
+        "relevance": "与大模型量化的关系：论文将模型压缩与量化列为资源高效DLM的重要方向，节选提到扩散专用训练后量化（PTQD）可将权重压缩到低比特表示，并提到按需量化可在电池与带宽限制下自适应调整权重压缩与无线传输；同时指出量化是边缘多模态DLM实际部署的依赖条件之一。与长程Agent/多步工具调用量化的关系：论文将DLM的双向上下文、并行精炼、自适应去噪与结构化可控性映射到智能体的命令修复、全局规划、工具调用与API命令生成、安全可执行计划等需求，并讨论长上下文记忆与智能体状态管理、拆分推理与通信感知服务等开放问题；但节选未给出针对多步工具调用或长程智能体任务的专门量化实验，相关联系多为面向Agent应用的推测与系统级讨论。与KV cache的关系：论文指出自回归LLM依赖随上下文增长的KV cache，长上下文推理会带来显著内存压力，而DLM可并行预测多个token、避免因果KV解码，但需迭代去噪；同时提到块扩散等混合架构支持KV cache与变长文本生成，Fast-dLLM通过KV cache加并行解码加速DLM推理，说明KV cache在DLM边缘部署中仍是关键工程因素。论文未开展专门的Agent实验，节选中关于智能体应用的论述属于对DLM特性的应用性推测，而非直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:57:18+00:00",
+        "source_hash": "b38e67c39b213afdf909d7d4c7de502be92d84ce428c16d524dcc1593f3e4f6f",
+        "paper_updated": "2026-09-04T06:16:49Z"
+      }
     },
     {
       "id": "2609.04748",
@@ -1697,7 +2210,12 @@
         "generated_at": "2026-09-09T08:03:44+00:00",
         "source_hash": "58df557b562c85b43661f59dbe422eba79c2274d8cc7cc1a039e1009bad6e448",
         "paper_updated": "2026-09-04T05:27:34Z"
-      }
+      },
+      "image": {
+        "file": "2609.04748.jpg",
+        "source": "https://arxiv.org/html/2609.04748v1/author_photo.jpg"
+      },
+      "image_checked": "2026-09-11T08:57:21+00:00"
     },
     {
       "id": "2609.04724",
@@ -1730,7 +2248,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.04724.png",
+        "source": "https://arxiv.org/html/2609.04724v1/motivation_pc.png"
+      },
+      "image_checked": "2026-09-11T08:57:27+00:00",
+      "summary": {
+        "title_zh": "FlexPosit：面向LLM推理加速器的可调分数精度",
+        "tldr": "该论文提出FlexPosit，一种基于Posit数值格式与位串行脉动阵列协同设计的LLM推理加速器，将精度变为可在4至8位之间分数级调节的硬件旋钮，在通道级量化下以接近FP16的精度实现更高吞吐与更低能耗。",
+        "contributions": "论文自述贡献包括：一，首个在统一位串行脉动阵列中实现硬件级分数精度调节的LLM推理加速器，通过全局精度控制单元动态调整位串行深度；二，分布感知的Posit权重量化，并提出SerialPosit这一采用符号-幅值编码、便于位串行解码的Posit变体；三，与脉动阵列列结构对齐的敏感度引导混合精度分配；四，跨多个LLM的评估，声称相对BitMoD最高1.8倍吞吐、1.2倍更低能耗，相对OliVe为1.5倍吞吐、2.0倍更低能耗。",
+        "method": "算法上采用仅权重量化、激活保持FP16，对每个通道使用权2的幂缩放因子并按SQNR选择最优缩放，固定Posit指数位es=1；混合精度以与脉动阵列列数成整数倍的通道窗口为粒度，通过逐窗口升级并测量困惑度变化（ΔPPL）进行敏感度排序，再按虚拟平均精度预算分配位宽。硬件上采用输出驻留位串行脉动阵列，含全局精度控制单元、SerialPosit解码器、4路MAC簇与统一PE、每列重缩放单元，精度变化仅在通道窗口边界发生。",
+        "results": "在WikiText-2上，固定4位通道级Posit(4,1)平均ΔPPL为1.57，FlexPosit在4.1位时降至0.64，匹配BitMoD时平均ΔPPL为0.35；不同模型达到与BitMoD 4位相当精度所需虚拟精度从4.1位到5.0位不等。下游MMLU与HellaSwag精度随平均精度提升而恢复。FP8激活量化下相对排序保持稳定。硬件方面，在等效32×16阵列的等面积条件下，FlexPosit相对BitMoD最高1.8倍吞吐、1.2倍更低能耗，相对OliVe为1.5倍吞吐、2.0倍更低能耗；阵列面积与功耗中PE计算加流水寄存器占约98.88%面积与98.27%功耗。",
+        "limitations": "论文仅对权重做量化，激活保持FP16（另有一组FP8激活实验），未涉及KV cache量化；评估限于困惑度与MMLU、HellaSwag等下游任务，未包含长上下文或Agent类多步工具调用实验；硬件结果基于16纳米综合与周期级模拟，未给出流片实测；摘要未提供，需查看全文以确认更多限制。",
+        "relevance": "该论文与大模型量化直接相关，属于权重低比特量化与混合精度量化的算法-硬件协同设计，提出分数级可调精度以在4至8位间权衡精度与效率。与KV cache量化的关系：论文明确只量化权重、激活为FP16或FP8，未涉及KV cache量化，因此对KV cache压缩没有直接实验结论。与长程Agent或多步工具调用量化的关系：论文未进行任何Agent、工具调用或长程推理实验，其精度-吞吐权衡对Agent场景的适用性属于推测，需额外验证；若Agent负载对权重精度敏感，其分数精度调节思路可能具有参考价值，但论文本身未提供证据。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:57:34+00:00",
+        "source_hash": "12b62cfa3876d06b6418111fd7e75356561b428d1372cbb97fb3b44dce0adada",
+        "paper_updated": "2026-09-04T04:48:35Z"
+      }
     },
     {
       "id": "2609.04102",
@@ -1768,7 +2305,22 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image_checked": "2026-09-11T08:57:34+00:00",
+      "summary": {
+        "title_zh": "通过潜在空间蒸馏压缩流式神经音频编码器",
+        "tldr": "本文提出一种潜在空间蒸馏方法，将流式音频分词器的编码器压缩约2.8倍：学生编码器仅回归教师编码器在量化前的逐帧潜在表示，用一层仿射层对齐宽度差异，无需标签、无需微调，即可在六组教师-学生配对中的五组保持教师1.9%以内的相对词错误率，并比同容量独立训练的编码器相对提升3.9%。",
+        "contributions": "提出以量化前潜在表示为监督目标的音频分词器蒸馏方法，该目标位于量化器与语言模型桥接投影之前，因此同一配方同时适用于离散token接口和连续接口，也适用于仅预训练的分词器和与语言模型联合训练的分词器；学生只训练编码器，不实例化教师的转录与重建解码器；在2.8倍压缩下无需微调即可接近教师精度，并优于同容量独立训练模型。",
+        "method": "教师编码器冻结，仅使用其编码器部分；学生编码器较窄但更深，输出经一层仿射层映射到教师宽度；损失为掩码平方误差，对通道求和、对帧平均，只在有效帧上计算；教师量化器保留但不接收梯度，两个解码器完全排除；学生权重使用EMA，训练用AdamW、峰值学习率1e-3、逆平方根调度、10k预热、批大小1280、500k步、float32。",
+        "results": "在2.8倍压缩下，六组教师-学生配对中有五组学生相对WER退化不超过1.9%，且均未微调；阶段0三组分别相对退化+0.4%、+1.9%、+0.8%，部分测试集上学生优于教师；阶段1中J1相对退化1.5%，J2学生平均WER 11.68优于教师12.33（相对提升5.3%），J3相对退化7.7%；蒸馏学生比同容量独立训练模型相对提升3.9%（平均WER 11.90对12.36）；学生WER主要受教师WER影响，接口类型不影响蒸馏迁移效果，阶段0比阶段1更可复用且更可预测。",
+        "limitations": "摘要与节选未提供完整的消融细节，例如未比较L1损失与平方误差、未隔离位置归约方式的影响；阶段1结果波动较大，J3出现最大退化；研究配置与生产配置不同，论文数字均为研究配置下的公开基准结果；未提供Agent相关实验。",
+        "relevance": "本文与大模型量化的关系是间接的：它压缩的是音频分词器编码器而非大语言模型本身，但动机来自稀疏激活大模型（IFP）下DRAM预算共享，量化器与语言模型桥接接口被保留而不蒸馏。与长程Agent/多步工具调用量化无直接关系，论文未涉及Agent或工具调用实验。与KV cache无直接关系，论文未讨论KV cache压缩或缓存量化，仅涉及编码器参数压缩与潜在表示蒸馏。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-11T08:57:39+00:00",
+        "source_hash": "767d1c164922a234399eb66f775c75ae5ad3827963e8ba011849d7b3992d1c4a",
+        "paper_updated": "2026-09-03T17:07:52Z"
+      }
     },
     {
       "id": "2609.04098",
