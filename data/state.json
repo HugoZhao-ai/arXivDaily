@@ -23,9 +23,14 @@
     }
   },
   "last_run": {
-    "at": "2026-09-12T08:39:03+00:00",
-    "status": "ok",
-    "errors": [],
+    "at": "2026-09-13T09:38:02+00:00",
+    "status": "partial",
+    "errors": [
+      "topic:llm-quantization: TimeoutError: The read operation timed out",
+      "topic:agent-quantization: HTTPError: HTTP Error 429: Too Many Requests",
+      "topic:long-context: HTTPError: HTTP Error 429: Too Many Requests",
+      "researcher:song-han: TimeoutError: The read operation timed out"
+    ],
     "warnings": [],
     "paper_count": 229
   }
