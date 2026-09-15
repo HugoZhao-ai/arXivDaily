@@ -23,12 +23,13 @@
     }
   },
   "last_run": {
-    "at": "2026-09-14T09:55:53+00:00",
+    "at": "2026-09-15T09:29:44+00:00",
     "status": "partial",
     "errors": [
-      "topic:llm-quantization: HTTPError: HTTP Error 429: Unknown Error",
-      "topic:long-context: HTTPError: HTTP Error 429: Unknown Error",
-      "researcher:song-han: HTTPError: HTTP Error 429: Unknown Error"
+      "topic:llm-quantization: TimeoutError: The read operation timed out",
+      "topic:agent-quantization: HTTPError: HTTP Error 429: Too Many Requests",
+      "topic:long-context: HTTPError: HTTP Error 429: Too Many Requests",
+      "researcher:song-han: HTTPError: HTTP Error 429: Too Many Requests"
     ],
     "warnings": [],
     "paper_count": 229
