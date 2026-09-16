@@ -2,6 +2,1418 @@
   "schema_version": 1,
   "papers": [
     {
+      "id": "2609.17475",
+      "title": "JustFit: 200K-Token LLM Serving on a 24 GiB Laptop with Just-in-Time State Management",
+      "abstract": "Capable open-weight models make local coding and reasoning attractive, but their context and execution state strain laptop memory. We present JustFit, an MLX-based inference runtime that combines KVExec for compressed KV execution, PhaseSwap for component residency, and StateTrans for state-preserving serving transitions. These mechanisms fuse reconstruction and coordinate just-in-time materialization and release, independently of model-weight quantization. In full-execution capacity tests on a 24 GiB M4 Pro MacBook running Qwen3.8-27B MXFP4, three independent runs complete 196,608 input and 16,384 output tokens, increasing completed single-request context from the mlx-vlm baseline's 30,720 positions to 212,992 (6.93x); a separate two-request run retains 229,376 positions in aggregate. In separate performance tests, a 32K-input, 64-output probe reaches 19.11 tokens/s, and a repeated 32K+6K workload has a median peak process footprint of 16,374 MiB. The integrated runtime answers 29 of 30 AIME 2026 problems correctly, showing how compact state and lifetime-aware execution expand local serving capacity while supporting extended generated reasoning.",
+      "authors": [
+        "Yuhua Chen"
+      ],
+      "published": "2026-09-15T17:15:48Z",
+      "updated": "2026-09-15T17:15:48Z",
+      "version": 1,
+      "categories": [
+        "cs.AI",
+        "cs.PF"
+      ],
+      "url": "https://arxiv.org/abs/2609.17475",
+      "pdf_url": "https://arxiv.org/pdf/2609.17475",
+      "first_seen": "2026-09-16T09:18:22+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-16T09:18:30+00:00",
+      "summary": {
+        "title_zh": "JustFit：在24 GiB笔记本上以即时状态管理实现200K Token的大语言模型服务",
+        "tldr": "JustFit是一个基于MLX的推理运行时，通过KVExec压缩KV执行、PhaseSwap组件驻留和StateTrans跨请求状态保持三种机制，在24 GiB M4 Pro笔记本上运行Qwen3.8-27B MXFP4模型，将单请求完成上下文从基线30,720位置提升到212,992位置（6.93倍），并在AIME 2026上答对29/30题。",
+        "contributions": "论文自述三点贡献：第一，KVExec将基于TurboQuant的四比特存储与页原生访问、融合逆重建和层作用域求值结合；第二，PhaseSwap与StateTrans协调组件所有权与请求准入、推测和回收；第三，评估确立了200K规模的完成容量、单请求极限的可重复性、跨上下文长度的吞吐量以及压缩状态下的端到端推理。",
+        "method": "JustFit在MLX上运行固定MXFP4权重的Qwen3.8-27B，模型含16个全注意力层和48个Gated DeltaNet层。KVExec采用TurboQuant的归一化旋转MSE分支做四比特KV存储，通过页寻址、融合逆重建（反量化、质心查找、逆Hadamard旋转、范数恢复）和求值边界限制浮点操作数生命周期。PhaseSwap按所有权租约管理组件驻留，例如在中间预填充阶段卸载LM head并在最终预填充/首logits边界前重建。StateTrans分离队列到达、准入与执行，在安全执行边界释放页面引用，支持MTP与自回归批处理之间的转换。",
+        "results": "在24 GiB M4 Pro MacBook上，三次独立单请求运行完成196,608输入加16,384输出token，共212,992位置，相对mlx-vlm基线30,720位置提升6.93倍，中位解码4.985 tokens/s，采样峰值20,960至20,977 MiB。双请求配置聚合保留229,376位置，聚合吞吐12.55 tokens/s，峰值20,310 MiB。短输出探针在8K、32K、64K输入下分别达24.31、19.11、14.59 tokens/s。固定32K+6K工作负载最终配置达11.54 tokens/s、峰值16,374 MiB。AIME 2026答对29/30，生成696,834 token，token加权15.04 tokens/s，最大进程占用19,043 MiB。",
+        "limitations": "论文自述为单平台系统研究，最小采样保护余量仅23 MiB，日常服务需要更多预留。重复容量输入与AIME推理回答不同评估问题，均未测量仓库级任务成功率或压缩频率。开发研究合并了多项改动而非逐项消融，未报告匹配的PhaseSwap开关对照。极端上下文下速度仍是主要限制，单请求极限运行冷预填充约48分钟、生成4.99 tokens/s、完整尝试约103分钟。82.314毫秒前缀测试并非200K热延迟测量。历史运行缺少完整的GPU核心数、macOS、Python和MLX版本清单，限制精确复现。",
+        "relevance": "该论文与大模型量化直接相关：它固定MXFP4权重，聚焦KV cache的四比特量化（TQ4）与执行，报告每位置16,640字节对FP16的65,536字节，约3.94倍缩减，并讨论KIVI、KVQuant、TurboQuant等KV量化工作。与长程Agent/多步工具调用量化的关系：论文在引言中明确以仓库级编码和工具使用会话为动机，引用Hermes要求每活跃工具会话至少64,000上下文token，并强调前缀复用避免每轮重算，但论文未进行Agent任务实验，未测量多步工具调用成功率或Agent场景下的量化效果，相关联系属于应用动机层面的推测而非直接实验结论。与KV cache的关系：KV cache压缩与页管理是论文核心，KVExec直接消费压缩KV，StateTrans管理跨请求的KV状态保持与页面引用释放。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:18:35+00:00",
+        "source_hash": "13c515701fdbb1538a165a364213baed57272b29c2173c193382d537ece0aa9d",
+        "paper_updated": "2026-09-15T17:15:48Z"
+      }
+    },
+    {
+      "id": "2609.17346",
+      "title": "Where Should a Document Live: Context, Representations, or Parameters?",
+      "abstract": "To answer questions outside of their pre-training data, large language models (LLMs) need access to new information, which can be presented in the context window as documents, encoded into the model's parameters, or injected as latent representations. However, each of these methods comes with different efficiency, cost, and performance trade-offs, with no single winner. We present a controlled comparison of representation-based (KV-cache based) and parametric (fine-tuning-based) adaptation methods on five knowledge-intensive benchmarks. We show that in the oracle setting, Cartridges (KV) are the most accurate injection method at nearly every storage budget, outperforming parametric methods by 10 points. Compaction (KV) matches Cartridges only at low compression rates, lagging behind the parametric methods by 10 points at rates higher than $50\\times$. In the more realistic multi-document retrieval scenario, Cartridges are the only method that matches in-context learning (ICL), leading the parametric methods by 29 points and Compaction by 15 points. Nonetheless, Cartridges are also the only method, besides full fine-tuning and large MLP adapters, that suffers from catastrophic forgetting, i.e., a 6% performance degradation on control benchmarks, with 13% in coding.",
+      "authors": [
+        "Nathanaël Carraz Rakotonirina",
+        "Momchil Hardalov",
+        "Gonzalo Iglesias",
+        "Adrià de Gispert"
+      ],
+      "published": "2026-09-15T15:47:02Z",
+      "updated": "2026-09-15T15:47:02Z",
+      "version": 1,
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.17346",
+      "pdf_url": "https://arxiv.org/pdf/2609.17346",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv-cache, compress, language model"
+        }
+      ],
+      "related_only": true,
+      "image_checked": "2026-09-16T09:18:35+00:00",
+      "summary": {
+        "title_zh": "文档应该存放在哪里：上下文、表示还是参数？",
+        "tldr": "该论文对基于表示（KV cache）与基于参数（微调）的知识注入方法在五个知识密集型基准上进行了受控比较。在单文档（oracle）设定下，Cartridges（KV）在几乎每个存储预算下最准确，比参数方法高约10分；Compaction（KV）仅在低压缩率下与Cartridges相当，压缩率高于50倍时落后参数方法约10分。在多文档检索设定下，Cartridges是唯一能与上下文学习（ICL）相当的方法，领先参数方法29分、领先Compaction 15分；但Cartridges也是除全量微调和大型MLP适配器外唯一出现灾难性遗忘的方法，控制基准平均下降6%，代码任务下降13%。论文未涉及Agent或多步工具调用实验。",
+        "contributions": "论文声称的主要贡献包括：对多种知识注入方法进行整体、受控的比较，涵盖基于表示的方法（Cartridges、Compaction）和基于参数的方法（LoRA、MLP适配器、全量微调），并在单文档和多文档设定下评估知识密集型任务；研究适配器（KV cache或权重）大小如何影响模型性能和灾难性遗忘，量化每种方法的权衡；表明在多文档检索设定下适配器组合在特定条件下可行但仍具挑战性。",
+        "method": "论文比较三类方法：上下文方法（No context、ICL）、基于表示的方法（Cartridges、Compaction）和基于参数的方法（LoRA、MLP适配器、全量微调）。设定分为单文档（oracle，仅编码金标文档）和多文档（检索top-k块并组合适配器：表示方法拼接KV cache，参数方法平均合并权重）。训练使用Self-Study合成数据，由GPT-OSS 120B生成问题、目标模型生成答案，目标函数为蒸馏（最小化教师与学生KL散度）。主模型为Qwen3-8B，并在Gemma-3-12B上验证。评估使用LongHealth、QASPER、QuALITY、T2-RAGBench/FinQA、TechQA五个基准，以及GSM8K、HumanEval、IFEval、MMLU四个控制基准衡量遗忘。",
+        "results": "单文档固定适配器大小下，No context平均24.9，ICL 73.6，Compaction 73.4，Cartridges 70.6，LoRA 64.5，MLP适配器62.2，全量微调59.8。随压缩率增加，Compaction急剧下降（FinQA从2倍时66.4降至20倍时19.3；LongHealth从87.7降至100倍时46.5），Cartridges基本稳定（LongHealth 81.1→77.3，QuALITY 78.6→76.4，TechQA 75.8→76.9）。多文档设定下，k从1增至10时Cartridges在LongHealth上升（70.8→83.2），而Compaction和合并参数适配器单调下降（Compaction LongHealth 72.9→56.3，TechQA 65.4→26.4；LoRA TechQA从57.4在k=1降至23.5在k=3，QuALITY从70.8降至44.2在k=10；FinQA合并从34.5在k=1降至4.9在k=3）。联合训练在加入干扰文档后优于合并。遗忘方面，Compaction不遗忘，Cartridges平均下降6%（HumanEval高压缩下下降16分），LoRA保持能力，大型MLP适配器退化（GSM8K从约92降至约60），全量微调严重退化。成本方面，表示方法10倍token缩减带来约100倍prefill FLOPs减少；Qwen3-8B在H200上加载10个20倍压缩cartridge（6K KV token，850 MiB）需30–50 ms，而prefill等效120K原始token需400–800 ms。",
+        "limitations": "论文自述局限：仅研究两个中等规模指令微调模型（Qwen3-8B和Gemma-3-12B），未测试更大模型是否保持相同权衡；仅研究知识密集型任务，未覆盖推理或编码等技能获取；多文档分析依赖单一检索后组合流程（参数适配器均值合并、表示方法提示拼接），组合结论应理解为这些标准合并算子的行为；所有方法训练于相同的self-study合成数据，相对性能与数据及生成器质量相关。",
+        "relevance": "该论文与大模型量化、长程Agent/多步工具调用量化、KV cache直接相关。它系统比较了KV cache类表示方法（Cartridges、Compaction）与参数高效微调方法（LoRA、MLP适配器、全量微调）在知识注入中的存储-性能-遗忘权衡，涉及KV cache压缩率、存储预算匹配、推理成本（prefill FLOPs、加载时间）等量化相关维度。但论文未进行任何Agent或多步工具调用实验，也未评估量化本身；其关于Agent应用的启示（如多文档组合、KV cache复用、遗忘风险）属于对论文结论的推测，而非论文直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:18:42+00:00",
+        "source_hash": "7320af22744ed5bba39424eeb0b24be7eae644366a7054ad063fd2f4862c4e9e",
+        "paper_updated": "2026-09-15T15:47:02Z"
+      }
+    },
+    {
+      "id": "2609.17248",
+      "title": "Video-HolmesV2: Can MLLMs Reason with Spatio-Temporal Audio-Visual Evidence in Long Videos?",
+      "abstract": "Multimodal Large Language Models have demonstrated impressive video understanding, yet their ability to reason over long-form narratives is often masked by visual-centric evaluations and inefficient context processing. Existing benchmarks over-rely on visual heuristics while marginalizing auditory cues, effectively reducing models to \"silent observers\" that bypass genuine cross-modal reasoning. Moreover, standard dense sampling creates an evidence-context trade-off: increasing frames to capture evidence inevitably leads to attention distraction and token explosion. To bridge these gaps, we present Video-HolmesV2, a novel benchmark designed for Deep Audio-Visual Coupling. Unlike previous works, it enforces an Evidence-Based Evaluation, requiring models to justify answers with precise spatio-temporal audio-visual evidence, thereby reducing confounding effects of guessing and hallucinated evidence. To support this, we introduce: (1) a Multi-Model Cross-Verification pipeline to ensure task rigor; (2) a Spatio-temporal Evidence-Aware Metric for fine-grained calibration. Furthermore, we propose an Audio-Text Guided Token Compression framework. By fusing task intent with auditory anchors, our method distills high-value reasoning cues to mitigate long-context noise. In our evaluation, even strong proprietary models achieve below 60% accuracy, while our approach outperforms comparable open-source omni-models.",
+      "authors": [
+        "Zhaoyang Wei",
+        "Zipeng Wang",
+        "Yushe Cao",
+        "Chenhui Qiang",
+        "Shuaibing Cheng",
+        "Xuesong Yang",
+        "Sen Nie",
+        "Bowen Jiang",
+        "Wenchao Ding",
+        "Yanchao Hao",
+        "Zheng Wei",
+        "Xuehui Yu",
+        "Zhenjun Han"
+      ],
+      "published": "2026-09-15T14:30:00Z",
+      "updated": "2026-09-15T14:30:00Z",
+      "version": 1,
+      "categories": [
+        "cs.CV"
+      ],
+      "url": "https://arxiv.org/abs/2609.17248",
+      "pdf_url": "https://arxiv.org/pdf/2609.17248",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "long-context, compress, language model"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.17248.png",
+        "source": "https://arxiv.org/html/2609.17248v1/annotation_revised.png"
+      },
+      "image_checked": "2026-09-16T09:18:45+00:00"
+    },
+    {
+      "id": "2609.17198",
+      "title": "TIO-Former: Ultra-Lightweight 6-Directional ToF-Inertial Odometry for Nano-UAVs via a Streaming Causal Transformer",
+      "abstract": "Autonomous nano-UAV navigation requires accurate ego-motion estimation under stringent size, weight, power, and computing (SWaP-C) constraints, where visual sensors and LiDARs exceed payload limits, optical flow degrades in low-texture scenes, and inertial-only state estimation is susceptible to accumulated drift. While multi-zone time-of-flight (ToF) arrays provide a lightweight metric complement, 6-DoF estimation from merely 384 ranges per frame is challenged by invalid returns, anisotropic observability, and temporal computational scaling. We propose TIO-FORMER, a camera-free, optical-flow-free, and mapless range-inertial odometry framework driven by an IMU and an ultra-lightweight (15 g) payload of six orthogonal 8 x 8 ToF arrays. Our frontend pairs consecutive range grids with a bilateral gated difference, while IMU-guided cross-attention dynamically routes directional features conditioned on platform kinematics. A Streaming Causal Transformer couples an uncompressed Local KV cache with compressed Chunk-FIFO memory, maintaining bounded inference cost and memory footprint independent of flight duration. In real-flight evaluations, TIO-FORMER reduces open-loop position error by 54.4% compared to nano-UAV optical flow and by 66.4%-89.1% over learned inertial baselines. We also evaluate performance across multiple environments and robustness under severe sensing degradation. Deployed on an edge RISC-V companion computer, TIO-FORMER achieves a P95 latency of 10.466 ms and peak resident memory of 6.324 MiB (less than 5 percent system RAM), demonstrating that sparse range sensing provides practical geometric anchoring for resource-constrained micro-aerial robots. Code is available at https://github.com/Ly041021/TIO-Former.",
+      "authors": [
+        "Yang Liu",
+        "Yifan He",
+        "Wenhao Zhao",
+        "Xiangyu Mo",
+        "Yang Xu",
+        "Hao Wei",
+        "Mingze Ma",
+        "Huan Li",
+        "Yifan Wu",
+        "Zipeng Dai",
+        "Xin Zhou",
+        "Fei Gao"
+      ],
+      "published": "2026-09-15T13:54:06Z",
+      "updated": "2026-09-15T13:54:06Z",
+      "version": 1,
+      "categories": [
+        "cs.RO"
+      ],
+      "url": "https://arxiv.org/abs/2609.17198",
+      "pdf_url": "https://arxiv.org/pdf/2609.17198",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, compress, transformer"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.17198.png",
+        "source": "https://arxiv.org/html/2609.17198v1/figures/system_overview.png"
+      },
+      "image_checked": "2026-09-16T09:18:54+00:00",
+      "summary": {
+        "title_zh": "TIO-Former：面向纳米无人机的超轻量六向ToF-惯性里程计，基于流式因果Transformer",
+        "tldr": "该论文提出TIO-Former，一种无需相机、无需光流、无需地图的六自由度距离-惯性里程计框架，仅依靠IMU与六个正交8×8 ToF阵列（总重15克）实现纳米无人机自运动估计。方法包含可靠性门控的距离前端、IMU引导的方向性交叉注意力，以及两级流式因果Transformer（未压缩局部KV缓存加压缩Chunk-FIFO记忆），使每步推理开销与内存占用不随飞行时长增长。真实飞行实验中，开环位置误差较商用光流降低54.4%，较学习式惯性基线降低66.4%至89.1%，并在RISC-V边缘芯片上实现P95延迟10.466毫秒、峰值内存6.324 MiB的实时部署。",
+        "contributions": "提出一种仅由IMU与六个正交8×8 ToF阵列（ToF传感器总质量15克）驱动的无相机、无光流、无地图六自由度距离-惯性里程计框架；提出可靠性门控的距离前端与IMU引导的方向性交叉注意力模块，并配合两级流式Transformer，使每步推理开销与内存占用不随飞行时长增长；完成纳米无人机全栈机载部署，在超过4.5公里、四个不同室内场景的真实飞行基准上评估，在低功耗RISC-V SoC上实现实时边缘执行，并显著优于商用光流与学习式惯性基线。",
+        "method": "系统以15 Hz接收六个正交8×8 ToF网格，并以200 Hz接收同步IMU数据。前端对连续距离网格构造确定性可靠性掩码，进行因果插补，并计算由前后两帧可靠性共同门控的双边门控差分，形成三通道输入。采用权重共享的二维CNN提取各视图局部特征，加入可学习视图嵌入后经跨视图Transformer建模全向空间依赖。以三层一维CNN编码IMU特征作为查询，通过多头交叉注意力对六个方向ToF令牌进行运动条件加权。时间骨干为流式因果Transformer，每层维护容量C的未压缩局部KV缓存，缓存满时驱逐最旧G个键值对并池化投影后入队容量S的Chunk-FIFO记忆，因果掩码防止未来信息泄漏。训练采用多时域轨迹监督，包括逐步位姿回归、多尺度SE(3)/SO(3)流形约束、全局路径长度正则与残差平滑。",
+        "results": "在真实飞行测试集上，TIO-Former位置ATE为0.118±0.007米，较Crazyflie Flow降低54.4%，较学习式惯性基线降低66.4%至89.1%；EDR为7.18±0.37%。四个室内场景（走廊、办公室、食品间、会议室）中ATE为0.091至0.158米，均为最低。方向性视图丢失下，交叉注意力的平均相对ATE增幅为57.19%，而拼接为151.84%；五视图丢失时交叉注意力ATE为0.307米、失败率22.12%，拼接为0.569米、失败率53.31%。随机退化增强下，30%与50%缺失率时ATE分别为0.154米与0.174米，70%极端缺失时ATE为0.245米、失败率12.0%，未增强基线为0.760米、74.3%。消融显示因果插补与双边门控差分降低ATE 25.3%，多时域监督降低25.8%；KV8+FIFO4在12令牌检索预算下优于KV12与未投影平均池化，较未压缩KV24精度提升11.3%且检索令牌减半。机载部署P95延迟10.466毫秒，峰值RSS 6.324 MiB（占128 MiB RAM的4.94%），5000周期内零截止超时。",
+        "limitations": "论文结论指出有限感知范围与几何退化仍是开环估计的挑战，未来工作将探索轻量回环检测与自监督预训练以提升长期鲁棒性。摘要与节选未提供关于计算资源下限、不同ToF传感器型号泛化性、室外或强光环境表现、以及长期运行漂移上界的进一步分析，需查看全文。",
+        "relevance": "该论文与大模型量化的直接关联有限，其核心是面向纳米无人机的轻量级距离-惯性里程计，而非大语言模型压缩。与长程Agent/多步工具调用量化的关系属于间接类比：论文提出的两级流式记忆（未压缩局部KV缓存加压缩Chunk-FIFO）在固定每步计算与内存预算下维持长时程上下文，这一KV缓存压缩与有界记忆设计思路可类比长程Agent中KV cache管理与上下文压缩问题，但论文并未涉及Agent、工具调用或多步推理实验。与KV cache的关系较为直接：论文明确采用未压缩局部KV缓存与压缩Chunk-FIFO记忆相结合的两级结构，在固定容量下实现有界推理成本与内存占用，并给出KV8、KV12、KV24、KV32及KV8+FIFO4的精度与延迟对比，可作为KV缓存压缩策略在资源受限流式场景下的实证参考。需注意，论文未开展任何大模型量化或Agent实验，上述关联均为对应用场景的推测，而非论文直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:01+00:00",
+        "source_hash": "e7bbb93072a461d8c27c7d51fd8205b8d677048c883c61b485955f4d10386a13",
+        "paper_updated": "2026-09-15T13:54:06Z"
+      }
+    },
+    {
+      "id": "2609.17193",
+      "title": "End-to-End Latency-Minimizing and Load-Balanced Request Scheduling for Edge LLM Inference in Agentic AI Services",
+      "abstract": "Large language model (LLM)-powered agentic AI services increasingly demand low-latency inference, motivating the deployment of LLMs across distributed edge servers. However, heterogeneous communication and computing capabilities, together with dynamically evolving inference states, make the edge server selection for each incoming request time-varying and tightly coupled across slots. In this paper, we investigate an online request scheduling framework for edge LLM inference that jointly minimizes long-term average end-to-end latency and regulates workload distribution across heterogeneous edge servers. Two main challenges arise in this context. First, conventional latency models cannot accurately capture the fine-grained dynamics of multi-stage LLM execution. Second, the latency consequence of a scheduling decision is observed only after request completion, making immediate decision evaluation difficult. To address these challenges, we develop a cross-slot inference model that captures transmission, prefill, iteration-level decoding, and key-value (KV) cache evolution for each diverse request, and characterize server workload through a KV cache memory-time consumption metric. We propose the LYREO approach that transforms the long-term load-balancing constraint via Lyapunov optimization and employs reward redistribution with sequencebased return prediction to convert delayed outcomes into timely learning signals for earlier decisions. Simulations under various configurations demonstrate that LYREO consistently achieves lower latency and more balanced load distribution than representative learning-based and heuristic baseline schemes.",
+      "authors": [
+        "Zhen Li",
+        "Jun Cai",
+        "Haoran Gao",
+        "An Li",
+        "Tan Li"
+      ],
+      "published": "2026-09-15T13:50:54Z",
+      "updated": "2026-09-15T13:50:54Z",
+      "version": 1,
+      "categories": [
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.17193",
+      "pdf_url": "https://arxiv.org/pdf/2609.17193",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, agentic, language model"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.17193.png",
+        "source": "https://arxiv.org/html/2609.17193v1/SystemModel.png"
+      },
+      "image_checked": "2026-09-16T09:19:04+00:00",
+      "summary": {
+        "title_zh": "面向智能体AI服务中边缘LLM推理的端到端时延最小化与负载均衡请求调度",
+        "tldr": "论文针对边缘部署LLM的智能体AI服务，提出LYREO在线请求调度方法，通过细粒度建模传输、预填充、逐迭代解码与KV缓存演化，利用Lyapunov优化处理长期负载均衡约束，并用LSTM奖励重分配将延迟反馈转化为及时学习信号，仿真显示其端到端时延和负载均衡偏差优于基线。",
+        "contributions": "提出细粒度边缘LLM推理模型，覆盖传输、批处理、预填充和逐迭代解码，并显式跟踪KV缓存占用演化；基于KV缓存轨迹定义归一化KV缓存内存-时间消耗指标以刻画服务器负载；提出LYREO方法，用Lyapunov虚拟队列满足长期负载均衡约束，并用LSTM奖励重分配、序列截断与值自举处理延迟反馈；在多种配置下评估，报告端到端时延和负载均衡偏差相对基线有一致改善。",
+        "method": "将请求调度建模为在线优化问题，最小化长期平均端到端时延并约束服务器间负载偏差；用Lyapunov优化将长期约束转化为每时隙漂移加惩罚目标；将问题建模为序列马尔可夫决策过程，状态包含请求属性与服务器带宽、预填充/解码吞吐、积压请求数、近期负载和虚拟队列长度，动作为请求到边缘服务器的分配；奖励包含完成请求时延、负载偏差虚拟队列项和GPU内存惩罚；采用LSTM预测截断加自举的回报目标，计算重分配奖励，再用PPO优化调度策略与价值网络。",
+        "results": "摘要称仿真在多种配置下LYREO相比代表性学习型和启发式基线持续取得更低时延和更均衡负载分布；HTML节选列出收敛性能、分布比较、负载均衡消融、系统参数影响和超参数敏感性等评估小节，但未给出具体数值。摘要未提供，需查看全文。",
+        "limitations": "摘要未提供，需查看全文。HTML节选未给出完整实验设置、基线细节、统计显著性或真实系统部署验证；论文未报告面向长程Agent或多步工具调用的实验。",
+        "relevance": "论文直接建模并优化边缘LLM推理中的KV cache演化与内存-时间负载，KV cache是核心状态与约束；其调度面向智能体AI服务的重复LLM调用，但未涉及大模型量化，也未开展长程Agent或多步工具调用量化实验；对Agent应用的关联属于论文动机层面的推测，而非直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:08+00:00",
+        "source_hash": "9e7522c1f6f97a14300940cab44e13a1c27159bd77b23c00ebeb86c2af67053f",
+        "paper_updated": "2026-09-15T13:50:54Z"
+      }
+    },
+    {
+      "id": "2609.17008",
+      "title": "FlexEE: Self-Speculative and KV-Compatible Early Exiting for Offloading-Aware LLM Inference",
+      "abstract": "Large language model (LLM) inference is often constrained by both computation and memory, especially in offloading-based deployments where model weights are transferred across memory hierarchies during autoregressive decoding. In this setting, reducing the number of executed layers can lower per-token latency while also avoiding costly weight movement. Motivated by this observation, we present FlexEE, an early exiting framework for resource-constrained and offloading-based LLM inference. FlexEE makes early exiting practical for LLM decoding through layer-wise exit supervision for reliable intermediate-layer prediction, self-speculative decoding over a Top-K local vocabulary for low-cost exit decisions, and dynamic hidden state management for KV-cache-correct and memory-aware execution. Across generative and downstream tasks, FlexEE enables efficient early exit with minimal accuracy degradation, delivering up to 1.27$\\times$/3.16$\\times$ and 1.25$\\times$/2.83$\\times$ end-to-end speedups on Llama2-7B and Llama3-8B under 0\\%/50\\% weight offloading, respectively.",
+      "authors": [
+        "Qihu Xie",
+        "Ziwei Li",
+        "Yi Kang"
+      ],
+      "published": "2026-09-15T11:20:23Z",
+      "updated": "2026-09-15T11:20:23Z",
+      "version": 1,
+      "categories": [
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.17008",
+      "pdf_url": "https://arxiv.org/pdf/2609.17008",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv-cache, efficient, language model"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.17008.png",
+        "source": "https://arxiv.org/html/2609.17008v1/FlexEE_new_cropped.png"
+      },
+      "image_checked": "2026-09-16T09:19:12+00:00",
+      "summary": {
+        "title_zh": "FlexEE：面向卸载感知LLM推理的自推测与KV兼容提前退出方法",
+        "tldr": "FlexEE是一个面向资源受限与权重卸载场景的LLM提前退出框架，通过层间退出监督、基于Top-K局部词表的自推测退出预测以及动态隐藏状态管理，在保持接近稠密解码精度的同时减少执行层数与权重搬运，在Llama2-7B和Llama3-8B上实现最高1.27倍（无卸载）和3.16倍（50%卸载）的端到端加速。",
+        "contributions": "第一，系统分析LLM中间层语义解码能力远弱于最终层，据此设计免训练、基于自推测的提前退出预测器，采用两阶段设计：自推测层提取紧凑候选词表，退出层在该缩减空间内预测，兼顾精度与低开销。第二，提出动态隐藏状态管理以解决自回归提前退出中的KV cache冲突，保留并复用关键隐藏状态以维持跨token语义连续性，避免为所有剩余层复制或重建KV cache，从而适配卸载式推理。第三，在多种生成与下游任务上评估，显示FlexEE在保持接近稠密解码性能的同时实现有效提前退出与端到端加速。",
+        "method": "FlexEE基于层间提前退出监督（沿用LayerSkip预训练检查点）提升中间层可解码性。退出特征选择Top Prob与Gap，通过离线统计在WikiText上按目标置信度τ=0.99推导逐层阈值。预测器采用自推测两阶段设计：选取一个中间层作为自推测层，保留其Top-K token作为局部词表（Llama2取K=30，Llama3取K=80），后续退出层仅在该局部候选集上做LM head投影，计算局部Top-1概率与局部gap，两者均超过预计算阈值时触发退出。系统层面提出动态隐藏状态管理：token在中间层退出时保留该层隐藏状态，生成下一token时在退出层之后的第一层将其与当前表示联合计算，待下一层KV cache更新完成后清除缓存隐藏状态，从而避免为后续层加载权重。实现基于FlexGen与HuggingFace Transformers，在CPU-GPU卸载环境下集成自推测层与退出层。",
+        "results": "精度方面，表1显示Llama2-7B从第8/16层退出时平均退出层为22.8/24.9，Llama2-13B为28.3/30.8，Llama3-8B为24.3/26.2，对应名义执行深度减少约28.8%/22.2%、29.3%/23.0%、24.1%/18.1%，多数任务性能接近稠密解码。表2显示FlexEE在WikiText、Alpaca等任务上PPL与FLOPs优于ShortGPT、AdaInfer、SpecEE、LayerSkip等基线。吞吐方面，表3显示卸载比例从0%升至75%时，Llama2-7B加速从1.27倍升至3.29倍，Llama2-13B从1.25倍升至2.68倍，Llama3-8B从1.25倍升至3.10倍；摘要报告50%卸载下Llama2-7B为3.16倍、Llama3-8B为2.83倍。在HuggingFace上相对基线最高1.18倍加速。消融显示自推测Top-K词表相比全词表可在更早退出下保持可比性能且吞吐更高。开放生成方面，表4显示AlpacaEval-LC对稠密解码的胜率接近50%，MT-Bench分数接近，平均退出层约24.91（Llama2-7B）与26.18（Llama3-8B）。批推理方面，表5显示batch size增大时提前退出收益减弱，小batch与卸载场景收益最大。",
+        "limitations": "论文自述局限：FlexEE依赖带层间提前退出监督的预训练模型，因此受底层模型质量影响；且主要受益于小batch或内存受限服务场景，此时跳过层才能转化为避免片外权重传输。此外，批推理中随batch size增大收益减弱，因为需等批次内所有样本退出后才能跳过后续层。摘要与节选未提供关于长程Agent或多步工具调用场景的实验，相关适用性需查看全文或另行验证。",
+        "relevance": "与LLM量化的关系：论文将量化列为相关但正交的加速方向，未提出新的量化方法，也未在量化模型上做实验，因此与量化仅有间接互补关系。与长程Agent/多步工具调用量化的关系：论文未涉及Agent、多步工具调用或工具调用量化，未提供相关实验，其小batch、卸载感知的加速特性可能对端侧Agent推理有潜在价值，但这属于推测而非论文结论。与KV cache的关系：论文直接处理提前退出导致的KV cache不一致问题，提出动态隐藏状态管理，避免为所有剩余层复制或重建KV cache，并在长序列下报告更低困惑度与更少推理时间，这是与KV cache最直接相关的贡献。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:19+00:00",
+        "source_hash": "0525ea0760ddd6d2dd984566a5a6a31e7b2a97d06193e41e68a92d61f1dc1fca",
+        "paper_updated": "2026-09-15T11:20:23Z"
+      }
+    },
+    {
+      "id": "2609.16689",
+      "title": "Efficient Quantization-Aware Distillation with Cross-Modal Alignment for Edge Vision-Language Models",
+      "abstract": "Large-scale vision-language models (VLM) such as CLIP enable strong open-vocabulary reasoning, yet deploying these capabilities on resource-constrained edge devices remains challenging. EdgeVL addresses this problem by distilling CLIP representations into lightweight multi-modal encoders and applying quantization-aware training (QAT) for efficient Open-Vocabulary Classification (OVC) on edge hardware. However, its two-stage optimization applies different objectives for distillation and QAT, and contrastive learning is performed within the quantized student space, which can result in inconsistent optimization and reduced training efficiency. Moreover, identical supervision across RGB and non-RGB modalities may lead to modality imbalance. We propose a unified framework for quantized semantic distillation tailored to edge deployment. By jointly optimizing distillation and quantization within a unified teacher-anchored framework, our method ensures consistent training under quantization, suppressing hard negatives and enlarging decision margins. Additionally, we design a lightweight cross-attention adapter that enhances non-RGB representations through RGB-guided semantic transfer, narrowing the modality gap. Extensive experiments demonstrate consistent improvements on non-RGB modalities while maintaining deployment efficiency.",
+      "authors": [
+        "Jinwoo Jeon",
+        "GyuYeop Do",
+        "Yubin Lim",
+        "Nam-Joon Kim",
+        "Hyun Gon Ryu",
+        "Hyuk-Jae Lee",
+        "Byung-Jun Lee"
+      ],
+      "published": "2026-09-15T06:12:54Z",
+      "updated": "2026-09-15T06:12:54Z",
+      "version": 1,
+      "categories": [
+        "cs.CV"
+      ],
+      "url": "https://arxiv.org/abs/2609.16689",
+      "pdf_url": "https://arxiv.org/pdf/2609.16689",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.16689.png",
+        "source": "https://arxiv.org/html/2609.16689v1/1_a.png"
+      },
+      "image_checked": "2026-09-16T09:19:22+00:00",
+      "summary": {
+        "title_zh": "面向边缘视觉语言模型的高效量化感知蒸馏与跨模态对齐",
+        "tldr": "论文提出一种统一的量化感知蒸馏框架，将蒸馏与量化训练合并为单阶段，并以冻结的CLIP教师嵌入作为锚点进行对比监督，同时引入轻量跨注意力适配器用RGB特征增强非RGB表示。在EuroSAT和ScanNet上，非RGB与多模态准确率相比EdgeVL基线有所提升，训练时间减少约81%。",
+        "contributions": "论文自述三点贡献：一是将蒸馏与量化统一为单阶段，采用教师锚定的对比监督，增大决策间隔并提升训练效率，训练速度最高提升5.3倍；二是提出轻量跨模态适配器，通过RGB引导的跨模态交互增强非RGB表示；三是在EuroSAT和ScanNet上，对所评估的骨干网络同时提升非RGB与多模态准确率并减少训练时间。",
+        "method": "方法以冻结的CLIP图像编码器为教师，学习支持RGB与非RGB输入的量化学生编码器。训练使用无标注的同步多模态传感器对，并利用教师伪标签。蒸馏目标由三部分组成：关系知识蒸馏RKD（距离关系与角度关系，使用Huber损失）、教师锚定的对称InfoNCE对比损失，以及基于伪标签的监督对比损失；仅保留教师置信度超过阈值τ的样本。此外引入单层多头跨注意力适配器，以非RGB token为查询、RGB token为键和值，经残差连接后池化得到增强的非RGB嵌入。总目标对RGB、非RGB和跨模态三种归一化嵌入分别施加蒸馏损失，学生编码器与适配器在量化感知训练中联合优化，教师保持冻结。",
+        "results": "在EuroSAT和ScanNet上，8比特量化下，所提方法在DAT-T、Swin-T、ViT-S三种骨干上均提升非RGB准确率，EuroSAT最高提升4.7个百分点，ScanNet最高提升4.9个百分点；RGB准确率多数提升，但Swin-T在EuroSAT上从67.1%小幅降至66.7%。多模态准确率在EuroSAT和ScanNet上均有一致提升。效率方面，训练时间从12小时降至2.25小时，减少81%，约5.3倍加速；但启用跨模态适配器后吞吐下降，ViT-S从461降至351图像/秒（下降23.9%），Swin-T从415降至359图像/秒（下降13.5%）。跨数据集泛化中，在ScanNet训练后测试NYUv2和SUN-RGBD，ViT-S和DAT-T有提升，但Swin-T在SUN-RGBD的非RGB、RGB准确率及两个未见数据集的多模态准确率低于EdgeVL，说明泛化收益依赖骨干。消融显示仅用RKD效果差，加入InfoNCE显著提升，再加入监督对比项取得最高RGB与非RGB准确率；低比特下6比特性能基本不变，4比特下降但仍保持超过50%的非RGB准确率；移除适配器与跨模态监督后，EuroSAT上准确率增益为1.3至2.2个百分点，该消融测量的是适配器与跨模态监督的联合贡献。",
+        "limitations": "论文自述的局限包括：跨数据集泛化收益依赖骨干，Swin-T在SUN-RGBD及多模态准确率上低于EdgeVL；4比特量化下准确率下降；跨模态适配器带来推理吞吐下降，并增加约9MB量化后参数，约为所报告56MB Swin-T骨干的16%；适配器消融同时移除适配器与跨模态监督，无法单独区分适配器结构的作用。此外，摘要与节选未提供更细粒度的失败案例分析、不同教师模型的影响、以及更大规模数据集上的验证，需查看全文。",
+        "relevance": "该论文与大模型量化直接相关：它研究量化感知训练（QAT）与蒸馏的统一，在8比特及6/4比特低比特设置下评估量化对语义嵌入几何的影响，并提出以冻结教师嵌入为锚点抑制量化噪声导致的表示漂移。与KV cache无直接关系，论文未涉及KV cache量化或缓存压缩。与长程Agent或多步工具调用量化无直接关系：论文任务是边缘设备上的开放词汇图像分类，未涉及Agent、多步工具调用或序列决策。论文没有Agent实验，因此对Agent应用的适用性只能视为推测：其教师锚定对比监督与低比特鲁棒性思路或可迁移到需要保持语义一致性的量化场景，但论文未做任何Agent或工具调用实验验证。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:28+00:00",
+        "source_hash": "2723ce62c782bd9b15bdaec57f82663fc6f86f674507bc751436d632d501a0d7",
+        "paper_updated": "2026-09-15T06:12:54Z"
+      }
+    },
+    {
+      "id": "2609.16599",
+      "title": "Large Language Models in the Loop: A Stability- and Network-Aware Survey in Networked Control, Cyber-Physical, and Multi-Agent Systems",
+      "abstract": "Modern networked control systems (NCSs), cyber-physical systems (CPSs), and complex multi-agent network systems (CNSs) increasingly rely on large language models (LLMs) for high-level decision-making. However, the slow, stochastic nature of LLMs directly conflicts with the strict stability and safety guarantees required by these physical systems. This survey presents a unified analysis of how LLMs can be admitted into the control loop of NCS, CPS, and CNS without compromising closed-loop guarantees. We organize this around a core principle: the LLM operates as a slow supervisor adjusting high-level goals and constraints, while a fast, certified inner loop maintains physical stability. Under this framework, LLM integration maps directly to classical networked control challenges, where inference latency acts as delay, API failures as packet dropouts, tokenization as quantization, and hallucinations as bounded disturbances. We assess current developments across all these three domains, highlighting that rising model capabilities are frequently accompanied by a drop in formal safety assurances. Finally, we propose concrete future research directions, identifying the widespread lack of formal stability proofs as the field's central open problem.",
+      "authors": [
+        "Haiping Du",
+        "Linping Chan"
+      ],
+      "published": "2026-09-15T03:50:12Z",
+      "updated": "2026-09-15T03:50:12Z",
+      "version": 1,
+      "categories": [
+        "eess.SY",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.16599",
+      "pdf_url": "https://arxiv.org/pdf/2609.16599",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization",
+        "agent-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        },
+        {
+          "type": "topic",
+          "label": "Agent 长程任务量化",
+          "evidence": "quantiz, agent, language model"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-16T09:19:28+00:00",
+      "summary": {
+        "title_zh": "大语言模型在环：网络化控制、信息物理系统与多智能体系统中的稳定性与网络感知综述",
+        "tldr": "这是一篇综述，提出将大语言模型作为慢速监督者、由快速且经过认证的内环维持物理稳定性的统一框架，把LLM集成中的推理延迟、API失败、分词和幻觉分别映射为网络化控制中的延迟、丢包、量化和有界扰动，并指出当前研究普遍缺乏形式化稳定性证明。",
+        "contributions": "提出一个统一分析框架，用于讨论如何在不破坏闭环保证的前提下将大语言模型引入网络化控制系统、信息物理系统和复杂多智能体网络系统的控制回路；围绕“LLM作为慢速监督者调整高层目标与约束，快速且经过认证的内环维持物理稳定性”这一核心原则组织分析；将LLM集成问题映射到经典网络化控制挑战；评估三个领域的当前进展；提出未来研究方向，并将形式化稳定性证明的普遍缺失列为该领域的核心开放问题。",
+        "method": "综述方法：以统一框架对网络化控制系统、信息物理系统和复杂多智能体网络系统中的LLM集成进行跨领域分析，采用类比映射方式，将推理延迟对应为延迟、API失败对应为丢包、分词对应为量化、幻觉对应为有界扰动，并据此评估现有发展。",
+        "results": "摘要未提供，需查看全文。摘要仅指出，随着模型能力提升，形式化安全保证往往随之下降，并强调该领域普遍缺乏形式化稳定性证明。",
+        "limitations": "摘要未提供，需查看全文。摘要本身未报告实验数据、具体系统验证结果或定量评估。",
+        "relevance": "该综述与大模型量化、长程Agent/多步工具调用量化、KV cache的关系属于概念层面的类比与推测，而非直接实验结论。摘要明确将分词类比为量化，因此与量化主题存在术语映射关系；将推理延迟类比为延迟、API失败类比为丢包，这与长程Agent或多步工具调用中因延迟和调用失败累积误差的问题相关；但摘要未提及KV cache，也未开展任何Agent实验，因此不能据此推断其在Agent量化或KV cache方面的直接结论。",
+        "source_kind": "abstract",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:31+00:00",
+        "source_hash": "8b8f10b658524ff79d8d1cd1c6576321db6c373a071e4b9a046de7e7fe412af6",
+        "paper_updated": "2026-09-15T03:50:12Z"
+      }
+    },
+    {
+      "id": "2609.16391",
+      "title": "Where Post-Training Quantization Breaks Text Embedders: A Measured Map Across Four Embedder Families",
+      "abstract": "Weight-only post-training quantization is the cheapest way to shrink a retrieval embedder, and the received advice for applying it -- protect the embedding table, allocate bits by module sensitivity, prefer a ranking-aware objective over weight reconstruction -- was carried into LLM quantization largely intact. We test that advice on retrieval embedders directly, quantizing five checkpoints from four architecture families across a grid of bit widths and group sizes, and isolating the embedding, attention and feed-forward blocks at each width. Every heuristic fails to transfer as stated. The embedding table never emerges as the dominant isolated protection priority in any family, despite being the largest tensor in several of them. Module sensitivity does not survive as a transferable ordering: at INT4/g16 the spread between modules is too small to allocate against, at INT3 the ordering becomes family-dependent and joint damage stops being the sum of its parts, and at INT2 comparable reconstruction error accompanies retention ranging from 1.3 to 65.9 percent of full precision. A cheap reconstruction proxy is useful for screening uniform bit widths but substantially less reliable for choosing which tensors to protect; its apparent strength across the whole grid is a range-extension artifact. A distilled 109M student at INT3 holds 78.04 NDCG@10 in 68.4 MB and dominates the extreme-PTQ arm of its own 0.6B teacher, 297.9 MB at 64.46, on both size and quality -- but only inside the task it was distilled for. Sizes are byte counts of files that exist rather than arithmetic estimates, and the measurement repository carries the byte provenance for every one of them.",
+      "authors": [
+        "Hyojung Han"
+      ],
+      "published": "2026-09-14T21:57:47Z",
+      "updated": "2026-09-14T21:57:47Z",
+      "version": 1,
+      "categories": [
+        "cs.IR",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.16391",
+      "pdf_url": "https://arxiv.org/pdf/2609.16391",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-16T09:19:31+00:00",
+      "summary": {
+        "title_zh": "后训练量化在何处破坏文本嵌入器：跨四个嵌入器家族的实测地图",
+        "tldr": "该论文在四个架构家族、五个检索嵌入器检查点上系统测量了仅权重的后训练量化，发现INT4/g16近似NDCG中性但排序并不稳定，INT3出现模块敏感度但排序随家族变化且模块代价不可加，INT2出现强烈家族依赖的崩塌，且权重重建误差只能预测均匀量化轴而不能预测模块分配轴。",
+        "contributions": "论文声称的贡献包括：一，在四个嵌入器家族、五个检查点、三个检索语料上测量出三个量化区间，INT4/g16近似NDCG中性且单模块最大影响为1.01点，INT3敏感度出现但排序随家族反转且模块代价不可加，INT2在重建误差0.315至0.337聚集时保留率从1.3%到65.9%不等；二，证明权重重建误差在均匀量化轴上预测良好（r=0.80至0.92），但在模块轴上预测很差（固定操作点下r约-0.04至0.42），而模块轴正是混合精度分配器搜索的轴；三，测量到NDCG中性并不等于排序不变，INT4/g16下13%至22%的top-10被替换，但被驱逐文档几乎都是非相关文档，相关文档重叠保持在0.944至0.970；四，提供配对基座与微调控制、提示契约、字节账本和留出隔离等可复现性控制。",
+        "method": "论文对五个检查点（Qwen3-Embedding-0.6B、其任务微调衍生SkillRet-Embedding-0.6B、EmbeddingGemma-300M、BGE-M3、E5-base-v2）在比特宽度与分组大小的网格上做仅权重分组仿射非对称min-max后训练量化，尺度与零点存为FP16，激活保持FP32，并在SciFact、NFCorpus和SkillRet三个检索语料上以NDCG@10评估，保留逐查询分数。论文还做单模块量化臂、对称量化对照、池化干预、嵌入表单独INT2量化等探针，并使用逐查询配对自助法区间。",
+        "results": "论文报告：INT4/g16下量化嵌入表、注意力投影或前馈块单独最多损失1.01 NDCG点，符号不一致，四十五个模块单元中十个排除零但四个为正；INT3下模块敏感度出现，Qwen谱系前馈块最贵，BGE-M3与E5注意力主导，EmbeddingGemma随分组大小切换，交互残差在INT3/g16从-2.35到+0.39不等；INT2下重建误差聚集在0.315至0.337的检查点保留率从1.3%到65.9%；仅量化嵌入表到INT2仍保留97.6%至100.5%，包括三个全模型INT2保留低于2%的检查点；权重重建误差在均匀轴上r=0.80至0.92，在模块轴上固定操作点下r约-0.04至0.42；INT4/g16下13%至22%的top-10被替换，但相关文档重叠0.944至0.970，Recall@10变化小于一点；配对控制显示任务微调在双语料平均上最多改变1.0点，单臂最多2.28点，且基座检查点已存在INT3下降与INT2崩塌；池化干预显示均值池化不充分，必要性未决。",
+        "limitations": "论文自述局限包括：所有质量数字为FP32算术下的伪量化，不构成整数内核延迟或端到端部署精度声明；未测试分词行为本身；INT2崩塌的成因未被解释，池化干预只能否定充分性而不能判定必要性；架构、参数量、预训练目标和训练数据在家族间同时变化，不能声称架构导致崩塌；对称量化器缺陷导致四个检查点的三元与对称臂被撤回且未重测；E5-base-v2缺少排序保持臂测量；部分交互残差在崩塌检查点上因地板效应为正，作者不解读其符号；SkillRet对微调检查点为域内而对基座为域外，保留率比较并非完全同条件。",
+        "relevance": "该论文直接研究文本嵌入器的仅权重后训练量化，与大模型量化高度相关，因为它检验了从生成式LLM量化继承来的模块敏感度分配、嵌入表保护和重建误差代理等假设在检索嵌入器上是否成立。与长程Agent或多步工具调用量化的关系是间接的：论文在引言中提到嵌入器在Agent系统中位于每一轮的关键路径上，但论文没有做任何Agent实验，也没有测量多步工具调用或长程Agent场景下的量化影响，因此对Agent应用的推论属于推测而非论文直接实验结论。与KV cache的关系是论文未涉及KV cache量化，其量化对象是嵌入器权重，激活保持FP32，因此不提供KV cache量化的直接证据。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:38+00:00",
+        "source_hash": "22da384b1690a68e8f1089106185cf333f58fb00eef0fde570adad39ab841180",
+        "paper_updated": "2026-09-14T21:57:47Z"
+      }
+    },
+    {
+      "id": "2609.16161",
+      "title": "LLM Inference in a Flash!",
+      "abstract": "Large Language Models (LLMs) have shown impressive capabilities across a range of natural language processing tasks, and LLM inference has emerged as a critical workload for enabling downstream applications. The demands of serving LLM inference are becoming increasingly challenging as requests shift toward longer sequences and heavier inference, driven by retrieval-augmented generation, inference-time compute scaling, and long-context applications. Additionally, these challenges are compounded by hardware trends, as memory capacity and communication bandwidth are not scaling as fast as increases in workload complexity. Compute-in-Flash is a promising solution to address memory bandwidth limitations by moving computation close to memory, and to exploit the large capacity of SSD technologies. However, it is challenging to deploy LLMs on these systems as they lack support for high-precision floating point operations and have limited write endurance. In our work, we aim to address these challenges by designing inference algorithms to enable LLM inference on Flash compute-in-memory devices. We present an end-to-end integer-only quantization approach to eliminate expensive floating-point computations. To address the limited write endurance, we design a dictionary-based KV cache compression strategy based on sparse dictionary coding that represents each KV vector as a linear combination of static dictionary vectors. These algorithmic improvements enable us to exploit the benefits of Compute-in-Flash for both model weights and KV cache, and to minimize expensive data transfer operations. Across Llama-3.1-8B and Qwen-2.5-7B, our combined method exhibits limited accuracy degradation while reducing dynamic KV cache traffic by 15$\\times$.",
+      "authors": [
+        "Sebastian Zhao",
+        "Minseo Kim",
+        "Coleman Hooper",
+        "Luca Manolache",
+        "Michael W. Mahoney",
+        "Yakun Sophia Shao",
+        "Kurt Keutzer",
+        "Amir Gholami"
+      ],
+      "published": "2026-09-14T18:04:30Z",
+      "updated": "2026-09-14T18:04:30Z",
+      "version": 1,
+      "categories": [
+        "cs.LG"
+      ],
+      "url": "https://arxiv.org/abs/2609.16161",
+      "pdf_url": "https://arxiv.org/pdf/2609.16161",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization",
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        },
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.16161.png",
+        "source": "https://arxiv.org/html/2609.16161v1/main_teaser.png"
+      },
+      "image_checked": "2026-09-16T09:19:41+00:00",
+      "summary": {
+        "title_zh": "LLM Inference in a Flash!（闪存内计算上的大语言模型推理）",
+        "tldr": "论文面向闪存内计算（Compute-in-Flash/CIM）硬件，提出端到端纯整数（INT8/INT16/INT32）量化推理方案与基于静态过完备字典的 KV cache 稀疏编码压缩方案，以规避闪存对浮点运算支持弱、写入耐久性有限的问题；在 Llama-3.1-8B 与 Qwen-2.5-7B 上报告约 15 倍动态 KV cache 流量压缩且精度损失有限，并用解析系统模型给出相对 DRAM 基线的延迟/能耗收益估计。",
+        "contributions": "1）设计端到端纯整数量化策略，消除 LLM 推理中的浮点计算，包括注意力与非线性算子（Softmax、RMSNorm、SiLU/SwiGLU），以避免浮点卸载；2）提出基于稀疏字典编码的 KV cache 压缩方法，用静态、常驻闪存的字典对每个 KV 向量做稀疏编码，减少写入流量并利用闪存容量与内部读带宽，主机只处理轻量元数据；3）给出系统级解析模型，量化在真实 CIM 约束下的延迟与能耗收益。",
+        "method": "量化方面：权重与激活量化为 INT8（W8A8），采用 SmoothQuant 式激活平滑与沿隐藏维的分组量化（组大小 128）；非线性算子用二阶多项式近似（含 IntSiLU 以支持 SwiGLU），Softmax 与 RMSNorm 输入按 token 重新量化为 INT16，并用右移/左移避免 INT32 溢出，RMSNorm 用基于 Newton–Raphson 的整数平方根，归一化用定点倒数与 32 位乘加移位实现。KV cache 方面：每层、每 key/value 流训练一个过完备字典（M=32768 个原子），训练时用非参数化投影式稀疏编码替代编码器、只优化解码器（字典），训练后对字典做逐张量 INT8 量化；推理时用投影式贪心追踪（Algorithm 1，仅做 D^T r 投影与残差更新，不做最小二乘重拟合）把 KV 向量编码为稀疏码；维护全精度局部窗口（W=128）与压缩上下文两部分，窗口满时按 U=32 批量压缩最旧 token；注意力在字典分数域直接计算（Q D_K^T 与稀疏码聚合，再经 D_V 得到 value 贡献），不做完整 KV 物化；并采用查询感知的层次稀疏（K_low=3 粗筛、top-10% token 细化到 K_high=16）。系统建模：用 Python 解析模型比较 NPU+DRAM 基线（B1 无压缩、B2 加字典压缩）与 CIM-SSD 方案（S1 系数在控制器 SRAM、S2 系数在 DRAM），建模 Llama-3.1-8B、batch size 1 的自回归解码，含计算/传输代价原语与重叠模型。",
+        "results": "整数量化消融（Llama-3.1-8B，WikiText-2 困惑度）：FP16 基线 7.5454；逐张量 W8A8 为 7.6525；加 SmoothQuant 与分组量化（g=128）为 7.5511；直接加整数非线性近似出现 NaN；再加 INT16 重新量化后最终为 7.5803，与 FP16 基线相差 0.0349。KV 压缩消融（LongBench 平均分）：完整 FP16 KV cache 为 44.07（1×）；K=16 稀疏编码为 44.61（4×）；加层次稀疏为 44.56（15×）。端到端（整数量化+字典 KV 压缩）：Llama-3.1-8B 平均 43.65（15×），Qwen-2.5-7B 平均 44.23（15×），论文称保留约 99% 的 FP16 全 KV 基线分数、平均下降不到 1 分。系统级建模（Llama-3.1-8B，batch size 1）：1K 上下文 B1 为 183.7 ms/101.8 J，B2 为 190.4 ms/108.2 J，S1 为 54.1 ms/37.4 J，S2 为 59.9 ms/37.8 J；256K 上下文 B1 为 631.5 ms/354.5 J，B2 为 217.4 ms/135.1 J，S1 为 208.4 ms/40.9 J，S2 为 143.5 ms/52.5 J。摘要与贡献中给出的 3.1×/2.7×（短上下文）与 4.4×/6.8×（长上下文）延迟/能耗节省对应 S2 配置。",
+        "limitations": "论文自述局限：一是研究只聚焦 LLM 推理的生成（decode）阶段，计算密集的 prefill 阶段更难高效映射到 CIM 平台（其总峰值算力通常低于 CPU/GPU），如何同时高效映射 prefill 与 decode 是未来工作；二是 Value 字典在追踪（转置访问）与注意力计算（非转置访问）中访问方式不同，为同时获得两者的 CIM 收益，假设存储两份 Value 字典（一份转置、一份非转置）。此外，系统级延迟/能耗结论来自解析模型而非真实硬件实测；KV 压缩比按每步解码需加载的动态内存计算，未计入字典本身占用。",
+        "relevance": "与量化：论文核心之一就是面向 CIM 硬件的端到端纯整数量化（W8A8、分组量化、INT16 重新量化、整数多项式非线性），属于大模型量化方向，但目标是消除浮点而非仅压缩权重。与 KV cache：提出基于静态过完备字典的 KV cache 稀疏编码压缩，报告约 15 倍动态 KV cache 流量压缩，并采用查询感知层次稀疏降低读 I/O，与 KV cache 压缩/稀疏注意力方向直接相关。与长程 Agent/多步工具调用量化：论文正文只在引言中把 agent 列为 LLM 推理的下游应用之一，未做任何 Agent 或多步工具调用实验，也未评估工具调用场景下的量化误差累积；因此其与长程 Agent 量化的关系属于潜在应用推测（长上下文与 KV cache 压力对 Agent 类长序列负载同样存在），论文本身没有给出 Agent 实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:49+00:00",
+        "source_hash": "7dec7c84507e79e93381c6c0333fec0b44348d03a6bf733e37376346918599a7",
+        "paper_updated": "2026-09-14T18:04:30Z"
+      }
+    },
+    {
+      "id": "2609.15810",
+      "title": "VC-Attention: Value Smoothing and Softmax Casting for Low-bit Attention",
+      "abstract": "Diffusion Transformers deliver state-of-the-art video generation, but their long spatiotemporal sequences make attention the dominant deployment cost, and a deployable low-bit kernel must be accurate and fast. Accuracy is limited by outliers: a block's quantization scale is set by its largest entries, leaving typical entries confined to a narrow range of representable values. Prior work smooths queries and keys, but value outliers follow no fixed channel or spatiotemporal structure and remain the dominant source of output error. Speed is limited by softmax: low-bit Tensor Cores accelerate only the two matrix multiplications, so the high-precision exponential between them becomes the longest pipeline stage on datacenter GPUs. We propose VC-Attention, a training-free low-bit attention framework that addresses both by pairing Value smoothing with a fused probability Cast. V-Smooth reorders value tokens by lightweight online clustering, so the tokens in a hardware block quantize well together. It quantizes only the residual after subtracting the block mean, and restores that mean from the row sum the online softmax already maintains. ExpCast-FP8 maps log-domain scores directly to E4M3 probability codes with one fused multiply-add, eliminating the FP32 exponential and the format conversion. We implement VC-Attention for B200, B300, H200, RTX PRO 6000, and RTX 5090. Across Wan2.2, LongCat-Video, HunyuanVideo-1.5, and MiniMax-H3, VC-Attention improves fidelity over low-bit baselines, speeds up the attention kernel over BF16 FlashAttention-4 by 1.46-1.59x on datacenter Blackwell and Hopper and by 2.3-3.6x on workstation cards, and generates a clip 1.13-1.19x and 1.36-1.70x faster end to end.",
+      "authors": [
+        "Xingyang Li",
+        "Dongyun Zou",
+        "Shining Zhang",
+        "Jiacheng Chen",
+        "Haocheng Xi",
+        "Lvmin Zhang",
+        "Jun-Yan Zhu",
+        "Song Han",
+        "Zhekai Zhang",
+        "Yujun Lin",
+        "Muyang Li"
+      ],
+      "published": "2026-09-14T16:17:35Z",
+      "updated": "2026-09-14T16:17:35Z",
+      "version": 1,
+      "categories": [
+        "cs.CV"
+      ],
+      "url": "https://arxiv.org/abs/2609.15810",
+      "pdf_url": "https://arxiv.org/pdf/2609.15810",
+      "first_seen": "2026-09-16T09:18:29+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [
+        {
+          "id": "song-han",
+          "status": "name-match"
+        }
+      ],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, transformer"
+        },
+        {
+          "type": "researcher",
+          "label": "韩松",
+          "evidence": "作者名匹配，机构身份待核验"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.15810.png",
+        "source": "https://arxiv.org/html/2609.15810v1/Figures/teaser/f-000.png"
+      },
+      "image_checked": "2026-09-16T09:19:52+00:00",
+      "summary": {
+        "title_zh": "VC-Attention：面向低位注意力的值平滑与Softmax直写",
+        "tldr": "论文提出 VC-Attention，一种免训练的低位注意力框架，用于视频扩散 Transformer。它包含两个机制：V-Smooth 通过在线 k-means 对 value token 重排，使同一硬件块内的 token 更相似，只量化减去块均值后的残差，并在在线 softmax 递推中恢复均值；ExpCast-FP8 用一次融合乘加把 log 域分数直接写成 E4M3 概率码，省去 FP32 指数和格式转换。作者在 B200、B300、H200、RTX PRO 6000、RTX 5090 上实现，并在 Wan2.2、LongCat-Video、HunyuanVideo-1.5、MiniMax-H3 上评测，报告了保真度提升和注意力核加速。",
+        "contributions": "提出免训练的低位注意力框架 VC-Attention，同时针对 value 量化误差和 softmax 标量路径两个瓶颈；提出 V-Smooth，用在线 k-means 对 value token 分组重排并做块去均值，只量化残差，均值在在线 softmax 递推中恢复；提出 ExpCast-FP8，把 log 域分数经一次融合乘加直接映射为 E4M3 概率码，并给出行级误差界 3.64% 加下溢尾部；实现融合 CuTe/CUDA 核，并在多种 GPU 与四个视频 DiT 上评测。",
+        "method": "V-Smooth 对每个 batch 和 head 的 value token 做在线 k-means 得到标签，按标签排序得到置换 π，同时作用于 K 和 V，保持输出不变；把置换后的 value 按硬件块 B_v=128 分行，减去每块均值，只量化残差，均值通过在线 softmax 已维护的行和以一次外积恢复。ExpCast-FP8 利用 E4M3 字节本身是对数值的仿射表示，用 c(u)=clip[0,120](Round(8(u+8)+56+β))，β=-0.35，把 log 域分数直接写成 E4M3 码，省去 FP32 指数和 FP32 到 E4M3 的转换。分组只在去噪步的前 25% 运行，其余步复用置换；预处理链被反向融合进量化核。",
+        "results": "摘要与节选报告：在 8 位下，V-Smooth 在四个模型上保真度领先免训练基线，相对 SageAttention2 在 Wan2.2 提升 2.3 dB、在 HunyuanVideo-1.5 提升 2.8 dB，LPIPS 降低 13–29%；融合 ExpCast-FP8 会牺牲 0.7–2.1 dB PSNR 换取速度，但组合核仍在四个模型上优于 SageAttention2。4 位下 V-Smooth 相对 SageAttention3 在 Wan2.2 提升 2.9 dB、LongCat-Video 提升 3.6 dB。注意力核相对 BF16 FlashAttention-4 加速：B200 1.59×、H200 1.46×、RTX PRO 6000 2.27×、RTX 5090 3.58×；端到端生成一个 Wan2.2 片段加速 B200 1.19×、H200 1.13×、RTX PRO 6000 1.36×、RTX 5090 1.70×。B300 上相对 BF16 FlashAttention-4 注意力加速 1.47×，PSNR 18.4 dB，对比朴素 FP8 的 1.31× 和 17.1 dB。分组开销平均占注意力时间 3–4%。",
+        "limitations": "论文为免训练方法，但未在摘要与节选中给出全部实验细节；4 位数据中心配置未评测，因为在线 NVFP4 的 P 的每 16 元素 scale 计算仍在 softmax 关键路径上，ExpCast-FP8 无法消除；分组本身有开销，需要调度摊销；V-Smooth 依赖 value token 的可聚类性，论文称不平衡簇代价小但仍有误差；未涉及长程 Agent 或多步工具调用场景。摘要未提供，需查看全文以确认更多限制。",
+        "relevance": "该论文直接研究低位注意力量化，属于大模型量化范畴，但聚焦视频扩散 Transformer 的注意力核，而非语言模型。它与 KV cache 量化相关：V-Smooth 对 value 操作数做分组、去均值和低位量化，思路与 KV cache 量化中的分组去均值相近，但论文本身不量化 KV cache，也不涉及自回归解码缓存。与长程 Agent / 多步工具调用量化的关系是间接的：论文没有 Agent 实验，也没有多步工具调用实验，其方法是否迁移到长上下文 Agent 的注意力或 KV cache 量化属于推测，需另行验证。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:19:59+00:00",
+        "source_hash": "050f8f3b3c190a4b2f5a7ed55998df68e8111f6c5e42f0177fb78b18b48710b4",
+        "paper_updated": "2026-09-14T16:17:35Z"
+      }
+    },
+    {
+      "id": "2609.15039",
+      "title": "SpliTEE: Improving LLM Inference on Trusted Hardware with Differentially Private GPU Outsourcing",
+      "abstract": "User prompts provided to large language models (LLMs) may contain sensitive or private information that can be misused by remotely deployed models, such as through inadvertent memorization during retraining. One way to protect user prompts is to execute the LLM inside a trusted execution environment (TEE), with the guarantee that the service provider has no access to computations performed within or information exchanged with the TEE. However, current TEEs are primarily CPU-based and significantly slower than GPUs optimized for LLM inference. To circumvent this, Tramer and Boneh (2019) proposed Slalom, which splits neural network inference between a TEE and an untrusted GPU and encrypts intermediate inputs sent to the GPU. We extend this split-inference architecture to LLM inference and instead protect intermediate inputs using differential privacy. We show that masking intermediate representations is necessary by showing that a prompt-reconstruction attack can recover prompts from these representations with nearly 80% accuracy. Our main contribution is a global sensitivity analysis of key LLM functions, which bounds the required scale of differentially private noise. Unlike encryption, differential privacy avoids quantization, allowing the LLM to remain in the floating-point domain. We also derive an upper bound on floating-point error from masking and noise cancellation in the TEE as a function of the privacy parameter epsilon. We implement our architecture using Intel TDX and evaluate it with two LLMs: Llama-3.2-3B and Qwen3-4B. Our split execution is nearly twice as fast as fully CPU-based inference inside TDX and 5-15 seconds faster than encryption-based Slalom while achieving higher accuracy. Finally, we demonstrate that prompt reconstruction, even with knowledge of the differential privacy mechanism, cannot recover more information than is contained in an unrelated prompt.",
+      "authors": [
+        "Shashie Dilhara Batan Arachchige",
+        "Robin Carpentier",
+        "Hassan Jameel Asghar",
+        "Dali Kaafar"
+      ],
+      "published": "2026-09-14T04:55:17Z",
+      "updated": "2026-09-14T04:55:17Z",
+      "version": 1,
+      "categories": [
+        "cs.CR",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "url": "https://arxiv.org/abs/2609.15039",
+      "pdf_url": "https://arxiv.org/pdf/2609.15039",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image": {
+        "file": "2609.15039.png",
+        "source": "https://arxiv.org/html/2609.15039v1/prompt.png"
+      },
+      "image_checked": "2026-09-16T09:20:02+00:00",
+      "summary": {
+        "title_zh": "SpliTEE：利用差分隐私GPU外包改进可信硬件上的LLM推理",
+        "tldr": "该论文提出SpliTEE，将LLM推理中昂贵的线性运算外包给不可信但诚实的GPU，并用差分隐私噪声（而非加密）掩码中间输入，以保护用户提示隐私。作者对LLM关键组件进行了全局敏感度分析，推导了浮点误差上界，并在Intel TDX上使用Llama-3.2-3B和Qwen3-4B评估。结果显示，拆分执行比纯CPU的TDX推理快近两倍，比基于加密的Slalom快5-15秒且精度更高；未掩码时提示重建攻击准确率近80%，加噪后攻击无法显著优于随机猜测。",
+        "contributions": "1. 提出一种拆分架构，将LLM推理中的线性运算外包给诚实但好奇的GPU，并使用差分隐私噪声掩码输入以保护提示隐私。2. 基于Llama-3.2-3B-Instruct识别可代数外包的常见LLM组件，并推导这些组件前驱函数的全局敏感度界，该分析可独立用于其他外包系统。3. 证明从GPU结果中去除DP噪声会导致浮点误差累积，推导线性运算的误差上界，并表明可通过调整隐私参数ε使误差低于影响精度的阈值。4. 在配备Intel TDX和GPU的机器上实现，使用Llama-3.2-3B-Instruct和Qwen3-4B-Instruct评估，显示端到端CPU推理比本方案慢近两倍，本方案比适配LLM的Slalom快5-15秒。5. 训练LLM进行提示重建攻击，显示未掩码时重建准确率近80%，加噪后攻击无法显著优于随机猜测。",
+        "method": "SpliTEE将LLM推理拆分：TEE（Intel TDX）执行非线性操作（如softmax、SiLU、层归一化）和噪声校正，GPU执行线性投影（Q、K、V、O、Gate、Up、语言模型头）。TEE对输入加性掩码x~=x+η，其中η为根据全局敏感度校准的高斯噪声，满足ε-GDP。GPU计算W x~并返回，TEE减去预计算的Wη恢复Wx。与Slalom使用有限域流密码不同，本方法在浮点域操作，避免量化误差。作者对层归一化、注意力机制、SiLU激活等前驱函数进行全局敏感度分析，并推导掩码与噪声消除的浮点误差上界。",
+        "results": "在Intel TDX和GPU上使用Llama-3.2-3B-Instruct和Qwen3-4B-Instruct评估：对于最多800个生成token，纯TDX CPU推理耗时53-83秒，GPU仅需3-5秒；SpliTEE拆分执行比纯CPU TDX推理快近两倍，比加密方案Slalom快5-15秒且精度更高。未掩码时提示重建攻击准确率近80%；加噪后，即使攻击者知道DP机制并训练辅助噪声输入，也无法比随机猜测常见token恢复更多信息。浮点误差上界与真实执行误差紧密匹配，可通过调整ε确保精度不受影响。",
+        "limitations": "摘要未提供，需查看全文。论文提及TEE可能受侧信道攻击和元数据泄露影响；Down线性投影因所需噪声量级过大而未外包；浮点误差累积问题需通过调整ε控制；GPU-TEE假设为诚实但好奇，未考虑恶意GPU；未验证外包计算正确性（与Slalom不同）。",
+        "relevance": "该论文与大模型量化、长程Agent/多步工具调用量化、KV cache的关系如下：论文直接涉及LLM推理的隐私保护与外包，未直接研究量化方法，但明确对比了基于量化的Slalom方案，指出量化会导致精度损失（CNN达0.5%，LLM达1.9%），而本方法在浮点域操作避免量化误差。论文未涉及长程Agent或多步工具调用场景，也未专门研究KV cache量化；其外包的线性运算包括注意力中的Q、K、V投影，与KV cache的生成相关，但论文未讨论KV cache的存储或量化优化。对于Agent应用，论文未进行任何实验，仅可推测其隐私保护机制可能适用于Agent场景中的提示保护，但需明确这是推测而非论文结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:20:09+00:00",
+        "source_hash": "d24088403bd62940f5c30e92f1f60ce43280581001f3fbd9611920ea203b74d0",
+        "paper_updated": "2026-09-14T04:55:17Z"
+      }
+    },
+    {
+      "id": "2609.15030",
+      "title": "Validating Hybrid-State Cache Recovery for GLM-5.3-Flash with vLLM and LMCache",
+      "abstract": "External cache transfers can succeed while a hybrid language model resumes from an inconsistent state. We examine the full 45-layer GLM-5.3-Flash model, using the RedHatAI/ GLM-5.3-Flash-NVFP4 quantized checkpoint with vLLM and LMCache under four-way tensor parallelism. A complete-hit recovery mismatch restored state for the full prompt while the scheduler credited one fewer token. We aligned recovery through strict-prefix lookup and established a numerical comparison using shared computation corrections, matched checkpoint scheduling, and fixed per-rank kernel configurations. In a nine-length serial workload, agreement with the modified recomputation control improved from 34/36 to 36/36 generations, each containing 64 token IDs. A separate instrumented run passed recorded transfer-page, effective-tail, and delayed-save checks. Three additional synthetic templates passed 72 paired 256-token continuations across two fresh-container runs. A subsequent serial performance study preserved output equality across 120 requests; among the measured trials, CPU reload reduced time to first token by 46-64% and total request time by 1.9-7.0% relative to modified cold recomputation. The contribution is an experimentally validated integration repair applying an existing checkpoint-alignment principle. The evidence is confined to one model revision and controlled configuration; it does not establish general determinism, task-quality equivalence, concurrent-serving gains, or capacity beyond GPU memory.",
+      "authors": [
+        "Frank Li"
+      ],
+      "published": "2026-09-14T04:46:09Z",
+      "updated": "2026-09-14T04:46:09Z",
+      "version": 1,
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "url": "https://arxiv.org/abs/2609.15030",
+      "pdf_url": "https://arxiv.org/pdf/2609.15030",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-16T09:20:09+00:00",
+      "summary": {
+        "title_zh": "验证 GLM-5.3-Flash 在 vLLM 与 LMCache 下的混合状态缓存恢复",
+        "tldr": "本文报告一个工程案例：在四路张量并行的 GLM-5.3-Flash（NVFP4 量化检查点）上，vLLM 与 LMCache 集成时出现完整命中恢复的状态与调度位置不一致（状态代表 B=N 而调度器只计入 p=N−1），导致续写偏离对照。作者通过严格前缀查找修复该边界错位，并在受控数值配置下用有限续写比对、插桩字节/尾项/延迟保存检查以及额外模板扩展进行验证，同时给出串行 CPU 重载相对修改后冷重算的延迟收益。",
+        "contributions": "作者自述贡献为：一是观测到完整命中时状态位置与调度位置不一致（B=N 而 p=N−1）并给出修复；二是记录并构建了可用的数值对照（共享计算修正、匹配检查点调度、固定每 rank 的 FLA 内核配置）；三是一个有界的回归验证，结合生成 token 一致性与传输、完成检查。作者明确说明该修复只是把已有的检查点对齐原则应用到一个具体集成故障，不提出新的检查点算法或新的淘汰策略。",
+        "method": "实验对象为完整 45 层 GLM-5.3-Flash，使用 RedHatAI/GLM-5.3-Flash-NVFP4 量化检查点，运行于 vLLM 与 LMCache，四路张量并行、单机四 GPU，eager 同步调度，MTP 配置一个投机 token，每 rank 4 GiB KV 预算，检查点间隔 C=1792 token。对照设置包括：修改后的重算对照（关闭连接器，共享计算修正、固定每 rank FLA 配置、匹配检查点调度）与修改后的候选（启用连接器检查点路径）。修复方式是在两个 GLM 查找入口处排除最后一个已知 token，使查找限定为严格前缀，从而选择较早的完整检查点，令 B=p=C·floor((N−1)/C)。数值对照通过记录并固定七个 FLA autotuner 配置、清除选择缓存并拒绝未记录 tuner 来建立。评估工作负载为九个边界附近长度（3583、3584、3585、3587、3588、3589、5375、5376、5377），每例五个串行操作（冷生成、两个插入请求、保留外部缓存重置 GPU 缓存、重载生成），温度 0、种子 42、忽略 EOS，比较全部 64 个生成 token ID。另有插桩运行（字节观察、H2D 前目的端投毒、注入 500 ms 保存延迟）以及三个额外合成模板、256 token 续写的预注册扩展，和独立的串行性能研究。",
+        "results": "修复前矩阵在 36 对生成中有 34/36 一致，两处差异均出现在精确边界重载（N=3584 首个差异在生成 token 索引 11，N=5376 在索引 0）；修复后矩阵 36/36 一致，九个目标冷/重载比较全部一致，且 36 个对照生成在修复前后也一致。修复后九个重载在四个 rank 上首批 computed=B、scheduled=N−B，每次重载四 rank 均有正 H2D 传输；N=3584 每 rank 传输字节由 69,625,856 变为 54,809,600，N=5376 由 84,442,112 变为 69,625,856。插桩运行中 36 个续写与已记录对照一致，D2H 页比较 17,640 行、H2D 3,288 行（目的端投毒）均零字节不匹配，合计 20,928 行覆盖每 rank 每方向全部 70 个注册条目，432 个非零尾项 H2D 观察全部非零，每 rank 67 对（共 268）延迟保存等待覆盖注入的 500 ms 延迟，四 rank H2D 总量 2,447,265,792 字节。扩展部分两个独立容器各跑一对引擎，40 个续写比较全部通过，两次运行在所有基线与候选续写上一致，每次运行 10 个重载满足 B=C·floor((N−1)/C)、computed=B、scheduled=N−B、受保护首批零草稿 token，无已知 EOS、无抢占，各导出 49 个文件并独立校验 SHA。性能研究中 120 个请求（90 个测量）输出 token 全部通过检查；六个运行/长度组的 TTFT 比值 1.85–2.80，总延迟比值 1.019–1.076，即 CPU 重载相对修改后冷重算降低首 token 时间约 46–64%、总请求时间约 1.9–7.0%；ON-cold/OFF-cold 的 TTFT 比值 1.01–1.04。作者强调这些是有限续写一致性与串行延迟结果，不构成通用确定性、任务质量等价、并发服务收益或超出 GPU 显存的容量结论。",
+        "limitations": "作者列出的限制包括：仅一个模型修订、一个四 rank 配置、合成提示模板、有限续写、串行请求，以及从观测基线中选出的固定 FLA 配置；原始矩阵只用一种模板和 64 token 输出，扩展仅增加三个模板、256 token 输出和两次新容器重复；未测量全部 logits、任意未来续写、跨 TP 不变性、并发抢占、其他模型或默认生产等价性。累积补丁改动 11 个文件，只有最后的查找干预被受控前后矩阵隔离，之前的集成改动未做完整因子消融，因此成功结果只适用于所述组合，不能证明累积补丁单独保持生产输出。插桩运行的延迟与观察会改变执行条件，不是服务性能测量。性能研究只有两个引擎对、共享主机、固定升序试验顺序，未随机化请求历史，也未消除共享主机干扰；OFF 即时重复中 18 个有 12 个重算、6 个本地前缀复用，ON 即时重复 18 个全部从 CPU 重载，因此缺少完整五路径本地命中比较；N=5376 时 OFF 本地复用计入 1792 token 而 ON CPU 路径恢复 3584 token，重复条件后缀工作量不等。未报告置信区间、持续并发结果或超出 GPU 显存的容量收益。关于 Agent 应用：本文没有进行任何 Agent 或多步工具调用实验，也没有长程 Agent 量化实验；相关联系只能视为推测。",
+        "relevance": "与大模型量化的关系：本文使用 NVFP4 量化检查点（RedHatAI/GLM-5.3-Flash-NVFP4）和 FP8 KV 配置，并指出模型检查点的 NVFP4 名称与 FP8 KV 配置并不能描述每个状态张量的精度（部分传输表示是字节视图，观测到的尾项为 BF16），因此量化精度与缓存状态表示的一致性是其集成问题的一部分，但论文本身不研究量化误差或量化算法。与 KV cache 的关系：这是论文的核心，涉及外部 CPU 缓存（LMCache）的传输、检查点对齐、严格前缀查找、完整命中边界错位、保存完成依赖、字节级页比较与尾项覆盖，以及 CPU 重载相对冷重算的 TTFT 与总延迟收益。与长程 Agent / 多步工具调用量化的关系：论文未做任何 Agent 或多步工具调用实验，也未评估任务质量或长程多轮场景；其混合状态检查点对齐与缓存恢复机制原则上可能对需要跨步骤复用前缀状态的 Agent 服务有参考价值，但这属于推测，论文未提供证据。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:20:19+00:00",
+        "source_hash": "178478bca5a5f60c0ec170858c2705ecc943c80baaee28d8c458466932ab6ad5",
+        "paper_updated": "2026-09-14T04:46:09Z"
+      }
+    },
+    {
+      "id": "2609.14976",
+      "title": "MemRiskBench: Trace-Aware Risk-Preserving Evaluation for Long-Horizon LLM Agents",
+      "abstract": "Long-horizon LLM agents accumulate memory across sessions, creating sparse but high-impact risks: stale facts, conflicting updates, cross-user leakage, revoked-memory reuse, and constraint decay. Standard aggregate scores hide per-risk failure rates--a model achieving 78% average accuracy may still leak data in 4% of episodes--and benchmark compression preferentially discards the rare high-severity events that distinguish a mostly-working model from one that occasionally causes harm. We present MemRiskBench. The primary contribution is a five-category risk taxonomy (plus one documented, unscored category) operationalized by deterministic trace grounded checks, instantiated as a 120-episode scripted benchmark with full trace logging and no LLM-as-judge on the pass/fail path, evaluated on five locally run quantized instruction-tuned models. Second, a risk-preserving subset selector: a coverage-constrained greedy selector on deterministic trace-derived features that retains full ranking (Spearman rho = 0.975, deterministic; CI collapses to a point estimate with zero bootstrap variance), risk coverage (1.0), and high-risk model detection (1.0) at a 20% subset size, reducing compute 5x. Unlike ranking-only subset selectors, this selector additionally preserves risk-type coverage and high-risk detection using trace-grounded deterministic features that do not require an LLM judge. All episodes, traces, the scoring implementation, and the selector are released to support reproducible evaluation and risk assessment of deployed LLM agents",
+      "authors": [
+        "Jianhua Jiang",
+        "Dongbo Yuan",
+        "Weihua Li"
+      ],
+      "published": "2026-09-14T03:31:19Z",
+      "updated": "2026-09-14T03:31:19Z",
+      "version": 1,
+      "categories": [
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.14976",
+      "pdf_url": "https://arxiv.org/pdf/2609.14976",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization",
+        "agent-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        },
+        {
+          "type": "topic",
+          "label": "Agent 长程任务量化",
+          "evidence": "quantiz, agents, llm"
+        }
+      ],
+      "related_only": false,
+      "image_checked": "2026-09-16T09:20:19+00:00",
+      "summary": {
+        "title_zh": "MemRiskBench：面向长程LLM智能体的轨迹感知风险保持评估",
+        "tldr": "论文提出MemRiskBench，一个针对长程LLM智能体记忆风险的评估基准，包含五类风险分类法（外加一类仅记录不计分的风险）、120个脚本化回合的确定性轨迹评分，以及一个风险保持子集选择器，可在20%子集规模下保持模型排名、风险类型覆盖和高风险模型检测，从而将评估计算量降低5倍。",
+        "contributions": "C1（主要贡献）：记忆风险评估基准，包括五类风险分类法（R1陈旧记忆依赖、R2冲突记忆误判、R3跨范围泄露、R4已撤销记忆复用、R5约束衰减）与确定性检查、120个脚本化回合（每类风险24个，分易中难三档）、完整轨迹日志、无LLM作为评判者的确定性评分器，并在五个本地运行的量化指令微调模型上评估。C2（次要贡献）：风险保持子集选择器，基于确定性轨迹特征的覆盖约束贪心选择器，在20%子集下保持排名（Spearman ρ=0.975）、风险类型覆盖（1.0）和高风险模型检测（1.0），计算量降低5倍。C3：对五个本地量化模型（1.5B至7B参数）在受控风险条件下的实证刻画，包括记忆基线实验显示标准检索级过滤比不过滤更差。",
+        "method": "基准由120个脚本化回合组成，每类风险24个，难度由干扰项数量、中间更新和轨迹长度决定（易5-8轮、中10-14轮、难15-25轮）。回合为事件有向无环图，智能体在每个决策点输出工具调用、最终答案或澄清问题，轨迹记录记忆存储、工具调用日志、约束状态和消息日志。评分确定性，输出布尔成功标志、0到1分数、违规列表、每风险通过与否及证据，主通过路径不使用LLM评判者。风险保持子集选择器使用12维轨迹特征向量（难度、区分度、失败密度、复杂度），采用留一模型交叉验证计算区分度特征，通过贪心前向选择最大化排名相关性、风险覆盖和高风险检测的加权目标。实验使用llama.cpp运行五个量化模型：Qwen2.5-1.5B-Instruct（Q4_K_M）、Qwen2.5-3B-Instruct（Q4_K_M）、Qwen2.5-7B-Instruct（Q3_K_M）、Phi-3.5-mini-instruct（Q4_K_M）、Llama-3.2-3B-Instruct（Q4_K_M）。",
+        "results": "五个模型平均任务成功率在0.775至0.885之间，差距0.110。跨范围泄露对最小模型最难（Qwen2.5-1.5B仅通过24个泄露回合中的1个，Phi-3.5-mini通过10/24，Fisher精确检验p=0.004，但经Holm校正后不显著，最小校正p=0.22）。约束衰减呈相反模式：1.5B遵守全部24个显式约束，而3B和7B各违反两个，Phi违反三个。20%子集比较：随机采样Spearman为0.733（95%置信区间[-0.05,0.97]），按风险分层采样风险覆盖为1.0但Spearman仅0.698、高风险检测0.345，风险保持选择器达到Spearman 0.975（确定性，置信区间退化为点估计）、风险覆盖1.0、高风险检测1.0。相对随机基线，失败覆盖改进z=+9.1（p<0.001），高风险检测改进z=+1.6（p=0.05）。特征消融显示跨模型通过率离散度承载全部排名信号，移除后Spearman降至0.308，移除其他特征不变。留出模型泛化测试中，留出Qwen2.5-1.5B后选择器在24回合子集上保持参考模型排名完美（Spearman=1.000），留出模型平均通过率0.812，高于全基准的0.775，但作者仅作为描述性合理性检查，不作统计泛化声明。记忆基线显示RAG和近期性过滤比不过滤更差。",
+        "limitations": "工具环境为脚本化模拟而非真实浏览器、邮件客户端或办公套件，工具调用为确定性桩。仅评估五个本地模型，均小于8B参数，其中三个属于Qwen系列，未评估前沿API模型。量化混杂：Qwen2.5-7B使用Q3_K_M而其他四个使用Q4_K_M，导致陈旧和撤销类别上的非单调性，无法完全排除量化影响。严格字符串匹配问题：20个回合定义原本编码了无模型能完整输出的标签前缀期望值，重新评分改变了600个轨迹-回合对中的39个。安全感知拒绝评分：默认评分将拒绝计为失败，但R3和R5中拒绝是安全正确结果，论文额外计算了安全感知变体。RQ5泛化仅使用单个最小模型，所选子集偏向冲突类回合（24个中20个），仅作为概念验证。选择器依赖v3参考排名，新模型家族可能需要重新计算。R6摘要污染已记录但未纳入主评分。",
+        "relevance": "该论文与大模型量化的关系：论文在五个本地量化指令微调模型（Q4_K_M和Q3_K_M）上评估，并明确将量化混杂列为局限（Qwen2.5-7B使用Q3_K_M而其他使用Q4_K_M，导致排名非单调），但论文核心并非量化方法研究，而是记忆风险评估基准。与长程Agent/多步工具调用量化的关系：论文直接针对长程LLM智能体的多会话记忆风险，回合包含多步工具调用（5至25轮），评估跨会话的记忆失效模式，与长程Agent评估高度相关，但未涉及工具调用本身的量化或压缩。与KV cache的关系：论文未涉及KV cache，摘要和节选中没有关于KV cache压缩、量化或管理的实验或讨论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:20:26+00:00",
+        "source_hash": "1d4c5905078683f2e3a4c4e8301adda0ec3e1443d08b8a1d0de3f991d3f6c79a",
+        "paper_updated": "2026-09-14T03:31:19Z"
+      }
+    },
+    {
+      "id": "2609.14872",
+      "title": "AgentKV: Phase-Aware KV Eviction for Agentic LLMs",
+      "abstract": "Agentic serving can consume orders of magnitude more tokens than chatbot workloads, stressing both KV-cache capacity and decode-time bandwidth. Most KV-eviction methods score cached keys against representative queries drawn from the most recent tokens, assuming future attention resembles recent attention. We show that agentic generation violates this assumption: future queries form a mixture over think, act, tool, and others phases, and principal-angle analysis shows these components occupy measurably different query subspaces, so recency representatives systematically undervalue keys that upcoming phases will need. We propose AGENTKV, which maintains a small query buffer per phase and scores cached keys against their union. We further implement AGENTKV in a persistent multi-turn serving path that carries compressed KV state across turns and compacts retained KV pages online. Across two models, six task domains, and three KV budgets each, AGENTKV improves task score by 5.5 points on average over R-KV and 5.3 over Tri-attention. Relative to upstream full-KV SGLang, AGENTKV improves output-token throughput by up to 1.80x. Code: https://github.com/LiuTaowen-Tony/agentkv.",
+      "authors": [
+        "Taowen Tony Liu",
+        "Jeffrey T. H. Wong",
+        "Can Xiao",
+        "Bowen Yang",
+        "Hao Mark Chen",
+        "Yiren Zhao"
+      ],
+      "published": "2026-09-14T00:42:53Z",
+      "updated": "2026-09-14T00:42:53Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.14872",
+      "pdf_url": "https://arxiv.org/pdf/2609.14872",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv-cache, compress, llms"
+        }
+      ],
+      "related_only": true,
+      "image": {
+        "file": "2609.14872.png",
+        "source": "https://arxiv.org/html/2609.14872v1/figures/Hero.png"
+      },
+      "image_checked": "2026-09-16T09:20:29+00:00",
+      "summary": {
+        "title_zh": "AgentKV：面向智能体式大模型的阶段感知KV缓存淘汰方法",
+        "tldr": "论文指出智能体式推理的查询分布随think、act、tool、others四个阶段变化，基于最近查询的KV淘汰会系统性低估未来阶段所需键值；提出AgentKV，为每个阶段维护小型查询缓冲区并用其并集对缓存键打分，并在持久多轮服务路径中实现在线KV页压缩与分配器复用。",
+        "contributions": "论文自述三项贡献：一是识别出基于近期查询的KV淘汰存在阶段导致的估计偏差，并用主角度分析验证不同阶段的查询子空间可区分；二是提出AgentKV，作者称其为首个显式考虑智能体推理中阶段混合查询分布的KV淘汰方法；三是构建持久多轮服务实现，包含在线KV页压缩与分配器级复用，以降低压缩缓存的推理开销。",
+        "method": "将未来查询分布建模为四个阶段（think、act、tool、others）查询分布的混合。用基于聊天模板标记的确定性在线解析器为每个token分配阶段，无需模型侧分类器或新特殊token。每个阶段维护固定大小的FIFO查询缓冲区，压缩事件时取各阶段缓冲区的并集作为代表查询集，对候选键计算平均注意力得分并保留top-B，不按阶段划分键或设每阶段键配额。服务侧在每次压缩后将保留的KV条目物理压缩、释放被淘汰页并归还分配器，同时保持逻辑长度与绝对位置以兼容RoPE、分块预填充和CUDA图捕获。",
+        "results": "在两个模型（Qwen3-32B、Qwen3-8B）、六个任务域、每个三种KV预算下，AgentKV平均任务得分比R-KV高5.5分、比Tri-attention高5.3分。相对上游全KV的SGLang，输出token吞吐最高提升1.80倍。匹配近期查询消融中，阶段感知代表查询在12个设置上平均提升4.2分。离线效用覆盖诊断显示，多阶段代表查询将tool阶段覆盖从B=512时的0.042提升到0.175，从B=1536时的0.117提升到0.416。配对自助法统计中，对R-KV有15/36、对Tri-attention有16/36为置信区间支持的提升，其余为统计上未分辨。跨家族迁移在Nemotron上较大预算提升4.0至4.5分，最小预算下降1.0分。",
+        "limitations": "论文自述局限：KV预算为人工指定而非按任务质量或延迟目标自动选择；方法在中等压缩比最有用，预算极小或压缩压力很弱时效果有限；当任务相关状态已由最近工具响应或外部记忆提供时，阶段感知保留用处较小；重复性或退化推理轨迹会使阶段缓冲区保留近似重复上下文，需要额外冗余控制。摘要与节选中未提供关于长程Agent多步工具调用量化的直接实验，需查看全文确认。",
+        "relevance": "与大模型量化无直接关系，论文聚焦KV缓存淘汰而非权重量化。与长程Agent/多步工具调用高度相关：论文针对智能体多轮轨迹中think、act、tool、others阶段交替导致的查询分布非平稳问题，属于Agent场景下的KV缓存压缩。与KV cache直接相关：AgentKV是查询中心的KV淘汰方法，维护分阶段代表查询缓冲区打分并保留top-B键，并在持久多轮服务路径中实现在线KV页压缩与分配器复用。论文未做Agent量化实验，也未涉及量化与KV淘汰的联合方法。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-16T09:20:35+00:00",
+        "source_hash": "714fab0f0ddf2cf22ff3a82c1a27f1fe7af05687cb0afb4cc3ecd6b970291af3",
+        "paper_updated": "2026-09-14T00:42:53Z"
+      }
+    },
+    {
+      "id": "2609.14850",
+      "title": "Self-Orchestrating Language Models: Leveraging Semantic Dependence for Efficient Inference",
+      "abstract": "Large language models (LLMs) demonstrate impressive capabilities, but their deployment presents significant efficiency challenges. Autoregressive decoding imposes substantial inference latency and under-utilizes hardware accelerators in low batch size regimes. Discrete diffusion models can generate in parallel but struggle to match autoregressive quality without many diffusion denoising steps. Long-context reasoning creates memory bottlenecks that strain even state-of-the-art accelerators. My thesis is that language models can direct their own inference execution strategy by annotating semantic dependence -- which tokens depend on which others -- in their generation. I call such models self-orchestrating language models. For each system, I design a runtime that acts on these annotations to parallelize autoregressive decoding, evict intermediate context, or derive denoising orders, achieving Pareto-optimal quality-efficiency trade-offs. I demonstrate this approach through three self-orchestrating systems. First, PASTA uses semantic dependence to parallelize autoregressive decoding, training the model to annotate which output chunks can generate independently. Second, TIP uses semantic dependence to evict intermediate reasoning steps from the KV cache, reducing memory consumption while preserving accuracy. Third, Planned Diffusion uses semantic dependence to derive a denoising order for discrete diffusion, autoregressively generating a plan that specifies which chunks to denoise in parallel.",
+      "authors": [
+        "Tian Jin"
+      ],
+      "published": "2026-09-13T23:48:33Z",
+      "updated": "2026-09-13T23:48:33Z",
+      "version": 1,
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.14850",
+      "pdf_url": "https://arxiv.org/pdf/2609.14850",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, efficient, language model"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.14762",
+      "title": "TriCalRAG: A Three-Strategy, Retrieval-Augmented Benchmark for On-Premise LLM-Based Root Cause Analysis in AIOps",
+      "abstract": "Cloud-hosted large language models (LLMs) are increasingly used for root cause analysis (RCA) in AIOps pipelines, but they introduce data privacy risk, network latency, and per-query cost that scale poorly with production log volumes. We present TriCalRAG, a benchmark evaluating open-weight LLMs served locally via vLLM on a single high-memory workstation GPU (NVIDIA RTX PRO 6000, 96GB) against a classical LSTM-based log anomaly detector (DeepLog), across four real, publicly available log datasets (BGL, HDFS, Thunderbird, OpenStack). We evaluate two open-weight models (Qwen2.5-14B, Mistral-Small) under three prompting strategies: zero-shot, few-shot, and retrieval-augmented generation (RAG) over a labeled incident history, reporting accuracy, precision/recall, and F1 with bootstrap 95% confidence intervals across 3 random seeds, alongside throughput and VRAM footprint. Our results show that RAG not only improves mean F1 by 0.10-0.27 over zero-shot prompting but, more importantly, substantially stabilizes model calibration: zero-shot prompting drives both models toward near-degenerate behavior (predicting \"anomaly\" on up to 100% of incidents on some datasets), while RAG keeps predicted-positive rates close to the true class balance in the majority of configurations. Mistral-Small achieves higher macro-averaged F1 than Qwen2.5-14B (0.644 vs. 0.560) but exhibits calibration failures in more configurations (7 vs. 5 of 12), while running at roughly half the throughput - indicating the better model choice depends on whether a deployment prioritizes peak accuracy or predictable behavior across prompting conditions. Ablations show batching scales throughput 41 times on a single card and that 4-bit quantization reduces latency 20% with no measurable accuracy loss. We release our benchmark harness, dataset splits, and evaluation code to support reproducible on-premise AIOps research.",
+      "authors": [
+        "Rohit Patel",
+        "Susil Kumar Mohanty",
+        "Jeenal Chaudhary"
+      ],
+      "published": "2026-09-13T19:52:46Z",
+      "updated": "2026-09-13T19:52:46Z",
+      "version": 1,
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.CR",
+        "cs.ET",
+        "cs.LG"
+      ],
+      "url": "https://arxiv.org/abs/2609.14762",
+      "pdf_url": "https://arxiv.org/pdf/2609.14762",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.14708",
+      "title": "Lightning Weave: Improving the Accuracy-Efficiency Frontier of Reasoning Models through Capability Composition",
+      "abstract": "A core goal of efficient reasoning is to improve the accuracy-efficiency frontier. However, jointly improving reasoning accuracy and inference efficiency can be challenging, as the two objectives can favor different reasoning behaviors. Independently post-trained models already offer distinct strengths in accuracy and efficiency. We introduce Lightning Weave, a post-training framework that extracts and composes these independently learned capabilities in a single student through on-policy distillation. Each acquired capability is represented by the policy shift from the model before post-training to the resulting specialist. Lightning Weave combines aligned log-ratio shifts at shared student token states and uses Tilted-Target DOPD to convert the cached signals into a stable learning target. Each anchor pair scores the cached trajectories once, enabling subsequent student training without serving multiple live anchor models concurrently. Across diverse student models and benchmarks in mathematics and code, Lightning Weave substantially improves upon the base students and achieves a state-of-the-art accuracy-efficiency frontier. On Qwen3.5-4B, it raises HMMT 2025 accuracy from 59.2% to 64.0% with 10.7% fewer response tokens, and LiveCodeBench v5 accuracy from 41.7% to 54.2% with 9.6% fewer response tokens. Adjusting the relative strengths of the anchor signals yields a strong empirical accuracy-efficiency Pareto frontier. These results establish Lightning Weave as a new practical route to efficient reasoning through capability composition. Code will be released soon.",
+      "authors": [
+        "Yecheng Wu",
+        "Song Han",
+        "Han Cai"
+      ],
+      "published": "2026-09-13T18:05:58Z",
+      "updated": "2026-09-13T18:05:58Z",
+      "version": 1,
+      "categories": [
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.14708",
+      "pdf_url": "https://arxiv.org/pdf/2609.14708",
+      "first_seen": "2026-09-16T09:18:29+00:00",
+      "topics": [],
+      "researchers": [
+        {
+          "id": "song-han",
+          "status": "name-match"
+        }
+      ],
+      "reasons": [
+        {
+          "type": "researcher",
+          "label": "韩松",
+          "evidence": "作者名匹配，机构身份待核验"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.16055",
+      "title": "State of Thought Enables Endogenous Reasoning",
+      "abstract": "Test-time compute has emerged as a major approach to improving the capabilities of Large Language Models (LLMs). However, existing test-time reasoning paradigms rely heavily on externally imposed control, either through fixed reasoning programs or through costly expansion in constrained search spaces, limiting both generalization and efficiency. We propose State of Thought (SoT), a new reasoning paradigm that enables endogenous reasoning in LLMs, with the model's internal reasoning state governing how reasoning unfolds. Concretely, SoT extracts a compact dynamics-geometric state from the model's internal information transfer and uses a 582-parameter controller on frozen backbones to selectively activate historical reasoning support useful under the current reasoning state, framing reasoning as a state-conditioned process over evidence rather than an externally prescribed token chain. Across quantitative (1.34x), general (1.62x), symbolic-and-code (1.76x), and long-context (2.51x) reasoning on 3 LLMs and 16 datasets, SoT consistently improves mean-baseline accuracy while reducing generated tokens by 62.6% and end-to-end latency by 44.6%. Across 2 VLM scales and 3 reasoning tasks, it improves mean accuracy by 3.8 points over reasoning baselines, with 74.9% fewer completion tokens and 73.5% lower latency than search-based methods. Under constrained access, SoT retains 38.2%/36.5% mean accuracy gains in training-free/embedding-only settings, while trajectory-only judging reaches 84.1% agreement across 3 API models. Together, endogenous state-driven reasoning provides a generalizable and efficient alternative.",
+      "authors": [
+        "Zhiren Gong",
+        "Yikun Hou",
+        "Zihao Zeng",
+        "Ming Xiao",
+        "Chau Yuen",
+        "Wei Yang Bryan Lim"
+      ],
+      "published": "2026-09-13T05:55:03Z",
+      "updated": "2026-09-13T05:55:03Z",
+      "version": 1,
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.16055",
+      "pdf_url": "https://arxiv.org/pdf/2609.16055",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "long-context, efficient, language model"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.14060",
+      "title": "AGENTQ: Quantization-Conditioned Backdoor Attacks on LLM Agents",
+      "abstract": "Quantization is one of the default deployment paths for open-weight LLM agents, but it is not behavior-preserving: an adversary can release a full-precision checkpoint that passes audits yet misbehaves once quantized, termed as quantization-conditioned attack (QCA). Prior QCA work targets free-text generation, where harm is mediated by a human reader. In contrast, the agentic setting poses a more severe risk: the triggered payload is a structured function that can be executed without human oversight. We present the first study of QCA against LLM agents. We find that directly adapting prior backdoor-injection methods can produce malicious behavior after quantization, but substantially degrades benign utility, rendering the resulting attacks impractical. To understand the true upper bound of the threat, we propose AGENTQ, an attack framework that combines layer-banded LoRA injection with partial-PGD repair over a multi-codebook quantization-equivalence class. AGENTQ preserves normal agentic capability while concentrating malicious behavior in the quantized model. Across three trigger-action pairs and three codebooks (NF4, FP4, INT8), AGENTQ reaches up to 100% post-quantization attack success rate with minimal loss of benign utility, underscoring the need to make quantization-aware safety evaluation a standard requirement before open-weight agents are deployed.",
+      "authors": [
+        "Xiaoqun Liu",
+        "Qiben Yan"
+      ],
+      "published": "2026-09-12T17:17:59Z",
+      "updated": "2026-09-12T17:17:59Z",
+      "version": 1,
+      "categories": [
+        "cs.CR",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.14060",
+      "pdf_url": "https://arxiv.org/pdf/2609.14060",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization",
+        "agent-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        },
+        {
+          "type": "topic",
+          "label": "Agent 长程任务量化",
+          "evidence": "quantiz, agents, llm"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.13624",
+      "title": "An Efficient and Modular Framework for Targeted Harm Mitigation in LLMS",
+      "abstract": "Large Language Models (LLMs) are powerful zero-shot learners but remain prone to misalignment with human preferences, often producing biased, toxic, or otherwise harmful outputs. Existing alignment methods, while effective, are costly and tightly coupled to the model, limiting flexibility and scalability. We propose a modular correction framework that augments pretrained LLMs with Activated LoRA (aLoRA) adapters and a context-aware routing mechanism to eliminate harms from misaligned model responses. Our approach enables expert adapters to activate mid-sequence without invalidating the KV cache, allowing low-latency, targeted correction during generation. Each expert is trained to detect and mitigate specific harms, such as bias or toxicity. A learned router dynamically selects appropriate experts based on the models intermediate outputs. We demonstrate that our system improves alignment on standard safety benchmarks while preserving task performance, offering a lightweight and efficient path toward safer and more controllable LLM deployments.",
+      "authors": [
+        "Roberto Campbell",
+        "Momin Abbass",
+        "Muneeza Azmat",
+        "Michal Ulewicz",
+        "Raya Horesh",
+        "Kristjan Greenewald",
+        "Rogério Abreu de Paula",
+        "Nathalie Baracaldo"
+      ],
+      "published": "2026-09-12T00:24:49Z",
+      "updated": "2026-09-12T00:24:49Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL",
+        "cs.CY"
+      ],
+      "url": "https://arxiv.org/abs/2609.13624",
+      "pdf_url": "https://arxiv.org/pdf/2609.13624",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, efficient, language model"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.13141",
+      "title": "SAS: Simple Attention Sparsification via End-to-End Optimization of Context Ranking",
+      "abstract": "Post-training attention sparsification reduces the quadratic cumulative attention cost of pretrained Transformers by selecting a small set of context units (tokens or blocks) for each query. Existing trainable methods usually use a lightweight selector to score context units, followed by hard Top-K selection that blocks gradients from the language modeling loss. Consequently, these methods commonly distill layer-wise dense attention distributions. Although this encourages the selector to rank context units by dense attention weights in the original model, the ranking is not directly aligned with their impact on predictions under a fixed attention budget (i.e., the number of attended context units per query), potentially wasting the limited budget on less useful units. To address this misalignment, we propose Simple Attention Sparsification (SAS), a gated sparse attention mechanism that optimizes context ranking end-to-end with the language modeling loss. The key idea is to inject the selector's continuous scores into attention logits during training, allowing the loss to update the selector through standard backpropagation. We identify several choices crucial for this simple design to work well in practice: placing the gate inside the attention softmax in log form, using normalized softmax gates to calibrate historical context against the always-retained current block, and preserving continuous selector scores so the model learns relative priorities rather than only hard selections. To support long-sequence training, we implement a memory-efficient Triton kernel that integrates SAS into FlashAttention-style computation. Across reasoning, long-context understanding, and agentic tasks, SAS consistently outperforms trainable sparse attention baselines across attention budgets, with especially large gains under tight budgets, demonstrating more effective context ranking for downstream tasks.",
+      "authors": [
+        "Zhiwei Li",
+        "Lei Zhu",
+        "Hao Gu",
+        "Xiang Hu",
+        "Yan Wang",
+        "Haitao Mi",
+        "Sirui Han",
+        "Leo Liang",
+        "Zhijiang Guo"
+      ],
+      "published": "2026-09-11T17:58:06Z",
+      "updated": "2026-09-11T17:58:06Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.13141",
+      "pdf_url": "https://arxiv.org/pdf/2609.13141",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "long-context, efficient, transformer"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.13045",
+      "title": "Kraken: LLM-based Speech-to-Speech Translation via Low-bitrate VQ and Dual-path Source Conditioning",
+      "abstract": "Speech-to-speech translation (S2ST) has advanced significantly with speech LLMs, offering the potential for joint optimization and preserving non-linguistic information. However, these models struggle with predicting high-bitrate speech tokens in LLMs, and face the challenge of relying on S2ST training data with ideally aligned speaker identity and prosody. We propose using low-bitrate tokens based on single-layer vector quantization, trained to reconstruct self-supervised learning (SSL) features. We also employ a separate token-to-waveform decoder named Autowave-X, which is also conditioned on the source speech to improve non-linguistic transfer, thereby relaxing the training data constraints. With the integration of these techniques, we propose an S2ST model named Kraken, which augments a pre-trained LLM with speech feature inputs and the low-bitrate token outputs, followed by Autowave-X vocoder. We built the model upon Qwen3-8B and trained it using 150k hours of multilingual and multitask speech data. We demonstrated that our model exhibited better translation quality than SeamlessM4T-Large v2 and Qwen2.5-Omni, along with improved speaker and prosody transfer capabilities.",
+      "authors": [
+        "Hayato Futami",
+        "Hassan Shahmohammadi",
+        "Tushar Dhyani",
+        "Alkis Koudounas",
+        "Raphaël Lafargue",
+        "Yosuke Kashiwagi",
+        "Quentin Jodelet",
+        "Emiru Tsunoo"
+      ],
+      "published": "2026-09-11T16:41:22Z",
+      "updated": "2026-09-11T16:41:22Z",
+      "version": 1,
+      "categories": [
+        "cs.CL",
+        "cs.SD"
+      ],
+      "url": "https://arxiv.org/abs/2609.13045",
+      "pdf_url": "https://arxiv.org/pdf/2609.13045",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.13031",
+      "title": "Attention Quantization for Tabular Foundation Models",
+      "abstract": "With the recent rise and adoption of tabular foundation models, optimizing their inference performance becomes an emerging field for efficiency research. While the models are architecturally similar to transformer-based large language models (LLMs), the size and serving patterns differ significantly. We show that the focus should be on the attention calculation and less on weight or KV cache quantization, which are more popular in LLMs. We develop a quantization strategy for queries, keys, and values to FP8 and use explicit FP8 matrix multiplication instructions to speed up the attention calculation. We find that it is crucial to align the quantization error in the test rows with the quantization error in the training rows, as otherwise the accuracy drops drastically. Our Triton kernel achieves a speedup up to 1.7x over regular 16-bit kernels, and we show that on TabPFN-v3 and TabICLv2 there is no relevant accuracy loss across TabArena and BeyondArena.",
+      "authors": [
+        "Jonas M. Kübler",
+        "Benjamin Jäger",
+        "Klemens Flöge",
+        "Noah Hollmann",
+        "Frank Hutter"
+      ],
+      "published": "2026-09-11T16:31:29Z",
+      "updated": "2026-09-11T16:31:29Z",
+      "version": 1,
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.13031",
+      "pdf_url": "https://arxiv.org/pdf/2609.13031",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization",
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        },
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv cache, quantiz, language model"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.12945",
+      "title": "StepAudio 3 Gen Technical Report",
+      "abstract": "We introduce StepAudio 3 Gen, a general-purpose audio generation model that supports zero-shot text-to-speech (TTS), voice design, vocal generation, sound effects, music, vibe speech, and mixtures of multiple audio types within a unified framework. At its core, StepAudio 3 Gen is a discrete autoregressive generator that models audio directly over residual vector quantization (RVQ) tokens, departing from the diffusion Transformer-based continuous generation paradigm prevalent in recent general audio models. Its StepAudio Tokenizer represents general audio at 12.5 Hz in a shared $16 \\times 2048$ residual code space, jointly quantizing semantic and waveform-level acoustic features so that each code layer preserves both types of information. For generation, the backbone predicts the first codebook along the time axis using autoregressive modeling, while a lightweight causal Transformer completes the remaining fifteen codebooks along the codebook axis. Our study further identifies three key design principles: (1) interference-aware progressive pretraining for acquiring audio capabilities while preserving the textual abilities of the large language model, (2) RVQ Adaptor for effectively incorporating multi-codebook acoustic representations, and (3) discrete autoregressive modeling over a shared representation across general audio domains. With progressive pretraining, multi-task instruction training, and supervised fine-tuning, StepAudio 3 Gen achieves state-of-the-art performance on both TTS and voice design, while retaining strong generation capabilities across speech, vocals, sound effects, and music. Audio samples are available at https://stepaudiollm.github.io/step-audio-3-gen/.",
+      "authors": [
+        "Bin Lin",
+        "Bo Zhao",
+        "Boyang Wang",
+        "Boyang Zhang",
+        "Boyong Wu",
+        "Chao Yan",
+        "Chen Geng",
+        "Chen Wu",
+        "Cheng Yi",
+        "Chengli Feng",
+        "Chenglin Zhu",
+        "DanNi Wan",
+        "Daxin Jiang",
+        "Dongqing Pang",
+        "Fei Tian",
+        "Feng Tian",
+        "Future Li",
+        "Gang Yu",
+        "Guanglong Yang",
+        "Jia Peng",
+        "Jiahao Song",
+        "Jiamin Fan",
+        "Jiangjie Zhen",
+        "Jianzheng Gao",
+        "Jun Chen",
+        "Li Xie",
+        "Lifang Zhang",
+        "Lingli Ji",
+        "Liying Shi",
+        "Lun Cai",
+        "Min Xu",
+        "Na Wang",
+        "Peilin Li",
+        "Peng Yang",
+        "Pengfei Tan",
+        "Qingjian Lin",
+        "Ruijie Xiong",
+        "Runze Li",
+        "Shenghua Hu",
+        "Shi Qiu",
+        "Siqi Tu",
+        "Siyi Zhou",
+        "Tianjiao Deng",
+        "Wanying Lu",
+        "Weiming Niu",
+        "Wen Sun",
+        "WenWen Qu",
+        "Xiangyu Zhang",
+        "Xianwei Zhang",
+        "XiaoSu Su",
+        "Xing Chen",
+        "Xinyu Liu",
+        "Xuerui Yang",
+        "Yang Li",
+        "Yang Yang",
+        "Yechang Huang",
+        "Yibo Zhu",
+        "Yifan Zhang",
+        "Yiyang Xu",
+        "Yu Fu",
+        "Yu Luo",
+        "Yu Zhou",
+        "Yumang Wang",
+        "Yunzhou Ju",
+        "Yuxiang Yang",
+        "Zekai Liu",
+        "Zengwei Yao",
+        "Zhenwei Mou",
+        "Zheqi Dai",
+        "Zhiyue Wu",
+        "Zichao Zhou"
+      ],
+      "published": "2026-09-11T15:05:20Z",
+      "updated": "2026-09-11T15:05:20Z",
+      "version": 1,
+      "categories": [
+        "cs.SD",
+        "eess.AS"
+      ],
+      "url": "https://arxiv.org/abs/2609.12945",
+      "pdf_url": "https://arxiv.org/pdf/2609.12945",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.12923",
+      "title": "Dissecting GPU Utilization for LLM Inference on Nvidia Hopper",
+      "abstract": "A single SM utilization percentage can make an LLM inference workload look compute-saturated while hiding how much useful work is being done. The problem is not that the counter is wrong, but that it collapses several different mechanisms into one number. This is most severe during decode, where each request contributes only one new token and dense projection GEMMs become small-row matrix multiplications. On Hopper, the bfloat16 GMMA path executes these operations in fixed 64-row matrix fragments, so small-batch decode can fill only a small fraction of each fragment with real token rows. In this paper, we profile vLLM with FlashAttention-3 and cuBLASLt on an H100 NVL across cold prefill, warm prefill, and decode, sweeping sequence length and batch size. We replace the usual single utilization number with eight counter-validated views derived from raw Nsight Compute reports, each pinned to an NCU counter or explicit formula. Together, these views map utilization gaps to concrete mechanisms - fragment fill, occupancy limits, stall signatures, wave quantization, and kernel selection - across four production models and six per-layer kernel roles.",
+      "authors": [
+        "Mohammad Siavashi",
+        "Gerald Q. Maguire",
+        "Dejan Kostic",
+        "Marco Chiesa"
+      ],
+      "published": "2026-09-11T14:49:05Z",
+      "updated": "2026-09-11T14:49:05Z",
+      "version": 1,
+      "categories": [
+        "cs.PF",
+        "cs.AR",
+        "cs.DC",
+        "cs.LG"
+      ],
+      "url": "https://arxiv.org/abs/2609.12923",
+      "pdf_url": "https://arxiv.org/pdf/2609.12923",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, llm"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.12686",
+      "title": "Residual Vector-based Reconstruction as Long-Context Recall Regardless of Context Window Size",
+      "abstract": "Large language models (LLMs) process long contexts, including long documents and lengthy conversations, but face token-level memory usage that increases proportionally to input length. Although model optimization and lossy prompt compression are widely used, these methods still fail to solve the long-context recall problem beyond pretrained and size-constrained context windows. This paper proposes a long-context recall method that maintains near-constant GPU memory usage as context length increases, without additional training. The main idea is to reconstruct facts using parameter activations in the LLM's feed-forward layers, which store residual vectors representing facts from the source document. Utilizing residual vectors allows the LLM to deterministically reconstruct query relevant facts without referencing the original document, preserving high fidelity and reducing memory usage without fine-tuning weights. Experimental results show that the proposed method enables answering single-fact questions in two-million-token story contexts where previous methods fail.",
+      "authors": [
+        "MyungHoon Ryu",
+        "XinYu Piao",
+        "Jong-Kook Kim"
+      ],
+      "published": "2026-09-11T10:31:46Z",
+      "updated": "2026-09-11T10:31:46Z",
+      "version": 1,
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.12686",
+      "pdf_url": "https://arxiv.org/pdf/2609.12686",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "long-context, compress, language model"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.12551",
+      "title": "RoofLang: Enabling AI-Driven Architecting of LLM Inference Systems",
+      "abstract": "AI is beginning to make substantive contributions to LLM inference optimization. Existing AI optimizations are predominantly profiling-based. Profiling-bound feedback confines the search to the capabilities and performance of an existing software stack, preventing a fundamentally better architecture of LLM inference systems from being identified. To enable the AI-driven LLM inference system architecting loop, we argue that a general workload representation, a verifiable mutation space, and an implementation-independent evaluator are required. We present the RoofLang domain-specific language (DSL) that provides these features. In our evaluation, RoofLang reveals that DeepSeek V4-series models could achieve 3.5-39.5$\\times$ higher peak decode throughput than other representative models. This gap is disproportionate to their total parameter counts and arises largely from compact KV-cache designs that support larger batches and reduce memory traffic. A persistent optimizer agent further discovered several new architectures that improved both throughput and interactivity of DeepSeek V4 Pro on NVIDIA B300 by 6.23-50.1%.",
+      "authors": [
+        "Ziyue Yang",
+        "Yuting Jiang",
+        "Lei Qu",
+        "Peng Cheng"
+      ],
+      "published": "2026-09-11T07:57:28Z",
+      "updated": "2026-09-11T07:57:28Z",
+      "version": 1,
+      "categories": [
+        "cs.DC",
+        "cs.AI"
+      ],
+      "url": "https://arxiv.org/abs/2609.12551",
+      "pdf_url": "https://arxiv.org/pdf/2609.12551",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "kv-cache, agent, llm"
+        }
+      ],
+      "related_only": true
+    },
+    {
+      "id": "2609.12412",
+      "title": "HoliBench: A Cross-Platform Benchmarking and Deployment Toolkit for Foundation Models in CPS-IoT Applications",
+      "abstract": "Foundation models, including large language models, vision-language models, and time-series foundation models, are increasingly deployed on embedded and edge platforms for CPS and IoT applications, where energy, latency, and memory are as critical as task accuracy. Existing benchmarking tools evaluate model capability in isolation, reporting accuracy assuming sufficient compute, while hardware profiling tools remain platform-specific and mutually incompatible. As a result, users lack a unified workflow for making deployment decisions across heterogeneous devices. We present HoliBench, a modular benchmarking and deployment toolkit that jointly characterizes accuracy, latency, and energy across platforms from single-board computers to GPU servers. Its platform abstraction layer calibrates cross-device measurement, and the toolkit supports multiple model modalities, inference engines, concurrencies, and existing evaluation harnesses. An interactive interface exposes constraint-aware configuration selection over a design space that is profiled once and reused across studies. Using HoliBench, we characterize 20 models across 7 device types, 3 quantization levels, 8 inference backends, and over 30 tasks, surfacing tradeoffs that existing tools miss: quantization reduces latency only on hardware with low-precision support, accuracy gains show diminishing returns relative to energy, and for autoregressive workloads, average inference power is approximately constant across output lengths. We further find that single-model profiles compose under sequential co-resident execution. In a multi-model CPS deployment, standalone profiles predict combined-pipeline latency and power within 1.2% and 2.5%, enabling deployment exploration without exhaustively profiling every pipeline configuration. We release HoliBench as open-source infrastructure for deployment-aware evaluation of foundation models.",
+      "authors": [
+        "Inesh Chakrabarti",
+        "Zejun Xiong",
+        "Pragya Sharma",
+        "Mani Srivastava"
+      ],
+      "published": "2026-09-11T04:03:20Z",
+      "updated": "2026-09-11T04:03:20Z",
+      "version": 1,
+      "categories": [
+        "cs.DC",
+        "cs.LG",
+        "cs.PF"
+      ],
+      "url": "https://arxiv.org/abs/2609.12412",
+      "pdf_url": "https://arxiv.org/pdf/2609.12412",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.12208",
+      "title": "Vortex: Bridging Extreme Compression and Efficient LLM Inference",
+      "abstract": "Extreme compression techniques, including vector quantization (VQ) and input-dependent sparsity, can significantly reduce the memory footprint of large language models (LLMs). However, a key challenge remains in translating such compression into practical efficiency. On conventional systolic-array-based accelerators, VQ incurs high dequantization overhead, while the irregular patterns of input-dependent sparsity are difficult to exploit. In this study, we address these challenges with Vortex, an architecture compatible with systolic-array-based accelerators with minimal hardware overhead, bridging the gap between extreme compression and efficient inference. Vortex adopts a bi-flow execution strategy that efficiently supports vector-quantized models across both prefill and decoding workloads, and we further optimize it through systematic design space exploration. On the algorithm side, we propose codebook-wise contextual sparsity to align with VQ execution. Across end-to-end workloads, Vortex achieves $8.03\\times$--$23.7\\times$ speedup and $5.68\\times$--$12.5\\times$ energy reduction over state-of-the-art accelerators.",
+      "authors": [
+        "Haoxuan Shan",
+        "Cong Guo",
+        "Bowen Duan",
+        "Chiyue Wei",
+        "Feng Cheng",
+        "Yuzhe Fu",
+        "Yintao He",
+        "Hai \"Helen\" Li",
+        "Yiran Chen"
+      ],
+      "published": "2026-09-10T21:04:15Z",
+      "updated": "2026-09-10T21:04:15Z",
+      "version": 1,
+      "categories": [
+        "cs.AR"
+      ],
+      "url": "https://arxiv.org/abs/2609.12208",
+      "pdf_url": "https://arxiv.org/pdf/2609.12208",
+      "first_seen": "2026-09-16T09:18:19+00:00",
+      "topics": [
+        "llm-quantization"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "大模型量化",
+          "evidence": "quantiz, language model"
+        }
+      ],
+      "related_only": false
+    },
+    {
+      "id": "2609.12111",
+      "title": "The Cost of Compression: A Rate-Distortion Limit on Factual Hallucination",
+      "abstract": "Factual hallucination in closed-book question answering is often treated as a coverage problem: a model fails because the relevant fact is absent from its internal memory. This view misses a second source of error. Even when a fact has been observed, finite memory may force it to be stored only approximately. We study this effect through a simple coverage--compression model of factual recall. We consider an unstructured question-answering task with $N$ possible queries and $K$ possible answers. A learner observes $M$ training facts, compresses them into at most $B$ bits, and answers uniformly drawn test queries without retrieval. For a uniformly random ground-truth mapping, we prove $\\mathcal{E} \\geq \\frac{M}{N}δ^\\star\\!\\left(\\frac{B}{M}\\right) + \\left(1-\\frac{M}{N}\\right)\\left(1-\\frac{1}{K}\\right)$, where $δ^\\star(r)$ is the inverse rate-distortion function of a uniform $K$-ary source under zero-one loss. The two terms separate compression distortion on observed facts from missing coverage on unobserved facts. The bound gives a compact way to reason about selective memory, forced compression, structure, retrieval, abstention, and long-context organization. We study the predicted signatures with theory-implied simulations and controlled fact-injection probes in modern language models that vary fact load and effective trainable memory. The result is not a complete theory of hallucination, but an information-theoretic account of a separable failure mode: lossy recall of observed facts under finite memory.",
+      "authors": [
+        "Xi Wang",
+        "Shijia Xu",
+        "Rongfeng Guo"
+      ],
+      "published": "2026-09-10T18:37:44Z",
+      "updated": "2026-09-10T18:37:44Z",
+      "version": 1,
+      "categories": [
+        "cs.CL"
+      ],
+      "url": "https://arxiv.org/abs/2609.12111",
+      "pdf_url": "https://arxiv.org/pdf/2609.12111",
+      "first_seen": "2026-09-16T09:18:26+00:00",
+      "topics": [
+        "long-context"
+      ],
+      "researchers": [],
+      "reasons": [
+        {
+          "type": "topic",
+          "label": "长上下文与 KV Cache",
+          "evidence": "long-context, compress, language model"
+        }
+      ],
+      "related_only": true
+    },
+    {
       "id": "2609.11716",
       "title": "Why Does Post-Training Quantization Work?",
       "abstract": "Post-training quantization compresses large language models (LLMs) by storing their weights at reduced precision, and each quantized weight introduces an error into the hidden states. Naively, these errors should accumulate with depth and corrupt next-token prediction; randomly initialized models accumulate these discrepancies rapidly, whereas quantized pretrained models accumulate much less hidden-state error and largely maintain downstream task performance, even though they were never trained with quantization noise. This raises the question we address: why does post-training quantization work? Comparing full-precision and quantized forward passes, we identify two mechanisms that characterize pretrained quantization robustness. First, the error a layer newly introduces tends to oppose the error it inherits from the layer's input. The two cancel partially such that the discrepancy between full-precision and quantized passes grows slowly. This counteracting residual interaction develops during pretraining. Our quantitative analysis identifies it as a major factor slowing hidden-error growth. Second, LM-head geometry preferentially preserves the scores and probabilities of high-ranked tokens, which typically represent the model's most confident predictions. Together, these mechanisms explain why quantization error that passes through numerous layers can still produce only small output changes, and we verify the findings across models and quantization settings.",
@@ -217,8 +1629,8 @@
         "Tianxiang Zhou"
       ],
       "published": "2026-09-10T08:29:27Z",
-      "updated": "2026-09-10T08:29:27Z",
-      "version": 1,
+      "updated": "2026-09-14T03:32:00Z",
+      "version": 2,
       "categories": [
         "cs.AI",
         "cs.CL",
@@ -238,26 +1650,7 @@
           "evidence": "kv cache, agent, language model"
         }
       ],
-      "related_only": true,
-      "image": {
-        "file": "2609.11231.png",
-        "source": "https://arxiv.org/html/2609.11231v1/surgical-room-agent-runtime.png"
-      },
-      "image_checked": "2026-09-11T08:56:07+00:00",
-      "summary": {
-        "title_zh": "面向智能手术室的语音交互多智能体系统：架构设计与关键技术",
-        "tldr": "本文提出 SurgicalRoomAgent，一个面向智能手术室、基于大语言模型的语音交互多智能体系统，采用语音交互流水线与智能体核心的分层架构，并研究三项关键技术：基于字节级最长公共前缀复用的 KV Cache 前缀预热、流式部分 JSON 解析与任务提前并行执行、渐进式技能提示披露；系统使用 Qwen3-27B 模型与 llama.cpp/sglang 推理引擎，在 16384 token 上下文限制内运行，摘要与正文给出的性能数据多为基于架构与参数配置的理论估计。",
-        "contributions": "1. 分层架构设计：将语音交互流水线（唤醒→ASR→轮次检测→智能体推理→LLM 生成→TTS）与智能体核心（技能注册表、任务规划器、设备管理器等）分离。2. KV Cache 前缀预热优化：基于字节级最长公共前缀复用，在设备状态变化后异步预计算系统提示的 KV Cache，将真实请求的预填充开销从约 500 毫秒降至数十毫秒。3. 流式部分 JSON 解析与任务提前执行：在 LLM 流式输出中实时解析部分 JSON，检测到完整任务数组即启动并行执行，形成边生成边执行的流水线。4. 渐进式技能提示披露：依据用户角色、已连接设备、手术阶段三层上下文动态过滤系统提示。5. DAG 任务规划与调度：采用 Kahn 算法分层拓扑排序与 DFS 三色环检测，支持多意图任务的依赖建模与并行执行。",
-        "method": "系统采用分层架构，语音交互流水线由五个通过 HTTP/WebSocket 通信的微服务组成：唤醒服务（Sherpa-ONNX 关键词识别）、实时 ASR 服务（FunASR 或 Qwen3-ASR，含音素匹配热词后校正，阈值 0.85）、轮次检测服务（基于 LLM 的二分类，0 表示闲聊或噪声、2 表示医疗指令，用 GBNF 语法约束输出，保留最近 5 轮对话上下文）、智能体服务（FastAPI，REST 与 WebSocket 接口）、TTS 服务（CosyVoice 或 Qwen3-TTS，支持流式合成）。智能体核心以 MultiTurnAgent 类为中心，包含技能注册表（Registry+Decorator 模式，自动发现）、任务规划器（Kahn 分层拓扑排序与 DFS 三色环检测）、设备管理器（模板方法模式，DeviceFunction 含 20 余个字段、24 个可更新字段）、权限控制（RBAC，admin/surgeon/anesthesiologist/nurse/any 五级）、存储与安全（SQLite、JWT HMAC-SHA256 24 小时过期、字段级加密、审计日志）。KV Cache 前缀预热通过 PromptWarmer 组件实现，采用 10 秒 TTL 去重、300 毫秒防抖、单线程执行、静默失败与强制模式，预热请求参数为 max_tokens=1、stream=True、timeout=30s、cache_prompt=True，触发点为设备状态变化、对话轮次完成与记录开始。流式部分 JSON 解析通过 extract_partial_field、try_extract_tasks、is_field_complete 等函数实现，检测到完整 tasks 数组后立即提交并行执行。渐进式技能提示披露通过 build_prompt_sections(context) 实现角色、设备条件、手术阶段三层过滤，技能提示文件采用 YAML frontmatter 加 Markdown 正文格式。DAG 任务规划支持单任务与多任务 JSON 格式，TaskScheduler 按层并行执行，同层任务无依赖并行、层间串行，并提供 _fallback_single_task 回退机制。",
-        "results": "论文报告：预填充开销（设备变化）从约 500 毫秒降至约 50–80 毫秒，改善 83%–90%；首 token 时间从约 600 毫秒降至约 150–200 毫秒，改善 67%–75%；任务执行启动由等待完整 JSON 改为流式加提前执行，约改善 30%；TTS 播放延迟由等待完整响应改为响应闭合触发，约改善 40%。上下文窗口分配：系统提示（核心角色加设备定义）约 8000 token 占 48.8%，技能提示（披露后）约 3000 token 占 18.3%，决策流加安全加格式约 1662 token 占 10.1%，对话历史（10 轮）约 2000 token 占 12.2%，用户输入加设备状态约 1000 token 占 6.1%，总计约 15662 token 占 95.6%，可用余量约 722 token 占 4.4%。渐进式披露在护士角色且设备较少场景可释放约 2000–3000 token。系统在 16384 token 上下文限制内运行，max_tokens 设为 1024。论文明确注明上述数据为基于系统架构与参数配置的理论估计，实际性能受硬件配置、网络环境与模型负载影响。轮次检测准确率的具体数值摘要未提供，需查看全文。",
-        "limitations": "论文自述局限：1. 缺乏大规模临床验证，系统处于原型开发与实验室测试阶段，尚未在真实手术室环境开展大规模临床试验。2. 单一 LLM 实例瓶颈，当前使用单个 Qwen3-27B 实例，多用户并发场景下可能成为性能瓶颈，GPU 显存限制并发。3. ASR 精度依赖，手术室噪声（如电外科设备、手术吸引器）可能影响 ASR 精度，高噪声环境鲁棒性有待改进。4. 设备协议依赖，设备控制依赖厂商提供的 API 或协议，不同厂商接口差异大，集成新设备需开发特定适配层。5. 上下文窗口限制，16384 token 上下文窗口在长时间手术场景下可能不足以维持完整对话历史。此外，性能数据为理论估计而非实测，轮次检测准确率等具体指标摘要未提供，需查看全文。",
-        "relevance": "与大模型量化的关系：论文使用 Qwen3-27B-FP8 模型，涉及 FP8 量化，但论文重点不在量化算法本身，而是推理延迟优化；其 KV Cache 前缀预热与字节级最长公共前缀复用属于 KV Cache 管理与推理优化范畴，与量化后模型的显存与延迟权衡相关。与长程 Agent 及多步工具调用量化的关系：论文提出 DAG 任务规划与调度、流式部分 JSON 解析与提前并行执行、渐进式技能提示披露，这些属于多步工具调用与任务编排的工程优化，但论文未涉及针对长程 Agent 或多步工具调用的量化方法研究，也未开展 Agent 场景下的量化实验。与 KV cache 的关系：论文核心贡献之一是 KV Cache 前缀预热机制，通过 PromptWarmer 异步预计算系统提示前缀的 KV Cache，利用字节级 LCP 复用使真实请求仅计算增量部分，将预填充开销从约 500 毫秒降至约 50–80 毫秒，并设计了基于 MD5 短哈希的预热命中诊断机制，这是与 KV cache 直接相关的关键技术。需要明确：论文没有开展 Agent 相关的实验，其 Agent 应用属于系统架构设计与理论性能分析，性能数据为理论估计；论文也未研究量化对长程 Agent 或多步工具调用性能的影响。",
-        "source_kind": "html_excerpt",
-        "model": "deepseek-v4-flash",
-        "generated_at": "2026-09-11T08:56:15+00:00",
-        "source_hash": "e8011a0f8af765756a5306228a6c1186767c982ca6d83dfed86f16f3cc7d6651",
-        "paper_updated": "2026-09-10T08:29:27Z"
-      }
+      "related_only": true
     },
     {
       "id": "2609.11192",

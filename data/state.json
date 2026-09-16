@@ -1,37 +1,32 @@
 {
-  "last_success": "2026-09-12T08:39:03+00:00",
+  "last_success": "2026-09-16T09:18:29+00:00",
   "streams": {
     "topic:llm-quantization": {
       "query": "(ti:quantiz* OR abs:quantiz* OR ti:\"low-bit\" OR abs:\"low-bit\" OR ti:FP4 OR ti:FP8) AND (ti:\"language model\" OR abs:\"language model\" OR abs:LLM OR abs:LLMs)",
-      "last_success": "2026-09-12T08:38:10+00:00",
-      "fetched": 24
+      "last_success": "2026-09-16T09:18:16+00:00",
+      "fetched": 36
     },
     "topic:agent-quantization": {
       "query": "(ti:quantiz* OR abs:quantiz* OR abs:\"low-bit\" OR abs:\"low precision\") AND (abs:agent OR abs:agentic OR abs:\"long-horizon\" OR abs:\"multi-step\" OR abs:\"chain-of-thought\" OR abs:reasoning OR abs:\"tool use\")",
-      "last_success": "2026-09-14T09:52:12+00:00",
-      "fetched": 8
+      "last_success": "2026-09-16T09:18:16+00:00",
+      "fetched": 11
     },
     "topic:long-context": {
       "query": "(abs:\"KV cache\" OR abs:\"key-value cache\" OR abs:\"long-context\") AND (abs:quantiz* OR abs:compress* OR abs:efficient OR abs:agent)",
-      "last_success": "2026-09-12T08:38:10+00:00",
-      "fetched": 26
+      "last_success": "2026-09-16T09:18:16+00:00",
+      "fetched": 43
     },
     "researcher:song-han": {
       "query": "au:\"Song Han\"",
-      "last_success": "2026-09-12T08:38:10+00:00",
-      "fetched": 0
+      "last_success": "2026-09-16T09:18:16+00:00",
+      "fetched": 2
     }
   },
   "last_run": {
-    "at": "2026-09-15T09:29:44+00:00",
-    "status": "partial",
-    "errors": [
-      "topic:llm-quantization: TimeoutError: The read operation timed out",
-      "topic:agent-quantization: HTTPError: HTTP Error 429: Too Many Requests",
-      "topic:long-context: HTTPError: HTTP Error 429: Too Many Requests",
-      "researcher:song-han: HTTPError: HTTP Error 429: Too Many Requests"
-    ],
+    "at": "2026-09-16T09:18:29+00:00",
+    "status": "ok",
+    "errors": [],
     "warnings": [],
-    "paper_count": 229
+    "paper_count": 260
   }
 }
