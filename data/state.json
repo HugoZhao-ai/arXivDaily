@@ -23,9 +23,14 @@
     }
   },
   "last_run": {
-    "at": "2026-09-16T09:18:29+00:00",
-    "status": "ok",
-    "errors": [],
+    "at": "2026-09-17T09:27:03+00:00",
+    "status": "partial",
+    "errors": [
+      "topic:llm-quantization: HTTPError: HTTP Error 406: Not Acceptable",
+      "topic:agent-quantization: HTTPError: HTTP Error 406: Not Acceptable",
+      "topic:long-context: HTTPError: HTTP Error 406: Not Acceptable",
+      "researcher:song-han: HTTPError: HTTP Error 406: Not Acceptable"
+    ],
     "warnings": [],
     "paper_count": 260
   }

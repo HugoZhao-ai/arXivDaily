@@ -138,7 +138,21 @@
         "file": "2609.17248.png",
         "source": "https://arxiv.org/html/2609.17248v1/annotation_revised.png"
       },
-      "image_checked": "2026-09-16T09:18:45+00:00"
+      "image_checked": "2026-09-17T09:27:04+00:00",
+      "summary": {
+        "title_zh": "Video-HolmesV2：多模态大模型能否在长视频中基于时空音视频证据进行推理？",
+        "tldr": "该论文提出 Video-HolmesV2，一个面向长视频深度音视频耦合推理的基准，包含 784 个长视频（平均约 43 分钟）和 4000 个问答对，要求模型给出精确的时空音视频证据；同时提出音视频-文本引导的 token 压缩框架以缓解长上下文 token 爆炸。摘要称即使强闭源模型准确率也低于 60%，其方法优于同类开源全模态模型。",
+        "contributions": "提出 Video-HolmesV2 基准，强调深度音视频耦合，包含 784 个长视频与 4000 个问答对；通过多模型交叉验证构建精确的时空音视频证据标注，并提出将推理正确性与有效时间定位严格绑定的评估指标；提出音视频-文本引导的 token 压缩框架，结合双模态打分与差异化去重以保留关键证据。",
+        "method": "基准构建方面：收集 2024 年后影视视频，用多个原生长上下文多模态模型从音视频互补性、跨模态因果复杂度、角色弧、叙事连贯性、受众评价五个维度打分，经 Z-score 归一化、加权聚合与模态否决、分歧度分层筛选；标注流程包括分层问题生成、单模态陷阱盲过滤、片段级交叉验证、专家裁决。评估方面：答案准确率为二值，证据质量由时间软对齐与语义匹配组成，总分 S_total=0.6·Acc_MCQ+0.4·(Acc_MCQ·S_evidence)。方法方面：用轻量文本引导视觉打分（从大模型蒸馏，Spearman 排序损失）与免训练音频引导视觉打分（音频自注意力选锚点，余弦相似度传播到视觉），融合后做掩码差异化压缩，核心集内细粒度合并、背景集激进池化，在固定 token 预算下重组序列。",
+        "results": "在 Video-HolmesV2 上，Gemini-2.5-Pro 总体最高 73.2，Qwen3-VL-235B-A22B 开源最高 55.3，GPT-4o 为 46.9；作者方法总体 44.5，高于 Qwen2.5-VL-32B 的 43.6 与 Qwen2.5-Omni-7B 的 40.7。证据分数方面，Qwen3-VL-235B-A22B 的 MCQ 为 55.1 但证据分仅 8.5，Gemini-2.5-Pro 证据分为 35.2。在 AVUTBench、VideoMME、ShortVid-Bench 上，作者方法相对 Full Tokens 达到 101.5% 相对性能；在 WorldScene 上平均 47.2，高于 Full Tokens 的 46.8。消融显示文本引导、音频引导、双流融合差异化压缩逐步提升 VideoMME 至 67.8，WorldScene 至 47.2；8192 视觉 token 与 2048 音频 token 为最优配置。",
+        "limitations": "摘要与节选未提供作者明确列出的局限性；论文提到长视频推理随视频时长增加而普遍退化，参数扩展无法解决注意力稀释，且部分模型证据分数接近零。摘要未提供，需查看全文以确认作者对基准覆盖范围、标注成本、评估指标假设等方面的正式局限说明。",
+        "relevance": "该论文与大模型量化、长程 Agent / 多步工具调用量化、KV cache 的关系：论文核心是长视频多模态 token 压缩与固定 token 预算下的证据保留，属于上下文 token 压缩与效率优化，与 KV cache 压缩和长上下文推理效率问题相关，但论文未直接研究 KV cache 量化或 Agent 多步工具调用量化。论文没有 Agent 实验，也未涉及多步工具调用场景；对 Agent 应用的关联仅为推测：其音视频证据定位与 token 压缩思路可能对需要长程多模态记忆的 Agent 有参考价值，但论文未验证。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:09+00:00",
+        "source_hash": "ce5ed103b525ab570ac93ec1f1f04e195d3b08903a1c4ce2469f18aa6b1892d3",
+        "paper_updated": "2026-09-15T14:30:00Z"
+      }
     },
     {
       "id": "2609.17198",
@@ -815,7 +829,26 @@
           "evidence": "kv cache, efficient, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.14850.png",
+        "source": "https://arxiv.org/html/2609.14850v1/parallel-decoding.html.png"
+      },
+      "image_checked": "2026-09-17T09:27:13+00:00",
+      "summary": {
+        "title_zh": "自编排语言模型：利用语义依赖实现高效推理",
+        "tldr": "这是一篇博士论文，提出“自编排语言模型”概念：让语言模型在生成过程中标注语义依赖（哪些 token 依赖哪些 token），并由配套运行时据此并行化解码、驱逐中间上下文或推导去噪顺序。论文通过 PASTA、Thinking in Place（TIP）和 Planned Diffusion 三个系统分别针对解码延迟、KV cache 内存和扩散去噪顺序三个瓶颈，报告了帕累托更优的质量-效率权衡。",
+        "contributions": "提出统一设计方法论：语义依赖标注语言、解释标注的运行时、以及训练模型产生准确标注的训练流程。三个系统分别为：PASTA 将回复切分为语义块并标注块间依赖，使无依赖块并行异步解码；TIP 将长思维链切分为语义步骤，用固定数量的思维寄存器管理，模型在生成中标记可驱逐步骤以释放 KV cache；Planned Diffusion 先自回归规划出相互独立的块，再用扩散并行去噪。论文还给出声明式与命令式两种自编排抽象。",
+        "method": "核心是让模型在生成中输出特殊 token 形式的语义依赖标注，运行时读取这些标注执行优化。PASTA 用监督微调加偏好优化训练模型生成并行/同步标注，运行时以异步解码线程执行并在同步点汇合。TIP 用思维寄存器机制，模型为每个推理步骤分配寄存器，复用寄存器即标记旧步骤死亡，运行时按页粒度驱逐其 KV cache 并维护增量注意力掩码，训练采用 SFT 加 GRPO 强化学习。Planned Diffusion 训练单一模型先自回归生成含块主题与长度的计划，再对独立块并行扩散去噪，注意力掩码混合因果与双向注意力。",
+        "results": "摘要与节选给出部分数字：PASTA 在 AlpacaEval 上实现 1.21 倍至 1.93 倍几何平均加速，质量变化从 +2.2% 到 -7.1%，帕累托优于 Skeleton-of-Thought 和 APAR。TIP 在 AIME 2024 和 2025 上分别减少 59% 和 54% KV cache，准确率相对稠密解码提升 6.4 和 2.1 个百分点，在可比内存预算下优于 StreamingLLM 和 Paged H2O 3 至 10 个准确率点。Planned Diffusion 在 AlpacaEval 上实现 1.27 倍至 1.81 倍加速，质量变化 -0.87% 至 -5.4%。其余实验细节、数据集、硬件与完整结果摘要未提供，需查看全文。",
+        "limitations": "论文自述结果为经验性，未分析可达到的加速或内存缩减上界；三个系统虽共享统一方法论，但尚未收敛为单一标注语言或单一运行时同时提供全部推理优化。此外，节选未提供各系统的完整实验设置、统计显著性与失败案例分析，需查看全文。",
+        "relevance": "与大模型量化无直接关系，论文未涉及权重量化或激活量化。与长程 Agent / 多步工具调用量化的关系为间接：TIP 针对长思维链推理的 KV cache 驱逐，其思维寄存器与步骤死亡标记机制在概念上可迁移到多步 Agent 的上下文管理，但论文未做 Agent 或工具调用实验，属于推测而非论文结论。与 KV cache 关系直接：TIP 明确以语义依赖驱动的 KV cache 驱逐和页粒度内存回收为核心，PASTA 与 Planned Diffusion 也涉及并行解码时的 KV cache 布局与缓存管理。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:18+00:00",
+        "source_hash": "0391cc9c400242a3ad8b6801243f3f58aa5140546de889b3466120571fbef72b",
+        "paper_updated": "2026-09-13T23:48:33Z"
+      }
     },
     {
       "id": "2609.14762",
@@ -850,7 +883,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.14762.png",
+        "source": "https://arxiv.org/html/2609.14762v1/figures/results_charts.png"
+      },
+      "image_checked": "2026-09-17T09:27:22+00:00",
+      "summary": {
+        "title_zh": "TriCalRAG：面向AIOps中本地部署大模型根因分析的三策略检索增强基准",
+        "tldr": "该论文提出TriCalRAG基准，在单张工作站GPU（NVIDIA RTX PRO 6000，96GB显存）上通过vLLM本地部署Qwen2.5-14B与Mistral-Small两个开源模型，在BGL、HDFS、Thunderbird、OpenStack四个真实日志数据集上，比较零样本、少样本与检索增强生成（RAG）三种提示策略，并与经典LSTM检测器DeepLog对比。结果显示RAG不仅将平均F1提升0.10至0.27，更重要的是显著稳定了模型校准，使预测正例率接近真实类别平衡；零样本提示则使模型趋于退化行为。",
+        "contributions": "提出一个可复现的本地部署大模型RCA基准，覆盖四个真实日志数据集、两个开源模型、三种提示策略与一个经典非大模型基线，全部在单张工作站GPU上评测；给出统计严谨的评测协议，每个配置使用3个随机种子并对所有指标报告bootstrap 95%置信区间；给出校准分析，指出仅看F1会严重误判模型能力，零样本提示使两个模型趋于退化行为而RAG能稳定校准；公开基准工具、数据集划分与评测代码。",
+        "method": "每个基准实例为一个事件，即来自四个LogHub数据集的五条连续原始日志行窗口，系统需输出包含is_anomaly二分类判断、severity、一句话root_cause与一句话remediation的结构化JSON。每个数据集构造150个事件、正负各半，共600个事件。三种提示策略：零样本仅给指令与事件；少样本前置两个固定示例；RAG用all-MiniLM-L6-v2句嵌入与FAISS索引检索三个最相似历史事件（含真实标签，排除查询自身）作为先例。评测Qwen2.5-14B-Instruct与Mistral-Small-Instruct（22B），以bfloat16经vLLM服务，并与仅用正常序列训练的DeepLog式LSTM基线对比。每个配置跑3个随机种子，报告bootstrap 95%置信区间。",
+        "results": "宏观平均上Mistral-Small的F1更高（0.644对0.560），但Qwen2.5-14B校准失败更少（12个配置中5个对7个）且吞吐约翻倍（713.1对365.9 tokens/s），两者显存占用约86GB。RAG在BGL与Thunderbird上取得最强结果（BGL F1约0.92至0.94，Thunderbird约0.88至0.89），零样本在同数据集仅0.51至0.73。HDFS对所有模型与策略都更难，F1不超过0.687。校准方面，零样本使两个模型在4个数据集中的3个趋于退化，Mistral-Small零样本预测正例率在BGL达0.993、HDFS达0.987、OpenStack达1.000，准确率仅0.500至0.507；8个RAG配置中7个校准在阈值内，而8个零样本配置中仅2个。少样本在HDFS与OpenStack上出现相反失败模式，预测正例率低至0.016。批大小从1增至128使吞吐从48.3提升至1991.0 tokens/s，约41倍。AWQ 4-bit量化F1为0.739对bfloat16的0.730，延迟从5.06秒降至4.04秒，约20%降低且无显著精度损失。修正数据泄漏后DeepLog F1为0.698（精确率0.584，召回率0.867），预测正例率0.742。JSON解析失败率修正后为0.2%。",
+        "limitations": "固定5行连续窗口对HDFS不匹配，因其标签按块ID定义，相关日志行可能非连续分布，这可能是HDFS表现普遍偏低的原因。JSON提取最初有缺陷，导致Mistral-Small早期57.1%响应被误判为解析失败，修正后降至0.2%。DeepLog基线训练与评测样本较小（240条训练序列、120个留出评测事件），小于大模型配置的600个事件，比较应视为指示性而非定论。本版本仅覆盖两个开源模型，Llama-3.1-8B因门控仓库审批未完成，70B级量化模型与云API基线也尚未评测。未评估生成的root_cause与remediation文本的语义质量，F1不能作为解释有用性的代理。",
+        "relevance": "该论文与大模型量化直接相关：其消融实验比较了Qwen2.5-14B的bfloat16与AWQ 4-bit量化版本，发现4-bit量化在该结构化输出RCA任务上延迟降低约20%且无显著精度损失，并讨论了GPTQ与8-bit矩阵乘法等训练后量化方法。与KV cache相关：论文指出在单张96GB显存卡上，vLLM报告约50GB可用于KV cache，使批大小128时吞吐提升约41倍，说明KV cache容量是单卡批量推理吞吐的关键约束。与长程Agent或多步工具调用量化无直接关系：论文未涉及Agent、多步工具调用或长程推理链，其任务为单次事件分类与结构化输出，因此对Agent场景的适用性属于推测而非论文实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:29+00:00",
+        "source_hash": "0928039d8fb4d43e799729ad60506088dbd5c4380e5aeb72a98a3a8c6fafbad3",
+        "paper_updated": "2026-09-13T19:52:46Z"
+      }
     },
     {
       "id": "2609.14708",
@@ -874,17 +926,36 @@
       "researchers": [
         {
           "id": "song-han",
-          "status": "name-match"
+          "status": "verified"
         }
       ],
       "reasons": [
         {
           "type": "researcher",
           "label": "韩松",
-          "evidence": "作者名匹配，机构身份待核验"
+          "evidence": "作者名匹配；官网论文链接已核验"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.14708.png",
+        "source": "https://arxiv.org/html/2609.14708v1/teaser-pdf.png"
+      },
+      "image_checked": "2026-09-17T09:27:32+00:00",
+      "summary": {
+        "title_zh": "Lightning Weave：通过能力组合提升推理模型的准确率—效率前沿",
+        "tldr": "论文提出 Lightning Weave，一种基于在线策略蒸馏的后训练框架，把独立后训练得到的准确率导向与效率导向两种“策略偏移”在共享的学生 token 状态上对齐并组合成单一联合目标，从而在单个学生模型中同时提升推理准确率并减少生成 token 数。作者还提出 Tilted-Target DOPD，把缓存的策略偏移转成显式目标分布，使离线训练具有明确的稳定不动点，无需在训练时同时部署多个锚点模型。",
+        "contributions": "提出把能力表示为“锚点对”（后训练模型与其后训练前检查点）之间的策略偏移，并在共享学生 token 状态上对齐与组合；提出 Tilted-Target DOPD，将缓存的策略偏移转化为显式目标分布，使损失与梯度在学生匹配目标时消失，从而为离线能力迁移提供稳定不动点；提出 Lightning Weave 多锚点组合，先对对齐后的对数比做加权求和，再构造一个联合倾斜目标，使多个能力源在每个学生决策上共同监督；通过调整锚点权重可获得一族具有不同准确率—效率权衡的学生模型，形成经验性 Pareto 前沿。",
+        "method": "方法基于在线策略蒸馏（OPD）与 Direct On-Policy Distillation（DOPD）。每个能力由一对锚点（π+ 后训练模型，π− 其前检查点）表示，token 级策略偏移为 r(a|s)=log π+(a|s)/π−(a|s)。离线做法是从初始学生 πb 采样轨迹并缓存各锚点的偏移分数。作者指出直接复用 DOPD 的采样 token KL 代理在缓存轨迹上不保证有正确的不动点，因此提出 Tilted-Target DOPD：每个缓存状态定义目标分布 q(a|s)=πb(a|s)exp(r(a|s)/α)/Z(s)，训练最小化学生到该目标的 KL，α 控制偏移强度。多锚点时，先对 K 个对齐后的对数比做加权和 r_w=Σ w_i r_i（权重非负且和为 1），再构造联合倾斜目标 q_w(a|s)=πb(a|s)/Z_w(s)·exp(r_w(a|s)/α)，即各相对策略变化的乘积而非教师分布的算术混合；训练目标为 α 倍学生到 q_w 的 KL。每个锚点对只需对缓存轨迹打分一次，之后训练只需学生与缓存分数，无需同时部署多个锚点模型。跨 tokenizer 时通过跨 tokenizer 对齐把锚点分数投影到学生 token 空间。",
+        "results": "在五个学生模型（Qwen3-1.7B、Qwen3-4B、Qwen3-4B-Thinking-2507、Qwen3.5-4B、OLMo-3-7B-Think）和五个基准（AIME 2024、AIME 2025、HMMT 2025、LiveCodeBench v5、v6）上评估，主要组合为准确率导向的 Klear 偏移与效率导向的 DECS 偏移。摘要与正文给出的数字包括：Qwen3-4B 上平均准确率较基座提升 4.02 分、响应 token 减少 19.7%；Qwen3-4B-Thinking-2507 上平均准确率提升 4.5 分、token 减少 9.0%；Qwen3.5-4B 上平均准确率提升 9.70 分、token 减少 5.3%，其中 HMMT 2025 从 59.2% 提升到 64.0% 且 token 减少 10.7%，LiveCodeBench v5 从 41.7% 提升到 54.2% 且 token 减少 9.6%；OLMo-3-7B-Think 上平均准确率提升 3.74 分、token 减少 12.9%。在 Qwen3-4B-Thinking-2507 上扫描 Klear–DECS 权重得到非支配操作点，构成经验性 Pareto 前沿；在 AIME 2024 不同 token 预算下均优于单锚点策略。消融显示 Tilted-Target 与 Online DOPD 表现相当，但优于 Naive Offline；多锚点组合优于数据混合与顺序组合。",
+        "limitations": "论文设有 Limitations and Future Work 章节，但所提供的 HTML 节选未包含其具体内容，摘要未提供，需查看全文。此外，节选未给出跨 tokenizer 对齐误差、缓存状态分布偏移程度、以及组合权重选择成本的定量分析，这些需查看全文。",
+        "relevance": "该论文与大模型量化没有直接关系，未涉及权重量化、低比特表示或量化误差分析。与长程 Agent / 多步工具调用量化的关系是间接的：论文关注的是推理模型生成 token 数量（响应长度）与准确率的权衡，属于推理效率优化，而非 Agent 多步工具调用场景下的量化。与 KV cache 的关系也是间接的：论文在相关工作中提到 R-KV、SkipKV 等 KV cache 压缩方法，并将其定位为推理时系统优化，与本文的后训练能力组合互补；论文本身不研究 KV cache 的量化或压缩。需要明确的是，论文没有进行任何 Agent 实验，也没有多步工具调用实验，因此其对 Agent 应用的潜在价值属于推测而非论文直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:39+00:00",
+        "source_hash": "d9b582cb50e18dffcd94ff62a74792038cf8b0202cbee4a0e22b3b6276e30c79",
+        "paper_updated": "2026-09-13T18:05:58Z"
+      }
     },
     {
       "id": "2609.16055",
@@ -919,7 +990,26 @@
           "evidence": "long-context, efficient, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.16055.png",
+        "source": "https://arxiv.org/html/2609.16055v1/intro_main.png"
+      },
+      "image_checked": "2026-09-17T09:27:42+00:00",
+      "summary": {
+        "title_zh": "思维状态实现内生推理",
+        "tldr": "论文提出思维状态（SoT）推理范式，从冻结大模型内部信息传递中提取四维动力学几何状态，用仅582参数的控制器在冻结骨干上选择性激活历史推理证据并决定何时停止，从而把测试时推理的控制变量从外部提示程序或搜索改为模型自身的内生状态；在3个LLM、16个数据集和2个VLM规模上报告了准确率提升与token、延迟下降。",
+        "contributions": "提出内生推理范式SoT，用模型内部演化状态而非外部脚本或搜索来控制推理；定义四维动力学几何状态（几何δ、动态v、方向一致性c、不确定性H）；设计状态条件化的证据组织算子与停止算子，仅训练582参数控制器而冻结骨干；在文本与视觉语言推理上验证准确率与效率的改进；探索无训练、仅嵌入和轨迹级评判等受限访问变体。",
+        "method": "将测试时推理形式化为策略控制的多步轨迹生成；从句子级推理单元的内部信息传递读出四维状态m_t；证据组织算子S根据当前状态从历史轨迹中选出稀疏子集作为后续推理上下文；停止算子T根据状态输出继续或终止；控制器用离线多步轨迹构造的偏好式信号和停止代理信号训练，骨干保持冻结；还给出无训练规则版和仅用句子嵌入轨迹的SoT-Embed版本，以及仅凭文本轨迹判断正确性的SoT-Judge。",
+        "results": "摘要与正文报告：在3个LLM、16个数据集上，SoT相对平均基线提升准确率并减少生成token 62.6%、端到端延迟44.6%；在Llama-3.1-8B上四个推理域均取得最佳域平均，较最强非SoT基线分别提升10.3/15.9/6.8/10.1个百分点，16个数据集中13个最佳或并列最佳；效率上平均223.9 token、9.8秒，低于采样搜索方法的472.7 token、29.0秒；在2个VLM规模、3个任务上平均准确率87.5%，较推理基线提升3.8点，较搜索方法少74.9% completion token、低73.5%延迟；受限访问下无训练和仅嵌入控制器分别保留38.2%和36.5%的平均准确率增益；轨迹级评判在3个API模型上达到84.1%一致率。",
+        "limitations": "论文在附录S列出当前局限与未来工作，但所给节选未展开具体内容；摘要未提供，需查看全文。此外，所给材料为HTML节选，可能截断，不能视为已读全文。",
+        "relevance": "论文与大模型量化没有直接关系，未涉及权重量化、激活量化或KV cache量化。其相关性在于长程Agent与多步工具调用场景：SoT通过内生状态选择历史证据并决定停止，可减少长轨迹中的token与延迟，理论上适合多步工具调用；但论文没有Agent或工具调用实验，也未评估KV cache，这些属于对Agent应用的推测而非论文直接结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:48+00:00",
+        "source_hash": "3054af30a9e9ebe9bdadfa0c33d529910f1daa910bf320d2784b741eed70be6f",
+        "paper_updated": "2026-09-13T05:55:03Z"
+      }
     },
     {
       "id": "2609.14060",
@@ -956,7 +1046,26 @@
           "evidence": "quantiz, agents, llm"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.14060.png",
+        "source": "https://arxiv.org/html/2609.14060v1/main.png"
+      },
+      "image_checked": "2026-09-17T09:27:51+00:00",
+      "summary": {
+        "title_zh": "AgentQ：面向LLM智能体的量化条件后门攻击",
+        "tldr": "论文提出AgentQ，首个针对LLM智能体的量化条件后门攻击研究。作者发现直接把已有量化条件攻击（QCA）方法移植到智能体会破坏工具调用格式能力，于是改用分层带限的低秩LoRA注入加部分PGD修复，使全精度检查点通过审计、量化后才触发恶意工具调用，在三个触发-动作对、三种量化码本和两个模型家族上取得最高100%的量化后攻击成功率且基本保持正常效用。",
+        "contributions": "论文自述贡献为：首次研究智能体场景下的量化条件攻击；识别并诊断直接移植QCA配方在智能体场景中的失败模式，将其归因于全秩SFT与全层PGD共有的均匀更新假设；提出AgentQ，通过分层带限低秩LoRA注入加部分PGD修复到多码本量化等价类来解决该矛盾，并在三个触发-动作对、三种码本和两个模型家族上验证。",
+        "method": "AgentQ沿用注入到修复的两阶段骨架，但把每阶段限制在结构化低维子流形上。阶段一用秩为r的LoRA适配器（附加到每个Transformer块的全部七个线性投影），但只作用于浅层到中层的层带（约前2/3层，L*=⌊2L/3⌋），训练后合并回基座，使有害扰动按构造位于层受限低秩子流形上。阶段二在活跃层集合上做部分PGD，冻结其余层作为能力锚点，并把参数投影到NF4、FP4、INT8三种码本量化等价类的交集上，优化目标聚合干净函数调用交叉熵与对三个投毒目标的遗忘，用bf16 AdamW、学习率2e-5并施加箱投影。部署时全精度推理表现为干净的函数调用智能体，而任一目标量化路径确定性触发有害行为。",
+        "results": "摘要与正文报告：全精度下发布的检查点通过良性行为审计，在留出触发输入上攻击签名出现率为零（ASR_fp16=0）；量化后每个（模型,任务）单元的最佳码本ASR在0.76到1.00之间，多数单元高于0.94，干净任务效用接近基座。直接移植基线在FP16通过审计，但量化后虽然ASR达0.93–1.00，工具选择、参数精确匹配和AgentDojo任务效用同步崩塌，原因是结构化输出失败（良性输入上约5次调用、70%过度调用率、精确调用保真度0.31对AgentQ的0.73）。层带消融显示全层适配器使FP16工具选择效用降至0.14，仅前段L0–9使NF4 ASR降至0.84，前段到中层L0–19达到NF4 ASR=1.00且效用0.40。18个单元中12个ASR超过0.90，参数注入最可靠（ASR≥0.87），AgentDojo广告注入最难但最小模型仍达0.76。最坏码本在单元间轮换，nf4、fp4、int8各至少出现在三个单元。良性流量误报率在工具选择上为0.00，参数注入不超过0.13。间接注入在Qwen3.5-9B上30/30触发，干净观测0/30、FP16 0/30；银行任务中量化智能体把账户值外泄20/20，门控0/100、FP16 0/100。案例研究用同一9B检查点经两个仅量化配置不同的FastAPI端点服务，磁盘权重字节相同，FP16端点表现干净而NF4端点每次探测都触发攻击。",
+        "limitations": "论文自述局限：码本覆盖仅限bitsandbytes的NF4、FP4、INT8，未覆盖GPTQ、AWQ、SmoothQuant及GGUF等；小规模实验显示AWQ因逐权重独立舍入可迁移（ASR_q=0.87），而GPTQ因Hessian误差反馈导致修复漂移、ASR_q=0.00（但修复前有害模型仍会触发）。模型规模与家族仅覆盖Qwen3.5-2B/4B/9B与Hammer2.1-1.5B/3B/7B，未评估30B–70B及闭源模型，层带选择在4B上校准、可能不适用于更深架构。论文不提出防御，确定性检测器只适用于已知触发。评估真实性方面，案例研究仅用单个9B检查点和合成的四工具注册表。此外，攻击需绑定特定工具名与模式，属于范围限制。",
+        "relevance": "该论文与大模型量化直接相关：它研究量化条件攻击，即全精度检查点通过审计、量化后才表现恶意，涉及NF4、FP4、INT8等量化码本与量化等价类。与长程Agent/多步工具调用量化的关系是：论文聚焦LLM智能体的工具调用场景，攻击载荷是可执行的结构化工具调用，并利用智能体的观测循环做间接注入，属于多步工具调用链上的量化安全风险；但它并未专门研究长程多步推理或长上下文下的量化误差累积。与KV cache的关系：论文未涉及KV cache量化，正文未提供相关内容，需查看全文确认是否有讨论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:27:58+00:00",
+        "source_hash": "8f1b70b2f1657e5a90f34a37b734f2c038dcc045051a1408931f19e7dc565158",
+        "paper_updated": "2026-09-12T17:17:59Z"
+      }
     },
     {
       "id": "2609.13624",
@@ -995,7 +1104,26 @@
           "evidence": "kv cache, efficient, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.13624.png",
+        "source": "https://arxiv.org/html/2609.13624v1/figures/training_configs.png"
+      },
+      "image_checked": "2026-09-17T09:28:02+00:00",
+      "summary": {
+        "title_zh": "面向大语言模型定向危害缓解的高效模块化框架",
+        "tldr": "论文提出一种模块化校正框架，在预训练大语言模型上叠加 Activated LoRA（aLoRA）适配器与上下文感知路由机制，用路由器判断响应中存在的危害类型并激活对应专家适配器进行纠正；由于 aLoRA 只在调用序列之后的 token 上应用低秩适配，可复用基座模型的 KV cache，从而避免重新预填充，实现低延迟的定向纠正。",
+        "contributions": "论文自述贡献包括：训练了针对偏见、毒性等特定危害的专用对齐器；将多个对齐器统一到单一模型中，用路由器适配器把有害响应路由到对应微调对齐器，且对齐器可在序列中途激活而不使 KV cache 失效，从而在生成过程中实现无缝低延迟纠正；在 BeaverTails、SafeRLHF、HarmfulQA 等标准安全与对齐基准上评估，路由在 6 个危害类别上 F1 超过 80%，并与 LoRA 在多轮对话场景下比较，说明方法在真实模型安全场景中的可行性。",
+        "method": "系统由两部分组成：一组 aLoRA 对齐器适配器，每个针对一种危害（harm、profanity、sexual_content、social_bias、unethical_behavior、violence）微调，并各自带有唯一调用序列以触发激活；以及一个同样以 aLoRA 实现的路由器适配器，把路由建模为多分类问题，替换线性输出头映射到 C 个类别，取分类输出 argmax 选择对齐器。训练损失为路由的多分类交叉熵损失与纠正的语言建模损失之和，并对类别不平衡按 w_i = n/m_i 加权。推理时先调用路由器得到对齐器名称，再按同质子批次替换调用序列并激活对应对齐器。论文还比较了三种训练配置：Trained Router（冻结预训练对齐器只训路由器）、Joint Trained Router（对齐器可继续训练）、Cold Start Joint（无预训练全联合训练）。",
+        "results": "路由方面，论文报告加权平均 F1 在三个基准上表现良好，训练路由器优于零样本与上下文基线，granite 2b 路由器可超过参数量约 6 倍的模型，gemma 12b instruct 在 SafeRLHF 与 HarmfulQA 上表现相近（≥80%）；三种路由器训练配置结果相似。对齐方面，使用 LLM as Judge 成对评估（Llama 70b 与 Mistral Small 24b 作为评判模型），训练 aLoRA 对齐器表现良好，但 granite 基线模型与训练对齐器表现相近。性能方面，在 8GB 显存的 RTX 3070 上使用支持 aLoRA 的 vLLM 分支，aLoRA 相比 LoRA 随对话长度增加降低请求延迟，并在多轮对话中保持恒定的首 token 时间（TTFT），而 LoRA 的 TTFT 随上下文长度增长；结论部分提到预期可获得 7-20 倍加速，引用 Greenewald 等（2025）报告的收益。",
+        "limitations": "论文自述局限：方法依赖参数高效微调，因此需要能访问基座模型，无法用于黑盒模型或仅通过 API 提供的模型，除非服务方将该微调方式作为服务提供；要实现推理时服务与 KV cache 复用收益，适配器必须针对生成文本所用的同一模型训练，迁移到其他模型会失去这些收益；对齐目前局限于单一危害，而真实响应可能同时包含多种危害，未来需研究如何组合多个对齐器同时对齐多个维度。",
+        "relevance": "该论文与 KV cache 直接相关：其核心机制是 aLoRA 适配器在序列中途激活时复用基座模型已计算的 KV cache，避免重新预填充，从而降低延迟并保持恒定 TTFT，论文还专门比较多轮对话下 aLoRA 与 LoRA 的延迟差异。与大模型量化无直接关系，论文未涉及量化方法、低比特表示或量化对 KV cache 的影响。与长程 Agent / 多步工具调用量化也无直接关系：论文未做 Agent 或工具调用实验，仅在引言中提到安全对齐不应干扰工具调用、数学等任务，属于背景性表述而非实验结论；其多轮对话延迟实验可被推测为对多步交互场景有参考价值，但论文本身未验证 Agent 或工具调用场景，相关推断需谨慎。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:08+00:00",
+        "source_hash": "5882d253a4dfb28701b8b91cd5805321575bfba3bd91834ee91806c151d64085",
+        "paper_updated": "2026-09-12T00:24:49Z"
+      }
     },
     {
       "id": "2609.13141",
@@ -1032,7 +1160,26 @@
           "evidence": "long-context, efficient, transformer"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.13141.png",
+        "source": "https://arxiv.org/html/2609.13141v1/ours5.png"
+      },
+      "image_checked": "2026-09-17T09:28:11+00:00",
+      "summary": {
+        "title_zh": "SAS：通过上下文排序端到端优化的简单注意力稀疏化",
+        "tldr": "论文提出 SAS，一种门控稀疏注意力机制，将选择器的连续分数以对数形式注入注意力 softmax 的 logits 中，使语言建模损失能够通过标准反向传播端到端地训练上下文块选择器，从而避免对稠密注意力分布进行逐层蒸馏。作者在推理、长上下文理解和智能体任务上报告 SAS 优于可训练稀疏注意力基线，并给出继续预训练的初步证据。",
+        "contributions": "提出 SAS 端到端后训练注意力稀疏化范式，用语言建模损失训练上下文选择器，无需教师注意力或辅助蒸馏；识别使该门控松弛有效的关键设计选择，包括 log 空间门注入、归一化门激活、保留细粒度分数差异、高效稀疏训练范围以及面向长上下文训练的内存高效内核；报告在推理、长上下文理解和智能体任务上跨注意力预算的一致改进，低预算下增益超过 10%。",
+        "method": "将块选择重新表述为上下文排序。选择器为历史块打分，经 softmax 归一化为门 g，当前块保持单位门。训练时把 log g 作为偏置加入注意力 logits，即 softmax(qK_S^T + log g_S)V_S，使语言建模损失可反向传播到选择器。采用四个设计选择：门注入在 softmax 内部、softmax 归一化门激活、保留连续软门而非二值 Top-K、训练时使用稀疏范围。推理时把学到的排序离散化为 Top-K 块索引。实现上使用融合门注入的 FlashAttention 风格 Triton 内核，并在 SGLang 中作为原生注意力后端支持解码阶段块稀疏注意力。",
+        "results": "消融实验在 Qwen3-4B、GPQA-Diamond、2048 token 预算下比较四种设计：内层 softmax 门优于外层门；softmax 归一化门优于 sigmoid 门和未归一化 logit 注入；保留连续排序信息比硬 Top-K STE 更稳定且最终更好；稀疏训练范围初期收敛较慢但最终性能与全范围相当且成本更低。后训练实验中 SAS 在推理、LongBench 和 BFCL/VitaBench 上多数预算和骨干下优于 SeerAttention-R 等基线，例如 1024 token 预算下 MATH500 提升 6.0–7.7 分、GPQA-Diamond 提升 10.6–15.5 分；LongBench 在 8K+ 桶有提升；BFCL 最高提升 +3.5。继续预训练中 SAS-RoPE 在 OLMo3-7B 上平均下游得分 43.28，LongBench 平均 30.0。解码效率方面报告 batch 1 在 512K 上下文下最高 5.6 倍延迟降低，batch 8 在 64K 下约 13 倍加速。",
+        "limitations": "论文包含 Limitation 附录，但提供的 HTML 节选未给出其具体内容，摘要未提供，需查看全文。此外，节选在效率分析处被截断，部分结果细节不完整。",
+        "relevance": "该论文直接研究大模型注意力稀疏化与 KV cache 选择：通过端到端训练块选择器，在解码阶段只读取固定预算的 KV 块，把解码复杂度从 O(n) 降到 O(|S|)，从而降低长上下文 KV cache 读取成本。论文包含智能体任务实验（BFCL 多轮和 VitaBench 长程工具使用），属于长程 Agent / 多步工具调用场景下的量化与稀疏化相关研究；但论文并未研究权重量化或 KV cache 数值量化，其稀疏化是选择性的块级注意力稀疏，而非低比特量化。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:17+00:00",
+        "source_hash": "4f23e0488f0d52d83967d122943e64d41194cb05fe2bb3b21878f821f485d42a",
+        "paper_updated": "2026-09-11T17:58:06Z"
+      }
     },
     {
       "id": "2609.13045",
@@ -1069,7 +1216,26 @@
           "evidence": "quantiz, llm"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.13045.png",
+        "source": "https://arxiv.org/html/2609.13045v1/autowave-x_v2.png"
+      },
+      "image_checked": "2026-09-17T09:28:20+00:00",
+      "summary": {
+        "title_zh": "Kraken：基于低比特率VQ与双路径源条件化的LLM语音到语音翻译",
+        "tldr": "论文提出Kraken，一个基于Qwen3-8B的端到端语音到语音翻译模型。它使用单层向量量化生成325 bps的低比特率语音token，并采用名为Autowave-X的GAN声码器，同时让LLM和声码器都以源语音为条件（双路径源条件化），从而在训练数据说话人和韵律不匹配的情况下仍能较好地迁移说话人身份和韵律。",
+        "contributions": "（a）提出325 bps的低比特率VQ token，降低SLM中的计算成本并简化架构；（b）提出双路径源条件化，LLM和基于GAN的token到波形声码器Autowave-X均以源语音为条件；（c）实验表明Kraken在翻译质量以及说话人和韵律迁移上优于SeamlessM4T-Large-v2和Qwen2.5-Omni，并在CVSS上超过Qwen3-Omni。",
+        "method": "模型由语音编码器、LLM和语音解码器组成。编码器使用经ASR微调的W2v-BERT 2.0，输入连续特征而非离散token，经适配器从50 Hz下采样到12.5 Hz。量化模块基于Conformer的编码器-解码器结构，以单层VQ码本（8192项）为瓶颈，重建W2v-BERT 2.0第20层SSL嵌入，输出25 Hz、325 bps的token。解码器包括GAN声码器Autowave-X（基于UniCATS，生成器替换为Vocos，以第8层SSL嵌入为源条件）和可选的迭代精修模块（基于WaveFit）。训练采用链式思维提示，先做ASR和S2TT再生成目标语音token。基于Qwen3-8B，使用150k小时多语言多任务语音数据全量微调。",
+        "results": "在FLEURS X-En S2ST上，Kraken（9B）平均ASR-BLEU为32.3，优于Seamless（2B）的32.1和Qwen2.5o（7B）的25.1，略低于Qwen3o（30B）的33.6，但在印地语和日语上更优。在FLEURS S2TT上平均BLEU为33.1，优于Whisper、Seamless和Qwen2.5o，低于Qwen3o的34.6。在CVSS X-En S2ST上平均ASR-BLEU为43.5，优于所有对比模型。客观指标上，Kraken在说话人相似度（SSim 0.75）、情感相似度（ESim 0.77）和AutoPCP（2.48）上优于对比模型，但UTMOS（3.13）低于Qwen2.5o和Qwen3o。消融显示迭代精修提升UTMOS，去掉解码器条件化会提高UTMOS但降低说话人和韵律相似度，去掉LLM条件化会降低说话人和韵律相似度。人工评测（MELD-ST日译英）中Kraken在韵律自然度、说话人匹配和情感匹配上得分最高，整体质量与Qwen3o接近但音频质量较低。",
+        "limitations": "仅支持10种主要语言的X-En翻译，不支持其他语言和方向（如En-X和非英语对）；是离线模型，流式（同传）翻译为未来工作；模型专注于标准S2ST及标准ASR、S2TT、MT、TTS任务，丧失了预训练LLM的通用指令跟随能力，对高级指令的S2ST任务表现不佳；训练数据依赖有限公开语料，低资源口音和方言可能表现下降。",
+        "relevance": "论文与大模型量化直接相关：它提出325 bps的单层VQ低比特率语音token，显著低于Qwen3-Omni和Hibiki的2.2 kbps以及SeamlessM4T-Large v2的664 bps，并强调低比特率可降低LLM预测的计算开销和架构复杂度。与长程Agent/多步工具调用量化无直接关系，论文未涉及Agent或工具调用实验。与KV cache无直接关系，论文未讨论KV cache。论文的链式思维提示（ASR→S2TT→S2ST）属于多步生成，但并非Agent工具调用。论文没有Agent实验，相关Agent应用仅为推测。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:26+00:00",
+        "source_hash": "e15302f2f8020840b22856eb4e55ff4e7e237d4eef855382d7069201fe9317de",
+        "paper_updated": "2026-09-11T16:41:22Z"
+      }
     },
     {
       "id": "2609.13031",
@@ -1109,7 +1275,22 @@
           "evidence": "kv cache, quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image_checked": "2026-09-17T09:28:26+00:00",
+      "summary": {
+        "title_zh": "面向表格基础模型的注意力量化",
+        "tldr": "论文针对表格基础模型（TabPFN-v3、TabICLv2）提出对注意力计算中的查询、键、值进行 FP8 量化，并使用 Triton 内核加速。核心发现是必须同时量化训练行之间（train-train）与测试行到训练行（test-train）的注意力，否则精度会大幅下降；在 NVIDIA RTX Pro 6000 上内核加速最高约 1.7 倍，在 TabArena 与 BeyondArena 上精度损失在种子噪声范围内。",
+        "contributions": "据摘要与正文：首次研究表格基础模型中的 FP8 注意力量化；提出对 Q、K、V 采用逐头 absmax 动态缩放的 FP8 量化方案；发现必须同时量化 train-train 与 test-train 两次注意力调用才能保持精度；提出复用训练查询的缩放因子给测试查询，使测试预测与批次无关；实现 Triton 内核并在 TabPFN-v3 与 TabICLv2 上验证精度与速度。",
+        "method": "将注意力中的 Q、K、V 量化为 e4m3fn FP8 格式，逐头计算 absmax 动态缩放（s=1/448*max|X|），P 矩阵不落盘、在内核内用固定缩放量化；对 softmax 指数加常数使行最大值提升到 256 以利用指数范围；测试查询复用训练查询的缩放因子以保证批次不变性；内核基于 FA2 设计、类似 FA3 的量化方式，用 Triton 实现，并在训练行数超过 8192 时启用（gate）。",
+        "results": "在 TabPFN-v3 上，仅量化 train-train 或仅量化 test-train 会导致明显退化（相对误差约 +2.8% 与 +2.4%，Elo 下降约 32 与 20）；同时量化两者时误差约 +0.01% 至 +0.02%，Elo 下降约 1.0 至 1.3，统计检验显示无 gate 时可能存在微小但可检测的退化。加 gate 后 TabArena 上 18/51 数据集启用 FP8，Elo 变化约 -0.1 至 -0.5；BeyondArena 上 56/142 数据集启用，Elo 变化约 -2.0 至 +0.6，端到端墙钟时间从 253.8 分钟降至 183.7 分钟。内核加速最高 1.72 倍，端到端最高 1.67 倍；头维度 128 时最高 1.82 倍，L4 GPU 上最高 1.89 倍。TabICLv2 上单次注意力调用量化误差约 +0.009%，Elo -1.8，p 值不显著，512k 训练行端到端加速 1.56 倍。",
+        "limitations": "作者指出：当前内核为 FA2 设计，未使用 TMA 等硬件单元，在 B200 或 H100 上可能无法达到 16 位性能；在 B200 上即使 16 位计算 softmax 也可能成为瓶颈，单纯加速矩阵乘法未必带来有意义加速。此外，无 gate 时严格统计检验显示存在微小但可检测的精度退化。",
+        "relevance": "论文直接研究注意力计算的量化（Q/K/V 到 FP8），而非权重或 KV cache 量化，并明确指出在表格基础模型中权重与 KV cache 量化收益有限。与大模型量化相关：它提供了注意力量化中缩放对齐、批次不变性等经验，但对象是表格基础模型而非 LLM。与长程 Agent / 多步工具调用量化：论文未涉及 Agent、多步工具调用或长上下文 KV cache 场景，没有相关实验，属于推测性关联。与 KV cache 的关系：论文明确将 KV cache 量化列为 LLM 中更流行但在此场景收益有限的方向，本文不量化 KV cache，而是量化注意力矩阵乘法中的 Q、K、V。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:31+00:00",
+        "source_hash": "9df8fc9cfde80a30f7ab250d89f80e47240c4a94ae0933de4274ce719030a16a",
+        "paper_updated": "2026-09-11T16:31:29Z"
+      }
     },
     {
       "id": "2609.12945",
@@ -1209,7 +1390,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.12945.png",
+        "source": "https://arxiv.org/html/2609.12945v1/figures/zh-elo-2.png"
+      },
+      "image_checked": "2026-09-17T09:28:34+00:00",
+      "summary": {
+        "title_zh": "StepAudio 3 Gen 技术报告",
+        "tldr": "该报告提出 StepAudio 3 Gen，一个基于离散自回归建模的通用音频生成模型，直接在 12.5 Hz、16 层残差向量量化（RVQ）码本上建模语音、歌声、音乐、音效等，采用时间-深度架构分离时间轴与码本轴预测，并通过干扰感知渐进预训练与 RVQ Adaptor 在引入音频能力的同时保留大语言模型的文本能力。",
+        "contributions": "提出三项设计：一是干扰感知渐进预训练，用四阶段课程（冻结主干对齐、50% 文本回放、残差码预测器梯度暂时切断、低学习率长上下文联合冷却）在获得音频能力的同时保留 LLM 文本能力；二是 RVQ Adaptor，一个零初始化、逐 token 的残差模块，将多码本音频嵌入对齐到预训练 token 嵌入空间；三是跨通用音频的离散自回归建模，用单一 12.5 Hz、16 码本 RVQ 表示和共享 LLM 生成语音、歌声、音乐、音效及混合音频，不依赖扩散或流匹配声学渲染器。",
+        "method": "StepAudio Tokenizer 以 12.5 Hz 将语音、音乐和通用音频离散化为共享的 16×2048 RVQ 码空间，联合量化语义与声学特征，解码器为全因果 Vocos 风格 Transformer 加 ISTFT 头，输出 24 kHz 波形。LLM 主干为预训练 decoder-only Transformer，将第 0 码本加入主词表由 LM 头自回归预测，其余 15 个残差码本由轻量因果 Transformer（RVQ Code Predictor）沿码本轴自回归预测。输入侧 16 个码本嵌入求和后经 RVQ Adaptor 加到音频位置的 token 嵌入上。训练分四阶段预训练（约 2.7T token）、多任务指令微调（约 5000 小时音频）和基于 GRPO 的强化学习。",
+        "results": "摘要与节选报告：在 TTS 中文拟人度 Arena 式评测中 Elo 为 1755.33，对五个商业 TTS 系统总体胜率 82.0%（各对手 73.0%–90.0%）；在 InstructTTSEval 上中文平均 85.2%、英文平均 77.7%，为所比较系统最佳；语音设计盲评 Elo 1668.5，总体胜率 75.5%（各对手 65.3%–85.7%）。RVQ Adaptor 消融在 ASR、MMAU、CoVoST、SpeechMMLU 上均优于无 Adaptor 版本；干扰感知预训练在 FinEval、C-Eval、MMLU、CMMLU、MATH、GSM8K、BBH、HumanEval 上均优于三阶段基线。其他音频域（歌声、音乐、音效、vibe speech）仅作能力展示，未给出量化对比。",
+        "limitations": "摘要未提供，需查看全文。节选未报告通用音频各域（歌声、音乐、音效、vibe speech）的量化评测结果，也未提供与连续生成范式的直接对比实验；TTS 与语音设计主要依赖主观评测，客观指标有限；未讨论推理延迟、码本预测器误差累积等潜在问题。",
+        "relevance": "该论文与大模型量化的关系是间接的：其核心是音频 token 的离散 RVQ 表示与自回归生成，而非对 LLM 权重或激活做低比特量化。与长程 Agent / 多步工具调用量化的关系：论文未涉及 Agent、工具调用或多步推理实验，仅在预训练阶段使用长上下文（32,768 token，约 44 分钟音频）和交错多轮语音对话数据，属于长序列建模而非 Agent 量化。与 KV cache 的关系：论文未讨论 KV cache 的量化或压缩；其时间-深度架构将 15 个残差码本交给轻量预测器处理，避免把全部码本展平进主干序列，从而间接控制主干序列长度，但这不是 KV cache 量化研究。论文没有 Agent 实验，相关应用只能视为推测。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:40+00:00",
+        "source_hash": "a3f8e509fc8204964eddfe64cdcbfc8f89eb409c517bd5e55b4e50ca244e8629",
+        "paper_updated": "2026-09-11T15:05:20Z"
+      }
     },
     {
       "id": "2609.12923",
@@ -1244,7 +1444,26 @@
           "evidence": "quantiz, llm"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.12923.png",
+        "source": "https://arxiv.org/html/2609.12923v1/fig1_smbusy.png"
+      },
+      "image_checked": "2026-09-17T09:28:44+00:00",
+      "summary": {
+        "title_zh": "剖析Nvidia Hopper上大语言模型推理的GPU利用率",
+        "tldr": "本文针对单一SM利用率指标掩盖LLM推理真实瓶颈的问题，在H100 NVL上对vLLM+FlashAttention-3+cuBLASLt进行Nsight Compute剖析，提出八项计数器验证的利用率视图，覆盖冷预填充、热预填充和解码三种场景及四个生产模型。核心发现是解码阶段低利用率并非单一瓶颈，而是由寄存器与共享内存共同限制的占用上限、波量化浪费以及Hopper BF16 GMMA固定m64片段填充率过低等多种机制叠加造成。",
+        "contributions": "提出可复用的八指标、计数器验证的利用率报告方法，替代单一SM利用率数字；给出vLLM+FA3+cuBLASLt服务栈在冷预填充、热预填充、解码三种场景下按角色和场景的表征；指出Hopper GMMA m64片段使小批量解码稠密GEMM片段填充率仅1.6–12.5%，使每核计算吞吐读数高估有用矩阵乘吞吐8–64倍；提供cuBLASLt tile空间枚举实验和B=32验证实验，并计划公开原始NCU与Nsys报告及派生CSV数据集。",
+        "method": "在单张H100 NVL（94GB HBM3，132个SM）上运行vLLM（BF16，TP=1），启用FlashAttention-3、cuBLASLt Hopper GMMA路径和CUDA Graphs。使用Nsight Compute 2024.3按核剖析，启用MemoryWorkloadAnalysis、LaunchStats、SpeedOfLight、WarpStateStats和Occupancy等section。对Meta-Llama-3-8B、Qwen3-14B、Qwen3-32B、Qwen3-30B-A3B四个模型，扫描冷预填充、热预填充、解码三种场景以及上下文长度S、批量B和每层核角色，从原始NCU报告计算八个利用率视图，每个视图绑定到NCU计数器或显式公式。",
+        "results": "摘要与节选给出的直接实验结论包括：解码阶段稠密GEMM的SM利用率仅6.5–12.7%（均值9.4%），而冷预填充为73–97%（均值92%）；设备级计算SOL冷预填充92.0%、热预填充22.6%、解码7.9%；解码稠密GEMM的GMMA M轴片段填充率η_M在B=1,2,4,8时分别为1.56%、3.12%、6.25%、12.5%，均值5.86%；解码时long_scoreboard占停顿预算70–84%；波效率冷预填充99.8%、热预填充85.5%、解码80.5%；所有稠密BF16核受寄存器和共享内存共同限制，上限均为12 warps/SM；cuBLASLt tile空间枚举中59个可产生配置无一得到132倍数网格；B=32验证中Qwen3-14B解码稠密GEMM SM利用率升至71.9%，接近预测的B*≈31。",
+        "limitations": "作者列出的局限包括：FA3行混合问题，标准flash_attn行混合主核与combine核；B*线性外推仅由B=32实验验证和修正，属诊断而非预测；单GPU、TP=1、单一H100 SKU，TP会改变每GEMM形状并增加all-reduce，其他H100 SKU上HBM受限数字可能变化；启动开销常数τ=5μs依赖主机和驱动，仅捕获原始调度；工作集模型为一阶近似，无scratch/tile暂存，与dram__bytes误差约10–20%；热预填充缓存状态为合成预热，命中率≥99%，真实多轮中间命中率未表征。",
+        "relevance": "该论文与大模型量化、长程Agent/多步工具调用量化、KV cache的关系如下：论文直接实验聚焦BF16推理的GPU利用率剖析，未涉及量化本身，仅在占用上限分析中附带一个FP8-E4M3的CUTLASS tile扫描，且明确声明FP8不在主要范围内；论文未进行任何Agent或多步工具调用实验，因此对Agent应用的推断只能视为推测，不能作为论文结论；论文直接涉及KV cache，包括前缀缓存对冷/热预填充的区分、KV缓存写入核reshape_and_cache_flash在解码迭代中占比低于2%、以及Qwen3-32B因KV内存受限在长上下文下批量被限制在B≤4等，这些与长程Agent场景中KV cache增长和批量受限问题相关，但论文没有Agent实验。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:28:50+00:00",
+        "source_hash": "cccdde8cdf6b758261b265267b464555cfcdba91c8e745df4093d1d1bbc43992",
+        "paper_updated": "2026-09-11T14:49:05Z"
+      }
     },
     {
       "id": "2609.12686",
@@ -1276,7 +1495,26 @@
           "evidence": "long-context, compress, language model"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image": {
+        "file": "2609.12686.png",
+        "source": "https://arxiv.org/html/2609.12686v1/fig1.png"
+      },
+      "image_checked": "2026-09-17T09:28:54+00:00",
+      "summary": {
+        "title_zh": "基于残差向量重构的长上下文召回：不受上下文窗口大小限制",
+        "tldr": "论文提出一种免训练的长上下文召回方法：在记忆阶段从有界窗口抽取事实，将每条事实编码为冻结大模型前馈层中由激活索引的残差向量并外存；回答阶段通过查询路由与门控注入残差向量，在源文本及其 KV cache 被丢弃后重构事实。实验显示在二百万 token 的 BABILong 单事实问答上三个模型达到 50–80% 准确率，而对比的免训练方法降至零或接近零，且响应时 GPU 显存接近冻结模型本身。",
+        "contributions": "提出两阶段免训练召回方法，把有界文档窗口转为与查询无关的事实记录，并在源移除后重构选中记录，使 GPU 显存由固定事实预算而非源长度决定；用激活索引的参数残差向量确定性重构源信息，保持较高重构保真度并降低召回存储，且不修改模型权重；实验显示在二百万 token 时单事实准确率达 50–80%，在三个模型上超过所有被评估的免训练方法，存储事实内存在所有测量条件下低于 1GB；通过阶段级分析区分抽取、路由、重构与答案模型失败，并指出锚点对应有限是选择性召回的核心约束。",
+        "method": "方法分记忆与响应两阶段，模型权重全程冻结。记忆阶段：先用高召回候选过滤扫描句子，保留含实体、数字或标识符类 token 的句子，冻结模型按固定批次读取候选并提出简短逐字锚点，形成事实记录（锚点、事实索引、逐字句子值、源偏移）；容量预算 B=min(m̂·n_anc, K·C) 决定保留数量，锚点过多时按模型验证事实数与保留事实数排序；用留出召回探针选出 K 个存储层，按 ℓ(e,j)=λ_{(ι(e)+j) mod K} 轮转分配；对每条记录用固定召回提示（模板为 Recall the fact about {key}:）捕获 down projection 输入处的激活作为键，并仅优化残差向量 δ 使句子可被重构，存储归一化键与残差向量。响应阶段：用稠密语义排序与词法排序经倒数排名融合对锚点打分，最多选 5 个锚点、按融合顺序解码最多 24 条事实；在分配层安装读取钩子，按余弦相似度、softmax 权重与阈值 θ 门控注入残差向量；最后把重构事实按源顺序放入答案提示，由冻结模型生成答案。",
+        "results": "BABILong 单事实（QA1）从 0K 到 2M：在 0K 与 1K 无一致领先，16K 达到或并列最高；128K 及以上每个测量单元均非零；2M 时 Phi-3.5-mini 50%、Qwen3-4B 67%、Llama-3.1-8B 80%，超过所有对比方法，而压缩方法在该范围为零，截断与 StreamingLLM 仅在 2M 恢复 Llama-3.1-8B 一个样本，Chunk RAG 表现不稳定。两事实组合（QA2）优势较窄：Phi-3.5-mini 在 128K–1M 非零，Qwen3-4B 在 128K–512K 非零，Llama-3.1-8B 在 128K 后降为零；1M 时仅 Phi-3.5-mini 答对一题（两题中 50%）。RULER QA 中优势依模型而异：Phi-3.5-mini 在 512K–2M、Llama-3.1-8B 在 128K–1M 高于所有对比方法，Qwen3-4B 在长输入与若干文本方法持平（2M 与 Chunk RAG 持平），Llama-3.1-8B 在 2M 失败；Phi-3.5-mini 在 1M 与 2M 的 100% 各仅代表一个成功问题。显存方面，响应时 GPU 显存从 4K 到 2M 变化很小，两个较小模型在 9.3–10.3GB，Llama-3.1-8B 在 17.1–17.9GB，激活存储增长不足 0.8GB；全注意力从 8K 起超过该方法。消融显示：层数 K 从 1 增至 6 使准确率由 62.5% 升至 87.5%（路由召回保持 100%）；模板事实在 128–4096 条时平均召回 93.6–98.5%、保真度约 0.94；共享叙事池的保真度与精确召回随事实数增加而下降；删除 8 条条目后删除事实召回降为零，56 条保留输出均不变；NoLiMa 探针中该方法 8 题答对 1 题，Chunk RAG 答对 7 题，一跳问题全部失败。",
+        "limitations": "作者指出主要缺点是方法结构本身带来的时间开销：记忆阶段对每条保留事实运行梯度优化，成本随 O(N) 个固定步数优化循环增长，远多于检索索引所需的单次嵌入；响应时路由需与全部 N 条存储条目比较，且每条路由事实都要单独生成一遍再进入答案生成，带来单遍方法没有的每问题延迟，编码成本只有在后续问题复用条目时才摊销。评估仅覆盖三个不超过 8B 参数的模型家族、一类 GPU 和英文自动基准；一百万与二百万 token 单元只有 1 至 5 个样本，分数只表示可行性而非精确准确率估计；全上下文参考止于 40,000 token 的评测框架上限，StreamingLLM 实现的是提示保留代理；重构在算法层面确定，但评估未建立跨硬件或数值配置的逐位可复现性；基准为自动评测、无人工反馈，对重构答案的信任、召回失败后的恢复与长期使用均未测量。此外，抽取阶段会因句子缺少实体、数字或标识符线索而丢失证据（QA4），QA3 在抽取覆盖完整且保真度至少 0.77 时仍失败，说明限制在答案模型组合；NoLiMa 探针显示当问题与保留锚点词法或语义对应有限时锚点路由是瓶颈；更宽松的门控阈值可能伴随更差的重构而非更好的访问。",
+        "relevance": "论文与大模型量化、长程 Agent / 多步工具调用量化、KV cache 的关系如下。与 KV cache 直接相关：论文明确把 KV cache 随上下文长度线性增长作为问题动机，提出用外存的激活索引残差向量替代 token 级缓存状态，使响应时 GPU 显存由固定事实预算而非源长度决定，并报告存储条目占用空间小于其替代的 KV cache；但论文未对 KV cache 本身做量化，也未评估量化后的 KV cache 与该方法结合的效果。与大模型量化：论文未涉及权重量化、激活量化或 KV cache 量化，其残差向量优化使用 fp32、前向使用 bf16，属于数值精度设置而非量化方法，因此与量化研究只有间接关联（同属降低长上下文推理内存开销的方向）。与长程 Agent / 多步工具调用量化：论文在引言与讨论中把长期对话、多轮交互、Agent 记住早期交互等作为应用背景，并在结论中称该方法可用于用户与 Agent 长期对话交互的场景，但论文没有进行任何 Agent 实验、多步工具调用实验或工具调用量化实验，这些属于对 Agent 应用的推测而非论文的直接实验结论；论文的直接实验仅限 BABILong、RULER QA 与 NoLiMa 派生探针上的问答评测。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:29:04+00:00",
+        "source_hash": "8800f42554e946254ee7f77b6dc29c82501808ae20b977c5478d1b0452867965",
+        "paper_updated": "2026-09-11T10:31:46Z"
+      }
     },
     {
       "id": "2609.12551",
@@ -1309,7 +1547,22 @@
           "evidence": "kv-cache, agent, llm"
         }
       ],
-      "related_only": true
+      "related_only": true,
+      "image_checked": "2026-09-17T09:29:04+00:00",
+      "summary": {
+        "title_zh": "RoofLang：面向AI驱动的LLM推理系统架构设计",
+        "tldr": "论文提出RoofLang领域特定语言，用计算图与硬件图表示LLM推理负载与硬件，通过保持语义的图变换、放置原语和基于roofline的离散事件模拟器，让AI智能体在无需真实剖析的情况下自主探索推理系统架构；评估显示DeepSeek V4系列因紧凑KV cache设计可获得3.5–39.5倍峰值解码吞吐优势，且一个持续运行的优化智能体在NVIDIA B300上为DeepSeek V4 Pro找到吞吐与交互性提升6.23–50.1%的新架构。",
+        "contributions": "提出用于自主LLM推理系统架构设计的实用DSL，结合通用图表示、保持语义的动作空间与基于roofline的评估器，形成AI可访问的闭环；分析模型、负载与硬件特性如何影响图组织、放置、分片、内存与通信及其权衡；评估AI自主架构设计，将AI驱动探索与启发式网格搜索对比，并考察智能体如何利用模拟反馈生成有意义的架构选择。",
+        "method": "RoofLang以外部提供的计算图描述LLM推理负载（节点为算子，含张量形状、dtype、FLOPs、数据移动等分析属性），以硬件图描述计算与内存设备及互连带宽延迟；通过放置原语（operator.set_compute、tensor.set_memory）将算子与张量映射到硬件；通过保持语义的变换原语（控制边增删、identity增删、kernel融合/拆分/复制/去重、gather-scatter与gather-broadcast与reduce-scatter与reduce-broadcast合并等）表达PD分离、KV cache生命周期、TP/CP/DP/EP/PP等架构动作；最后由拓扑感知离散事件模拟器按依赖调度，用roofline式公式计算compute、memory、network成本并取最大值作为无竞争基线，同时建模资源竞争与内存峰值。",
+        "results": "在64块NVIDIA GB300上，64K与1M上下文下DeepSeek V4 Flash峰值解码吞吐分别达GLM-5.3的9.6倍与16.7倍，达Kimi K3的25.2倍与39.5倍；DeepSeek V4 Pro对GLM-5.3为3.5倍与5.3倍，对Kimi K3为9.3倍与12.4倍，差距主要来自每解码token内存开销与KV cache占用。智能体案例：DeepSeek V4 Pro decode-64K在256块B300、batch 4096、EP=16、PP=16下，将均衡PP划分(4×13,3×3)改为(3,4×14,2)，吞吐与交互性提升20.3%；prefill-8K在8块B300、batch 512下，DP–CP路由专家拆分使吞吐与交互性提升6.23%；prefill-1M在16块B300、batch 1、CP=EP=16下，节点内专家复制使吞吐与交互性提升50.1%。",
+        "limitations": "作者列出三点：初始输入验证方面，RoofLang假设初始计算图与硬件图正确，仍需人工验证，未来应自动化构建与校验；建模保真度方面，当前模型假设MoE负载理想均衡，并省略KV cache追加、推测解码结构及Kimi K3多模态组件，未来需显式建模并对照实测校准；模拟可扩展性方面，离散事件模拟器无法高效扩展到最大配置，在128块GPU上模拟Kimi K3可能需数小时与数百GB内存，使反复智能体优化不现实。此外评估中H200与GH200假设以FP8速度模拟FP4。",
+        "relevance": "论文与大模型量化直接相关：其评估显式使用FP8/FP4/BF16等数值精度配置，并指出紧凑KV cache（FP8主缓存加FP4索引缓存）带来的内存流量下降是DeepSeek V4系列解码吞吐优势的主因，量化精度直接影响每token内存开销与可支持批大小。与KV cache关系密切：论文将KV cache生命周期（重算与缓存粒度、ToNvme/ToDram/ToHbm内存层级策略）作为可变换的架构动作，并用每请求KV cache占用与流量解释吞吐差异。与长程Agent/多步工具调用量化的关系为间接：论文本身未做长程Agent或多步工具调用实验，也未评估工具调用场景下的量化；其智能体实验是让Claude Code持续运行以优化推理架构，属于架构搜索智能体，而非长程工具调用负载。因此不能据此推断其在Agent多步工具调用量化上的表现，需查看全文或另行实验。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:29:11+00:00",
+        "source_hash": "6ad93bdd26cc84d6662a4a40eb616db5d1a641553d7c3f656fe952500176538b",
+        "paper_updated": "2026-09-11T07:57:28Z"
+      }
     },
     {
       "id": "2609.12412",
@@ -1343,7 +1596,26 @@
           "evidence": "quantiz, language model"
         }
       ],
-      "related_only": false
+      "related_only": false,
+      "image": {
+        "file": "2609.12412.png",
+        "source": "https://arxiv.org/html/2609.12412v1/figures/holibench_arch_v2.png"
+      },
+      "image_checked": "2026-09-17T09:29:15+00:00",
+      "summary": {
+        "title_zh": "HoliBench：面向CPS-IoT应用中基础模型的跨平台基准测试与部署工具包",
+        "tldr": "HoliBench 是一个面向 CPS-IoT 场景的跨平台基础模型基准测试与部署工具包，通过平台抽象层统一测量异构硬件上的精度、延迟、能耗与内存，并支持约束感知的配置选择。论文在 20 个模型、7 类设备、3 种量化级别、8 个推理后端和 30 多个任务上进行了刻画，发现量化收益高度依赖硬件与运行时、平均推理功耗主要由设备决定、精度提升相对能耗存在递减回报，并验证了单模型画像在顺序共驻执行下的可组合性。",
+        "contributions": "提出 HoliBench 开源工具包，覆盖 LLM、VLM、TSFM 及从单板计算机到 GPU 服务器的异构硬件，支持多种推理引擎、量化后端和评估框架；提出平台抽象层，通过同步测量、时间对齐和一致指标实现跨异构硬件的功耗、能耗、内存和利用率统一画像；在 20 个模型、7 类设备、3 种量化级别上刻画部署行为，揭示量化收益依赖运行时与硬件支持、平均推理功耗主要由设备决定、精度增益相对能耗递减等与常见预期相悖的现象；提供约束感知的配置选择交互界面，在精度、延迟、能耗和内存联合约束下识别可行配置；展示单模型画像在顺序共驻执行下可组合，在多模型 CPS 部署中预测组合流水线延迟和功耗误差分别为 1.2% 和 2.5%。",
+        "method": "HoliBench 采用四层模块化硬件在环架构：平台抽象层将不同硬件遥测接口归一化为统一指标，通过 Profiling Context Manager 对推理窗口进行同步括定，对瞬时功耗积分得到能耗，对累积能耗计数器取差分，并减去空闲基线得到净推理能耗；推理计时模型区分 LLM 的 prefill 与 decode 阶段、VLM 的视觉编码与语言生成阶段、TSFM 的单次前向传播；模态感知基准测试支持原生前向传播及 vLLM、SGLang、HuggingFace、MLX、OpenVino、TensorRT、ollama、ONNX 等 8 个推理后端，并评估 FP16、INT8、INT4 量化与硬件加速支持的交叉组合；约束感知配置选择先做求解器无关的可行性剪枝，再通过可插拔求解器接口进行排序，默认提供整数线性规划求解器。实验使用 Hydra 配置编排，在 7 个平台上对 20 个模型、30 多个任务进行单查询顺序推理测量，每个模型-设备-量化设置执行 100 个样本，LLM 和 VLM 功耗采样间隔为 100 毫秒，TSFM 为 10 毫秒。",
+        "results": "在 A5000 上的摘要任务中，15 个 LLM 配置的精度-净推理能耗曲线呈凸形，约 80% 精度后每点精度提升所需能耗比低精度区间高一个数量级以上，同等精度下配置间能耗差异可达 12 倍；在四个设备上净推理能耗与平均推理延迟呈线性关系，回归斜率对应平均推理功耗，A5000 功耗约为 RTX 3070 的两倍，Jetson AGX Orin 和 Mac Mini M4 Pro 约低一个数量级，DeepSeek-R1-Distill-Llama-8B 因输出膨胀明显偏离回归线；INT4 权重量化在 HuggingFace 后端上并非普遍降低延迟，RTX 3070 上 4B 模型延迟降低 54% 至 60%，但小于 1B 模型延迟增加 43% 至 131%，A5000 上所有测试模型延迟均增加，Jetson AGX Orin 上 Qwen3-0.6B 延迟增加 478%；跨平台验证中 PaliGemma-3B 在 A5000 上推理 0.15 秒耗能 31.2 焦耳，在 Jetson 上推理 0.39 秒耗能 14.7 焦耳，延迟排名与能耗排名出现反转；vLLM 在 A5000 上对所有模型加速 1.8 至 16 倍，但在 Jetson AGX Orin 上 2B 及以上模型均变慢，Llama-3.2-3B 最慢达 2.8 倍；多模型 CPS 案例中，求解器选择的配置预测延迟误差 1.2%、功耗误差 2.5%，88.8% 周期满足 1.6 秒截止时间，而精度贪心配置每个周期均超时且持续功耗 32.0 瓦超出预算。",
+        "limitations": "摘要未提供，需查看全文。从节选内容可见，量化刻画主要基于 bitsandbytes 权重量化与 HuggingFace 后端，跨后端泛化仅覆盖部分 LLM；多模型可组合性验证限于顺序共驻执行、静态 GPU 内存分配和计算阶段时间分离的条件，作者指出并发执行或动态批处理下这些条件可能不成立；vLLM 在 Jetson 上变慢的具体机制未被隔离，作者称超出研究范围；部分任务缺少对应基准数据集，部署成本估计依赖插值与近恒定功耗假设。",
+        "relevance": "论文直接涉及大模型量化：系统评估 FP16、INT8、INT4 量化与硬件加速支持的交叉组合，发现量化收益高度依赖硬件微架构和量化运行时内核实现，在部分平台上量化反而增加延迟。论文涉及 KV cache：在推理计时模型中说明 LLM 的 prefill 阶段填充 KV-cache，decode 阶段逐步生成 token，并指出 vLLM 的 paged KV-cache 管理在单查询边缘负载下可能引入开销。论文未直接研究长程 Agent 或多步工具调用量化，没有 Agent 实验；但其对自回归 decode 延迟与输出 token 数的线性关系、平均推理功耗近似恒定的刻画，以及对多模型顺序流水线延迟和功耗可组合性的验证，可为多步工具调用场景下的延迟与能耗估计提供参考，这属于对 Agent 应用的推测而非论文直接实验结论。",
+        "source_kind": "html_excerpt",
+        "model": "deepseek-v4-flash",
+        "generated_at": "2026-09-17T09:29:23+00:00",
+        "source_hash": "a60994d128e4e568257e2f667ee5a64d908adf1ffebb36c3e5dae28f00531dd0",
+        "paper_updated": "2026-09-11T04:03:20Z"
+      }
     },
     {
       "id": "2609.12208",
