@@ -18,14 +18,18 @@
     },
     "researcher:song-han": {
       "query": "au:\"Song Han\"",
-      "last_success": "2026-10-01T10:57:17+00:00",
+      "last_success": "2026-10-02T10:30:29+00:00",
       "fetched": 7
     }
   },
   "last_run": {
-    "at": "2026-10-01T10:57:34+00:00",
-    "status": "ok",
-    "errors": [],
+    "at": "2026-10-02T10:35:01+00:00",
+    "status": "partial",
+    "errors": [
+      "topic:llm-quantization: HTTPError: HTTP Error 429: Unknown Error",
+      "topic:agent-quantization: HTTPError: HTTP Error 429: Unknown Error",
+      "topic:long-context: HTTPError: HTTP Error 429: Unknown Error"
+    ],
     "warnings": [],
     "paper_count": 406
   }
