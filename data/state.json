@@ -1,36 +1,32 @@
 {
-  "last_success": "2026-10-01T10:57:34+00:00",
+  "last_success": "2026-10-03T09:52:28+00:00",
   "streams": {
     "topic:llm-quantization": {
       "query": "(ti:quantiz* OR abs:quantiz* OR ti:\"low-bit\" OR abs:\"low-bit\" OR ti:FP4 OR ti:FP8) AND (ti:\"language model\" OR abs:\"language model\" OR abs:LLM OR abs:LLMs)",
-      "last_success": "2026-10-01T10:57:17+00:00",
-      "fetched": 49
+      "last_success": "2026-10-03T09:52:08+00:00",
+      "fetched": 56
     },
     "topic:agent-quantization": {
       "query": "(ti:quantiz* OR abs:quantiz* OR abs:\"low-bit\" OR abs:\"low precision\") AND (abs:agent OR abs:agentic OR abs:\"long-horizon\" OR abs:\"multi-step\" OR abs:\"chain-of-thought\" OR abs:reasoning OR abs:\"tool use\")",
-      "last_success": "2026-10-01T10:57:17+00:00",
-      "fetched": 15
+      "last_success": "2026-10-03T09:52:08+00:00",
+      "fetched": 16
     },
     "topic:long-context": {
       "query": "(abs:\"KV cache\" OR abs:\"key-value cache\" OR abs:\"long-context\") AND (abs:quantiz* OR abs:compress* OR abs:efficient OR abs:agent)",
-      "last_success": "2026-10-01T10:57:17+00:00",
-      "fetched": 91
+      "last_success": "2026-10-03T09:52:08+00:00",
+      "fetched": 95
     },
     "researcher:song-han": {
       "query": "au:\"Song Han\"",
-      "last_success": "2026-10-02T10:30:29+00:00",
+      "last_success": "2026-10-03T09:52:08+00:00",
       "fetched": 7
     }
   },
   "last_run": {
-    "at": "2026-10-02T10:35:01+00:00",
-    "status": "partial",
-    "errors": [
-      "topic:llm-quantization: HTTPError: HTTP Error 429: Unknown Error",
-      "topic:agent-quantization: HTTPError: HTTP Error 429: Unknown Error",
-      "topic:long-context: HTTPError: HTTP Error 429: Unknown Error"
-    ],
+    "at": "2026-10-03T09:52:28+00:00",
+    "status": "ok",
+    "errors": [],
     "warnings": [],
-    "paper_count": 406
+    "paper_count": 418
   }
 }
